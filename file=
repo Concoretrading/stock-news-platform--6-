@@ -1,0 +1,13 @@
+scripts/add-sample-data.sql""-- Insert sample stocks (updated to include all 10 stocks)
+INSERT INTO stocks (ticker, name) VALUES
+('AAPL', 'Apple Inc.'),
+('MSFT', 'Microsoft Corporation'),
+('GOOGL', 'Alphabet Inc.'),
+('AMZN', 'Amazon.com Inc.'),
+('META', 'Meta Platforms Inc.'),
+('TSLA', 'Tesla Inc.'),
+('NVDA', 'NVIDIA Corporation'),
+('NFLX', 'Netflix Inc.'),
+('CRM', 'Salesforce Inc.'),
+('ORCL', 'Oracle Corporation')
+ON CONFLICT (ticker) DO NOTHING;
