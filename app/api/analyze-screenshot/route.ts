@@ -3,6 +3,9 @@ import { getAuth, getStorage } from "@/lib/firebase-admin"
 import { getFirestore } from "firebase-admin/firestore"
 
 const db = getFirestore()
+const BUCKET_NAME = 'concorenews.appspot.com';
+
+console.log('Firebase Admin initialized with bucket:', getStorage().bucket(BUCKET_NAME).name);
 
 export async function POST(request: NextRequest) {
   // Log the Authorization header and ID token for debugging
@@ -52,7 +55,7 @@ export async function POST(request: NextRequest) {
     // Upload image to Firebase Storage
     const storage = getStorage()
     const fileName = `screenshot-news-images/${userId}_${Date.now()}.${image.type.split('/').pop() || 'png'}`
-    const bucket = storage.bucket()
+    const bucket = storage.bucket(BUCKET_NAME)
     const file = bucket.file(fileName)
     await file.save(buffer, { contentType: image.type })
     // Do NOT make the file public
