@@ -78,8 +78,12 @@ export async function POST(request: NextRequest) {
     if (!ocrResult.success) {
       throw new Error(ocrResult.error || 'OCR processing failed')
     }
+    // Debug log: OCR matches
+    console.log('OCR matches:', ocrResult.matches)
     // 4. Filter matches to only those in user's watchlist
     const filteredMatches = (ocrResult.matches || []).filter((m: any) => watchlistTickers.includes(m.ticker?.toUpperCase()))
+    // Debug log: Filtered matches
+    console.log('Filtered matches (in watchlist):', filteredMatches)
     // 5. Log news entries for filtered tickers in Firestore
     const newsEntryResults: any[] = []
     const todayIso = new Date().toISOString().split("T")[0]
@@ -96,8 +100,12 @@ export async function POST(request: NextRequest) {
           createdAt: new Date().toISOString(),
         })
         newsEntryResults.push({ ticker: match.ticker, id: catalystDoc.id, success: true })
+        // Debug log: Firestore write success
+        console.log('Catalyst written to Firestore:', { ticker: match.ticker, id: catalystDoc.id })
       } catch (error) {
         newsEntryResults.push({ ticker: match.ticker, success: false, error: error instanceof Error ? error.message : "Unknown error" })
+        // Debug log: Firestore write error
+        console.error('Error writing catalyst to Firestore:', error)
       }
     }
     return NextResponse.json({
