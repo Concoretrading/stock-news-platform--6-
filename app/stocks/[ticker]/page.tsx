@@ -13,6 +13,7 @@ import { StockNewsHistory } from "@/components/stock-news-history"
 import { StockManualNewsForm } from "@/components/stock-manual-news-form"
 import { StockAlertTab } from "@/components/stock-alert-tab"
 import ScreenshotButton from '@/components/ScreenshotButton'
+import { StockNewsSearch } from "@/components/stock-news-search"
 
 interface StockData {
   symbol: string
@@ -176,21 +177,7 @@ export default function StockPage() {
           </TabsContent>
 
           <TabsContent value="search">
-            <Card>
-              <CardHeader>
-                <CardTitle>Search News Catalysts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <input
-                  type="text"
-                  className="w-full border rounded px-3 py-2 mb-4"
-                  placeholder="Type keywords to search..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-                <StockNewsHistory ticker={stockData.symbol} />
-              </CardContent>
-            </Card>
+            <StockNewsSearch ticker={stockData.symbol} />
           </TabsContent>
 
           <TabsContent value="add-news">
