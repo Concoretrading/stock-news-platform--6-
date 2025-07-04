@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, ChevronRight, Calendar, Plus, Trash2, Edit } from "lucide-react"
+import { ChevronDown, ChevronRight, Calendar, Plus, Trash2, Edit, Download, Undo2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
@@ -79,7 +79,7 @@ export function NewsImage({ imagePath }: { imagePath: string }) {
   return <img src={url} alt="Screenshot" className="mt-2 max-h-32 rounded" />
 }
 
-export function StockNewsHistory({ ticker, searchQuery }: { ticker?: string, searchQuery?: string }) {
+export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: string, searchQuery?: string }) {
   const [catalysts, setCatalysts] = useState<Catalyst[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -143,7 +143,7 @@ export function StockNewsHistory({ ticker, searchQuery }: { ticker?: string, sea
     try {
       setLoading(true)
       setError(null)
-      const response = await fetch(`/api/catalysts${ticker ? `?ticker=${ticker}` : ""}`)
+      const response = await fetchWithAuth(`/api/catalysts${ticker ? `?ticker=${ticker}` : ""}`)
       if (!response.ok) {
         setCatalysts([])
         return
