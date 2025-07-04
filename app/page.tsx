@@ -40,6 +40,7 @@ export default function HomePage() {
   const [globalDragActive, setGlobalDragActive] = useState(false)
   const [droppedFile, setDroppedFile] = useState<File | null>(null)
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
 
   // Redirect to login if not authenticated
@@ -54,7 +55,7 @@ export default function HomePage() {
     if (user) {
       loadUserWatchlist()
     }
-  }, [user])
+  }, [user, refreshKey])
 
   const loadUserWatchlist = async () => {
     try {
@@ -191,6 +192,7 @@ export default function HomePage() {
           throw new Error(result.error)
         }
         setDroppedFile(null)
+        handleScreenshotCatalystAdded()
       } catch (error) {
         console.error("Screenshot analysis failed:", error)
         toast({
@@ -201,6 +203,10 @@ export default function HomePage() {
         setDroppedFile(null)
       }
     }
+  }
+
+  const handleScreenshotCatalystAdded = () => {
+    setRefreshKey((k) => k + 1)
   }
 
   // Show loading state while checking authentication
@@ -338,7 +344,7 @@ export default function HomePage() {
         )}
         
         {/* Floating Screenshot Button */}
-        <ScreenshotButton />
+        <ScreenshotButton onCatalystAdded={handleScreenshotCatalystAdded} />
       </main>
     </div>
   )
