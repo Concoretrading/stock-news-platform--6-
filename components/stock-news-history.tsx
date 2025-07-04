@@ -96,11 +96,11 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
   const [undoData, setUndoData] = useState<Catalyst | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
 
-  // Generate the default 12 months
-  const generateDefault12Months = () => {
+  // Generate the default 6 months
+  const generateDefault6Months = () => {
     const months = []
     const now = new Date()
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 6; i++) {
       const monthDate = new Date(now.getFullYear(), now.getMonth() - i, 1)
       months.push(monthDate)
     }
@@ -109,7 +109,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
 
   // Get all visible months (default - deleted + custom)
   const getAllVisibleMonths = () => {
-    const defaultMonths = generateDefault12Months()
+    const defaultMonths = generateDefault6Months()
     const visibleDefaultMonths = defaultMonths.filter((month) => {
       const monthKey = format(month, "yyyy-MM")
       return !deletedMonths.has(monthKey)
@@ -244,7 +244,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
 
   const deleteMonth = (monthDate: Date) => {
     const monthKey = format(monthDate, "yyyy-MM")
-    const defaultMonths = generateDefault12Months()
+    const defaultMonths = generateDefault6Months()
     const isDefaultMonth = defaultMonths.some((m) => format(m, "yyyy-MM") === monthKey)
     const isCustomMonth = customMonths.some((m) => format(m, "yyyy-MM") === monthKey)
     if (isDefaultMonth) {
@@ -257,7 +257,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
   }
 
   const getDeletedMonthsForRestore = () => {
-    const defaultMonths = generateDefault12Months()
+    const defaultMonths = generateDefault6Months()
     return defaultMonths.filter((month) => {
       const monthKey = format(month, "yyyy-MM")
       return deletedMonths.has(monthKey)
@@ -399,7 +399,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
               const monthKey = format(month, "yyyy-MM")
               const monthName = format(month, "MMMM yyyy")
               const isCurrentMonth = format(new Date(), "yyyy-MM") === monthKey
-              const defaultMonths = generateDefault12Months()
+              const defaultMonths = generateDefault6Months()
               const isDefaultMonth = defaultMonths.some((m) => format(m, "yyyy-MM") === monthKey)
               const isCustomMonth = customMonths.some((m) => format(m, "yyyy-MM") === monthKey)
               const isOpen = openMonths.has(monthKey)
