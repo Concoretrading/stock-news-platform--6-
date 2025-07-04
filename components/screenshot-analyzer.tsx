@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -43,6 +43,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
   const [files, setFiles] = useState<BulkFile[]>([])
   const [dragActive, setDragActive] = useState(false)
   const { toast } = useToast()
+  const lastAnalyzeTime = useRef(0)
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -62,6 +63,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
     const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"))
     if (droppedFiles.length > 0) {
       handleFileSelect(droppedFiles)
+      setTimeout(() => analyzeAll(), 0)
     }
   }
 
@@ -80,6 +82,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       ...prev,
       ...validFiles.map(file => ({ file, status: 'pending' as FileStatus }))
     ])
+    setTimeout(() => analyzeAll(), 0)
   }
 
   const handlePaste = async () => {
@@ -114,6 +117,16 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
   }
 
   const analyzeAll = async () => {
+    const now = Date.now()
+    if (now - lastAnalyzeTime.current < 2000) {
+      toast({
+        title: "Please wait before analyzing again.",
+        description: "You can only analyze once every 2 seconds.",
+        variant: "destructive",
+      })
+      return
+    }
+    lastAnalyzeTime.current = now
     setFiles(prev => prev.map(f => f.status === 'pending' ? { ...f, status: 'analyzing' } : f))
     let allAddedTickers: string[] = []
     for (let i = 0; i < files.length; i++) {
@@ -293,11 +306,11 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
                   </div>
                 </div>
                 {/* News Entry Results */}
-                {f.result?.newsEntryResults && f.result.newsEntryResults.length > 0 && (
+                {f.result?.newsEntryResults?.[0] && (
                   <div className="mt-4 p-3 bg-green-50 rounded border border-green-200 flex items-center justify-between">
-                    <span className="font-medium">{f.result.newsEntryResults[0]?.ticker || 'N/A'}</span>
+                    <span className="font-medium">{f.result?.newsEntryResults?.[0]?.ticker || 'N/A'}</span>
                     <span className="text-sm text-green-600">
-                      {f.result.newsEntryResults[0]?.result?.success ? 'Success' : 'Failed'}
+                      {f.result?.newsEntryResults?.[0]?.result?.success ? 'Success' : 'Failed'}
                     </span>
                   </div>
                 )}
