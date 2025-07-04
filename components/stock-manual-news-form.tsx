@@ -17,7 +17,7 @@ import { auth } from "@/lib/firebase"
 export function StockManualNewsForm({ ticker }: { ticker: string }) {
   const [formData, setFormData] = useState({
     headline: "",
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     source: "",
     priceBefore: "",
     priceAfter: "",
@@ -73,7 +73,7 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
         // Reset form
         setFormData({
           headline: "",
-          date: "",
+          date: new Date().toISOString().split("T")[0],
           source: "",
           priceBefore: "",
           priceAfter: "",
@@ -167,13 +167,12 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="source">Source *</Label>
+              <Label htmlFor="source">Source</Label>
               <Input
                 id="source"
                 value={formData.source}
                 onChange={(e) => setFormData((prev) => ({ ...prev, source: e.target.value }))}
                 placeholder="e.g., Reuters, Bloomberg, Company PR"
-                required
               />
             </div>
 
