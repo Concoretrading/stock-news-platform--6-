@@ -2,12 +2,8 @@ import { initializeApp, cert, getApps, applicationDefault, App } from 'firebase-
 import { getAuth } from 'firebase-admin/auth';
 import { getStorage } from 'firebase-admin/storage';
 
-// Use environment variable for bucket
-const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
-
-if (!storageBucket) {
-  throw new Error('Missing NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET env variable');
-}
+// Hardcode the default bucket for testing
+const storageBucket = 'concorenews.firebasestorage.app';
 
 const app: App = !getApps().length
   ? initializeApp({
