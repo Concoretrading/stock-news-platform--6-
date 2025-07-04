@@ -301,7 +301,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
           {/* Left Side - Selected Stocks */}
           <div className="flex-1 p-6 border-r flex flex-col min-h-0">
             <h3 className="text-xl font-semibold mb-4 text-foreground">Selected Stocks ({selectedStocks.length}/10)</h3>
-            <div className="space-y-3 overflow-y-auto max-h-full flex-1 min-h-0">
+            <div className="space-y-3 overflow-y-auto max-h-[420px] min-h-[420px] flex-1 rounded-lg bg-background border">
               {selectedStocks.map((stock) => (
                 <div key={stock.ticker} className="bg-muted/50 rounded-lg p-4 flex items-center justify-between">
                   <div>
@@ -345,7 +345,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
               </div>
               {/* Real-time Search Results */}
               {searchQuery && (
-                <div className="mt-2 max-h-96 overflow-y-auto border rounded-lg bg-background">
+                <div className="mt-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background">
                   {filteredStocks.slice(0, 15).map((stock) => (
                     <div
                       key={stock.ticker}
@@ -385,7 +385,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
               {!searchQuery && (
                 <div className="mt-4">
                   <h4 className="font-medium mb-3 text-foreground">Popular Stocks</h4>
-                  <div className="grid gap-2 max-h-96 overflow-y-auto">
+                  <div className="grid gap-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background">
                     {EXTENDED_STOCKS.slice(0, 20)
                       .filter((stock) => !selectedStocks.some((selected) => selected.ticker === stock.ticker))
                       .map((stock) => (
