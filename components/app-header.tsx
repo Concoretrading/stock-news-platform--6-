@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import Link from "next/link"
 
 export function AppHeader() {
   return (
@@ -18,11 +19,13 @@ export function AppHeader() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <img
-              src="/images/concore-logo.png"
-              alt="ConcoreTrading"
-              className="h-16 w-16 rounded-full bg-white/10 p-2"
-            />
+            <Link href="/">
+              <img
+                src="/images/concore-logo.png"
+                alt="ConcoreTrading"
+                className="h-16 w-16 rounded-full bg-white/10 p-2 cursor-pointer"
+              />
+            </Link>
             <div>
               <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
               <div className="flex items-center space-x-2 mt-2">
