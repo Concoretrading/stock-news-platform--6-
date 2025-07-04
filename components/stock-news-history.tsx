@@ -167,53 +167,57 @@ export function StockNewsHistory({ ticker }: { ticker?: string }) {
   return (
     <div>
       <div className="space-y-4">
-        {monthsData.map((month, monthIdx) => (
-          <Collapsible key={monthIdx} open={month.isOpen} onOpenChange={() => {
-            const newMonthsData = [...monthsData]
-            newMonthsData[monthIdx].isOpen = !newMonthsData[monthIdx].isOpen
-            setMonthsData(newMonthsData)
-          }}>
-            <div className="flex items-center justify-between space-x-4 px-4">
-              <h4 className="text-sm font-semibold">
-                {month.month} {month.year}
-              </h4>
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0">
-                  <ChevronDown className="h-4 w-4" />
-                  <span className="sr-only">Toggle</span>
-                </Button>
-              </CollapsibleTrigger>
-            </div>
-            <div className="space-y-2">
-              {Object.entries(month.weeks).map(([week, newsItems]) => (
-                <div key={week}>
-                  <h5 className="text-xs font-medium text-muted-foreground">
-                    Week {week}
-                  </h5>
-                  <div className="space-y-1">
-                    {newsItems.map((item) => (
-                      <Card key={item.id}>
-                        <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <CardTitle>{item.headline}</CardTitle>
-                            <Badge>{item.date}</Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="mb-2 text-sm text-muted-foreground">
-                            {item.stockTickers && item.stockTickers.join(", ")}
-                          </div>
-                          <div>{item.notes}</div>
-                          {item.imageUrl && <NewsImage imagePath={item.imageUrl} />}
-                        </CardContent>
-                      </Card>
-                    ))}
+        {monthsData.map((month, monthIdx) => {
+          // Calculate total entries for the month
+          const monthTotal = Object.values(month.weeks).reduce((acc, newsItems) => acc + newsItems.length, 0);
+          return (
+            <Collapsible key={monthIdx} open={month.isOpen} onOpenChange={() => {
+              const newMonthsData = [...monthsData]
+              newMonthsData[monthIdx].isOpen = !newMonthsData[monthIdx].isOpen
+              setMonthsData(newMonthsData)
+            }}>
+              <div className="flex items-center justify-between space-x-4 px-4">
+                <h4 className="text-sm font-semibold">
+                  {month.month} {month.year} <span className="text-xs text-muted-foreground">({monthTotal})</span>
+                </h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <div className="space-y-2">
+                {Object.entries(month.weeks).map(([week, newsItems]) => (
+                  <div key={week}>
+                    <h5 className="text-xs font-medium text-muted-foreground">
+                      Week {week} <span className="text-xs">({newsItems.length})</span>
+                    </h5>
+                    <div className="space-y-1">
+                      {newsItems.map((item) => (
+                        <Card key={item.id}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between">
+                              <CardTitle>{item.headline}</CardTitle>
+                              <Badge>{item.date}</Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="mb-2 text-sm text-muted-foreground">
+                              {item.stockTickers && item.stockTickers.join(", ")}
+                            </div>
+                            <div>{item.notes}</div>
+                            {item.imageUrl && <NewsImage imagePath={item.imageUrl} />}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </Collapsible>
-        ))}
+                ))}
+              </div>
+            </Collapsible>
+          );
+        })}
       </div>
     </div>
   )
