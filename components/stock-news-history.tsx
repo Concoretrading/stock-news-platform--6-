@@ -65,10 +65,9 @@ function NewsImage({ imagePath }: { imagePath: string }) {
 }
 
 export function StockNewsHistory({ ticker }: { ticker?: string }) {
-  const [monthsData, setMonthsData] = useState<MonthData[]>([])
-  const [showAddForm, setShowAddForm] = useState<{ monthIdx: number, week: number } | null>(null)
-  const [editEntry, setEditEntry] = useState<{ entry: NewsItem, monthIdx: number, week: number } | null>(null)
-  const [userWatchlist, setUserWatchlist] = useState<string[]>([])
+  const [allEntries, setAllEntries] = useState<Catalyst[]>([])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredEntries, setFilteredEntries] = useState<Catalyst[]>([])
   const { toast } = useToast()
 
   useEffect(() => {
@@ -96,59 +95,7 @@ export function StockNewsHistory({ ticker }: { ticker?: string }) {
       querySnapshot.forEach((doc) => {
         catalysts.push({ id: doc.id, ...doc.data() } as Catalyst);
       });
-
-      // Always generate last 6 months
-      const months: MonthData[] = [];
-      const now = new Date();
-      for (let i = 0; i < 6; i++) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthName = date.toLocaleString("default", { month: "long" });
-        months.push({
-          month: monthName,
-          year: date.getFullYear(),
-          weeks: { 1: [], 2: [], 3: [], 4: [] },
-          isOpen: false,
-        });
-      }
-      catalysts.forEach((cat) => {
-        let dateString = cat.date;
-        if (!dateString && cat.createdAt) {
-          // Fallback to createdAt if date missing
-          if (typeof cat.createdAt === 'string') {
-            dateString = cat.createdAt.split('T')[0];
-          } else if (typeof cat.createdAt === 'object' && typeof (cat.createdAt as any).toDate === 'function') {
-            dateString = (cat.createdAt as any).toDate().toISOString().split('T')[0];
-          }
-        }
-        if (!dateString) {
-          console.warn('Skipping catalyst with missing date:', cat);
-          return;
-        }
-        const d = new Date(dateString);
-        if (isNaN(d.getTime())) {
-          console.warn('Skipping catalyst with invalid date:', cat, dateString);
-          return;
-        }
-        const monthIndex = months.findIndex(
-          (m) => m.year === d.getFullYear() && m.month === d.toLocaleString("default", { month: "long" })
-        );
-        if (monthIndex !== -1) {
-          const week = getWeekOfMonth(d);
-          months[monthIndex].weeks[week] = months[monthIndex].weeks[week] || [];
-          months[monthIndex].weeks[week].push({
-            id: cat.id,
-            date: dateString,
-            headline: cat.title,
-            notes: cat.description,
-            isManual: cat.isManual,
-            imageUrl: cat.imageUrl,
-            stockTickers: cat.stockTickers,
-          });
-        } else {
-          console.warn('Could not assign catalyst to any month:', { id: cat.id, title: cat.title, dateString, parsedDate: d });
-        }
-      });
-      setMonthsData(months);
+      setAllEntries(catalysts);
     }, (error) => {
       toast({ title: "Error", description: error.message || "Failed to fetch news" });
     });
@@ -156,191 +103,51 @@ export function StockNewsHistory({ ticker }: { ticker?: string }) {
   }, [ticker, toast]);
 
   useEffect(() => {
-    async function fetchWatchlist() {
-      const stocks = await getUserStocks();
-      const tickers = stocks.map((s: any) => (s.ticker || s.id).toUpperCase());
-      console.log('StockNewsHistory loaded watchlist:', tickers, stocks);
-      setUserWatchlist(tickers);
+    if (!searchQuery) {
+      setFilteredEntries(allEntries)
+    } else {
+      const q = searchQuery.toLowerCase()
+      setFilteredEntries(
+        allEntries.filter(entry =>
+          (entry.title && entry.title.toLowerCase().includes(q)) ||
+          (entry.description && entry.description.toLowerCase().includes(q)) ||
+          (entry.stockTickers && entry.stockTickers.some(t => t.toLowerCase().includes(q)))
+        )
+      )
     }
-    fetchWatchlist();
-  }, []);
-
-  const toggleMonth = (index: number) => {
-    setMonthsData((prev) => prev.map((month, i) => (i === index ? { ...month, isOpen: !month.isOpen } : month)))
-  }
-
-  const addMonth = () => {
-    const newDate = new Date()
-    newDate.setMonth(newDate.getMonth() - monthsData.length)
-    const newMonth: MonthData = {
-      month: newDate.toLocaleString("default", { month: "long" }),
-      year: newDate.getFullYear(),
-      weeks: { 1: [], 2: [], 3: [], 4: [] },
-      isOpen: false,
-    }
-    setMonthsData((prev) => [...prev, newMonth])
-    toast({
-      title: "Month Added",
-      description: `${newMonth.month} ${newMonth.year} has been added to the history.`,
-    })
-  }
-
-  const deleteMonth = (index: number) => {
-    const monthToDelete = monthsData[index]
-    setMonthsData((prev) => prev.filter((_, i) => i !== index))
-    toast({
-      title: "Month Deleted",
-      description: `${monthToDelete.month} ${monthToDelete.year} has been removed.`,
-    })
-  }
-
-  const addNewsToWeek = (monthIndex: number, week: number) => {
-    toast({
-      title: "Add News Catalyst",
-      description: `Add news catalyst for Week ${week} of ${monthsData[monthIndex].month}`,
-    })
-  }
-
-  const editNews = (newsId: string) => {
-    toast({
-      title: "Edit News Catalyst",
-      description: "Edit functionality coming soon...",
-    })
-  }
-
-  const deleteNews = (monthIndex: number, week: number, newsId: string) => {
-    setMonthsData((prev) =>
-      prev.map((month, i) =>
-        i === monthIndex
-          ? {
-              ...month,
-              weeks: {
-                ...month.weeks,
-                [week]: month.weeks[week].filter((news) => news.id !== newsId),
-              },
-            }
-          : month,
-      ),
-    )
-    toast({
-      title: "News Catalyst Deleted",
-      description: "The news catalyst has been removed.",
-    })
-  }
-
-  // Add or Edit form submit handler
-  const handleFormSuccess = () => {
-    setShowAddForm(null)
-    setEditEntry(null)
-  }
-
-  // Delete news entry
-  const handleDeleteNews = async (newsId: string) => {
-    try {
-      await deleteCatalyst(newsId)
-      toast({ title: "News Catalyst Deleted", description: "The news catalyst has been removed." })
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to delete news catalyst." })
-    }
-  }
-
-  // Edit news entry
-  const handleEditNews = (entry: NewsItem, monthIdx: number, week: number) => {
-    setEditEntry({ entry, monthIdx, week })
-  }
+  }, [searchQuery, allEntries])
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5" />
-            <span>{ticker ? `${ticker} News Catalyst History` : "All News Catalysts"}</span>
-          </CardTitle>
-          <Button onClick={addMonth} size="sm" variant="outline">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Month
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {monthsData.map((month: MonthData, monthIdx: number) => (
-          <div key={month.month + month.year} className="border rounded-lg p-4">
-            <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleMonth(monthIdx)}>
-              <div className="flex items-center space-x-2">
-                {month.isOpen ? <ChevronDown /> : <ChevronRight />}
-                <span className="font-semibold text-lg">{month.month} {month.year}</span>
+    <div>
+      <input
+        type="text"
+        className="w-full border rounded px-3 py-2 mb-4"
+        placeholder="Type keywords to search..."
+        value={searchQuery}
+        onChange={e => setSearchQuery(e.target.value)}
+      />
+      <div className="space-y-4">
+        {filteredEntries.length === 0 && (
+          <div className="text-muted-foreground text-center">No entries found.</div>
+        )}
+        {filteredEntries.map(entry => (
+          <Card key={entry.id}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{entry.title}</CardTitle>
+                <Badge>{entry.date}</Badge>
               </div>
-              <Button variant="ghost" size="sm" onClick={e => { e.stopPropagation(); deleteMonth(monthIdx); }}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-            {month.isOpen && (
-              <div className="mt-4 space-y-2">
-                {[1,2,3,4].map((week: number) => (
-                  <div key={week} className="border rounded p-2 mb-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Week {week}</span>
-                    </div>
-                    {month.weeks[week] && month.weeks[week].length > 0 && (
-                      <ul className="mt-2 space-y-2">
-                        {month.weeks[week].map((news: NewsItem) => (
-                          <li key={news.id} className="border rounded p-2 flex flex-col">
-                            <div className="flex justify-between items-center">
-                              <div>
-                                <span className="font-semibold">{news.headline}</span>
-                                <span className="text-xs text-gray-500 ml-2">{news.date}</span>
-                                {news.notes && <span className="text-sm mt-1 block">{news.notes}</span>}
-                                {news.imageUrl && <NewsImage imagePath={news.imageUrl} />}
-                              </div>
-                              <div className="flex gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleEditNews(news, monthIdx, week)}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDeleteNews(news.id)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {/* Add News Button or Form */}
-                    {showAddForm && showAddForm.monthIdx === monthIdx && showAddForm.week === week ? (
-                      <AddCatalystForm
-                        selectedStockSymbol={ticker || ""}
-                        onSuccess={handleFormSuccess}
-                        onCancel={() => setShowAddForm(null)}
-                        userWatchlist={userWatchlist}
-                      />
-                    ) : editEntry && editEntry.monthIdx === monthIdx && editEntry.week === week ? (
-                      <AddCatalystForm
-                        selectedStockSymbol={ticker || ""}
-                        onSuccess={handleFormSuccess}
-                        onCancel={() => setEditEntry(null)}
-                        userWatchlist={userWatchlist}
-                        // You may need to add props to pre-fill the form with editEntry.entry
-                        // e.g., initialValues={editEntry.entry}
-                      />
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full mt-2"
-                        onClick={() => setShowAddForm({ monthIdx, week })}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add News
-                      </Button>
-                    )}
-                  </div>
-                ))}
+            </CardHeader>
+            <CardContent>
+              <div className="mb-2 text-sm text-muted-foreground">
+                {entry.stockTickers && entry.stockTickers.join(", ")}
               </div>
-            )}
-          </div>
+              <div>{entry.description}</div>
+              {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} />}
+            </CardContent>
+          </Card>
         ))}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
