@@ -89,7 +89,7 @@ export default function HomePage() {
           changePercent: (Math.random() - 0.5) * 5,
         })))
       } else {
-        setWatchlist(userStocks.map(stock => ({
+        setWatchlist(userStocks.slice(0, 10).map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
           name: stock.companyName,
