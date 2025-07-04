@@ -10,11 +10,11 @@ import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
-import { getFirestore, collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
+import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore"
 import { getAuth } from "firebase/auth"
 import AddCatalystForm from "./add-catalyst-form"
 import { deleteCatalyst, getUserStocks } from "@/lib/firebase-services"
-import { doc, updateDoc } from "firebase/firestore"
+import { updateDoc } from "firebase/firestore"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import {
   ChevronDownIcon,
@@ -139,6 +139,35 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
     setOpenMonths(new Set([currentMonth]))
   }, [])
 
+  useEffect(() => {
+    async function fetchTimelinePrefs() {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+      const db = getFirestore();
+      const prefsRef = doc(db, "users", user.uid, "timelinePrefs", "prefs");
+      const prefsSnap = await getDoc(prefsRef);
+      if (prefsSnap.exists()) {
+        const data = prefsSnap.data();
+        setCustomMonths((data.customMonths || []).map((m: string) => new Date(m + "-01")));
+        setDeletedMonths(new Set(data.deletedMonths || []));
+      }
+    }
+    fetchTimelinePrefs();
+  }, []);
+
+  async function saveTimelinePrefs(newCustomMonths: Date[], newDeletedMonths: Set<string>) {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+    const db = getFirestore();
+    const prefsRef = doc(db, "users", user.uid, "timelinePrefs", "prefs");
+    await setDoc(prefsRef, {
+      customMonths: newCustomMonths.map(m => `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`),
+      deletedMonths: Array.from(newDeletedMonths),
+    });
+  }
+
   const loadCatalysts = async () => {
     try {
       setLoading(true)
@@ -225,15 +254,16 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
     const allMonths = getAllVisibleMonths()
     const exists = allMonths.some((m) => format(m, "yyyy-MM") === monthKey)
     if (!exists) {
-      setCustomMonths((prev) => [...prev, monthDate])
+      const updatedCustomMonths = [...customMonths, monthDate];
+      setCustomMonths(updatedCustomMonths)
       if (deletedMonths.has(monthKey)) {
-        setDeletedMonths((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(monthKey)
-          return newSet
-        })
+        const updatedDeletedMonths = new Set(deletedMonths);
+        updatedDeletedMonths.delete(monthKey);
+        setDeletedMonths(updatedDeletedMonths)
+        saveTimelinePrefs(updatedCustomMonths, updatedDeletedMonths);
         toast({ title: "Month Restored", description: `${format(monthDate, "MMMM yyyy")} has been restored to your timeline.` })
       } else {
+        saveTimelinePrefs(updatedCustomMonths, deletedMonths);
         toast({ title: "Month Added", description: `${format(monthDate, "MMMM yyyy")} has been added to your timeline.` })
       }
     } else {
@@ -248,10 +278,14 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
     const isDefaultMonth = defaultMonths.some((m) => format(m, "yyyy-MM") === monthKey)
     const isCustomMonth = customMonths.some((m) => format(m, "yyyy-MM") === monthKey)
     if (isDefaultMonth) {
-      setDeletedMonths((prev) => new Set(Array.from(prev).concat(monthKey)))
+      const updatedDeletedMonths = new Set(Array.from(deletedMonths).concat(monthKey));
+      setDeletedMonths(updatedDeletedMonths)
+      saveTimelinePrefs(customMonths, updatedDeletedMonths);
       toast({ title: "Month Hidden", description: `${format(monthDate, "MMMM yyyy")} has been hidden. You can restore it anytime.` })
     } else if (isCustomMonth) {
-      setCustomMonths((prev) => prev.filter((m) => format(m, "yyyy-MM") !== monthKey))
+      const updatedCustomMonths = customMonths.filter((m) => format(m, "yyyy-MM") !== monthKey);
+      setCustomMonths(updatedCustomMonths)
+      saveTimelinePrefs(updatedCustomMonths, deletedMonths);
       toast({ title: "Month Removed", description: `${format(monthDate, "MMMM yyyy")} has been removed from your timeline.` })
     }
   }
