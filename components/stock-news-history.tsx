@@ -27,6 +27,19 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline"
 import { ToastAction } from "@/components/ui/toast"
+import { DateDebugPanel } from "./date-debug-panel"
+
+// Utility function for date debugging
+const debugDateInfo = (dateString: string, context: string) => {
+  const date = new Date(dateString + 'T00:00:00.000Z');
+  console.log(`Date debug [${context}]:`, {
+    original: dateString,
+    parsed: date.toISOString(),
+    local: date.toLocaleDateString(),
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+  });
+  return date;
+};
 
 interface Catalyst {
   id: string
@@ -179,11 +192,24 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
       }
       const data = await response.json()
       if (data.success) {
-        setCatalysts(data.data || [])
+        const catalystsData = data.data || [];
+        console.log("Loaded catalysts:", {
+          count: catalystsData.length,
+          ticker: ticker,
+          sampleDates: catalystsData.slice(0, 3).map((c: any) => c.date)
+        });
+        
+        // Debug date information for first few catalysts
+        catalystsData.slice(0, 3).forEach((catalyst: any, index: number) => {
+          debugDateInfo(catalyst.date, `catalyst-${index}`);
+        });
+        
+        setCatalysts(catalystsData)
       } else {
         setCatalysts([])
       }
     } catch (error) {
+      console.error("Error loading catalysts:", error);
       setCatalysts([])
     } finally {
       setLoading(false)
@@ -223,17 +249,40 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
 
   // Filter catalysts by search query if provided
   const filteredCatalysts = searchQuery && searchQuery.trim().length > 0
-    ? catalysts.filter(c =>
+    ? catalysts.filter((c: Catalyst) =>
         (c.title && c.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))
       )
     : catalysts
 
   const getCatalystsForWeek = (weekStart: Date, weekEnd: Date) => {
-    return filteredCatalysts.filter((catalyst) => {
-      const catalystDate = new Date(catalyst.date)
-      return isWithinInterval(catalystDate, { start: weekStart, end: weekEnd })
-    })
+    console.log("Filtering catalysts for week:", {
+      weekStart: weekStart.toISOString(),
+      weekEnd: weekEnd.toISOString(),
+      totalCatalysts: filteredCatalysts.length
+    });
+    
+    const weekCatalysts = filteredCatalysts.filter((catalyst) => {
+      const catalystDate = new Date(catalyst.date + 'T00:00:00.000Z'); // Ensure UTC parsing
+      const isInWeek = isWithinInterval(catalystDate, { start: weekStart, end: weekEnd });
+      
+      // Debug logging for date matching
+      if (catalyst.stockTickers?.length) {
+        console.log("Catalyst date check:", {
+          ticker: catalyst.stockTickers[0],
+          catalystDate: catalyst.date,
+          parsedDate: catalystDate.toISOString(),
+          isInWeek,
+          weekStart: weekStart.toISOString(),
+          weekEnd: weekEnd.toISOString()
+        });
+      }
+      
+      return isInWeek;
+    });
+    
+    console.log("Catalysts found for week:", weekCatalysts.length);
+    return weekCatalysts;
   }
 
   const handleCatalystAdded = () => {
@@ -355,6 +404,9 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
 
   return (
     <div className="space-y-4">
+      {/* Debug Panel - Remove this in production */}
+      <DateDebugPanel />
+      
       {error && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-4">

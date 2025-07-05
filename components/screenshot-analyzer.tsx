@@ -21,7 +21,9 @@ interface AnalysisResult {
   source: string
   newsEntryResults: Array<{
     ticker: string
-    result: any
+    success: boolean
+    id?: string
+    error?: string
   }>
 }
 
@@ -44,6 +46,9 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
   const [dragActive, setDragActive] = useState(false)
   const { toast } = useToast()
   const lastAnalyzeTime = useRef(0)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [results, setResults] = useState<AnalysisResult | null>(null)
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -134,18 +139,9 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       const file = files[i].file
       setFiles(prev => prev.map((f, idx) => idx === i ? { ...f, status: 'analyzing' } : f))
       try {
-        const formData = new FormData()
-        formData.append("image", file)
-        const response = await fetchWithAuth("/api/analyze-screenshot", {
-          method: "POST",
-          body: formData,
-        })
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-        const result = await response.json()
-        if (result.error) throw new Error(result.error)
-        setFiles(prev => prev.map((f, idx) => idx === i ? { ...f, status: 'success', result } : f))
-        const tickerCount = result.newsEntryResults?.filter((r: any) => r.success).length || 0
-        const tickers = result.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || []
+        const data = await handleScreenshotAnalysis(file)
+        const tickerCount = data?.newsEntryResults?.filter((r: any) => r.success).length || 0
+        const tickers = data?.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || []
         allAddedTickers = [...allAddedTickers, ...tickers]
         toast({
           title: `Screenshot processed (${file.name})`,
@@ -167,6 +163,76 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       // Remove duplicates
       const uniqueTickers = Array.from(new Set(allAddedTickers))
       onCatalystAdded(uniqueTickers)
+    }
+  }
+
+  const handleScreenshotAnalysis = async (file: File) => {
+    setIsAnalyzing(true)
+    setError(null)
+    setResults(null)
+
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+
+      console.log("Starting screenshot analysis:", {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        currentTime: new Date().toISOString(),
+        userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      })
+
+      const response = await fetchWithAuth("/api/analyze-screenshot", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("Screenshot analysis response:", {
+        success: data.success,
+        matches: data.matches?.length || 0,
+        newsEntryResults: data.newsEntryResults?.length || 0,
+        dateUsed: data.dateUsed,
+        imageUrl: data.imageUrl
+      })
+
+      setResults(data)
+      
+      // Log detailed results for debugging
+      if (data.newsEntryResults) {
+        data.newsEntryResults.forEach((result: any, index: number) => {
+          console.log(`Entry ${index + 1}:`, {
+            ticker: result.ticker,
+            success: result.success,
+            id: result.id,
+            error: result.error
+          })
+        })
+      }
+      
+      toast({
+        title: "Screenshot Analyzed",
+        description: `Found ${data.matches?.length || 0} ticker matches and created ${data.newsEntryResults?.filter((r: any) => r.success).length || 0} entries.`,
+      })
+      
+      return data; // Return the data for use in analyzeAll
+    } catch (error) {
+      console.error("Screenshot analysis error:", error)
+      setError(error instanceof Error ? error.message : "Failed to analyze screenshot")
+      toast({
+        title: "Analysis Failed",
+        description: error instanceof Error ? error.message : "Failed to analyze screenshot",
+        variant: "destructive",
+      })
+      throw error; // Re-throw for analyzeAll to catch
+    } finally {
+      setIsAnalyzing(false)
     }
   }
 
@@ -278,7 +344,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-bold text-lg">{f.result?.matches?.[0]?.ticker || 'N/A'}</span>
-                      <Badge variant="secondary">{Math.round(f.result?.matches?.[0]?.confidence * 100) || 0}%</Badge>
+                      <Badge variant="secondary">{Math.round((f.result?.matches?.[0]?.confidence || 0) * 100)}%</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{f.result?.matches?.[0]?.company || 'N/A'}</p>
                     <div className="mt-4">
@@ -310,7 +376,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
                   <div className="mt-4 p-3 bg-green-50 rounded border border-green-200 flex items-center justify-between">
                     <span className="font-medium">{f.result?.newsEntryResults?.[0]?.ticker || 'N/A'}</span>
                     <span className="text-sm text-green-600">
-                      {f.result?.newsEntryResults?.[0]?.result?.success ? 'Success' : 'Failed'}
+                      {f.result?.newsEntryResults?.[0]?.success ? 'Success' : 'Failed'}
                     </span>
                   </div>
                 )}

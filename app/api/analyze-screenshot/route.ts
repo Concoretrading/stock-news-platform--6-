@@ -36,12 +36,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
     }
     const userId = decodedToken.uid
+    console.log("User ID:", userId);
 
     // 2. Get user's watchlist (tickers) from Firestore
     const stocksSnap = await db.collection("stocks")
       .where("userId", "==", userId)
       .get()
     const watchlistTickers = stocksSnap.docs.map(doc => doc.data().ticker?.toUpperCase()).slice(0, 10)
+    console.log("User watchlist tickers:", watchlistTickers);
 
     // 3. Continue with screenshot analysis as before
     const formData = await request.formData()
@@ -49,6 +51,8 @@ export async function POST(request: NextRequest) {
     if (!image) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 })
     }
+    console.log("Image received:", { name: image.name, type: image.type, size: image.size });
+    
     // Convert image to buffer
     const arrayBuffer = await image.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
@@ -61,6 +65,8 @@ export async function POST(request: NextRequest) {
     // Do NOT make the file public
     // Store the storage path for use with getDownloadURL
     const imageStoragePath = fileName
+    console.log("Image uploaded to storage:", imageStoragePath);
+    
     // Call Google Cloud Function for OCR processing
     const cloudFunctionUrl = process.env.GOOGLE_CLOUD_FUNCTION_URL
     if (!cloudFunctionUrl) {
@@ -84,12 +90,26 @@ export async function POST(request: NextRequest) {
     const filteredMatches = (ocrResult.matches || []).filter((m: any) => watchlistTickers.includes(m.ticker?.toUpperCase()))
     // Debug log: Filtered matches
     console.log('Filtered matches (in watchlist):', filteredMatches)
-    // 5. Log news entries for filtered tickers in Firestore
+    
+    // 5. Enhanced date handling with timezone awareness
+    const now = new Date();
+    const utcDate = new Date(now.getTime() + (now.getTimezoneOffset() * 60000));
+    const todayIso = utcDate.toISOString().split("T")[0];
+    
+    // Log date information for debugging
+    console.log("Date handling:", {
+      localTime: now.toISOString(),
+      utcTime: utcDate.toISOString(),
+      todayIso: todayIso,
+      timezoneOffset: now.getTimezoneOffset(),
+      userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    });
+    
+    // 6. Log news entries for filtered tickers in Firestore
     const newsEntryResults: any[] = []
-    const todayIso = new Date().toISOString().split("T")[0]
     for (const match of filteredMatches) {
       try {
-        const catalystDoc = await db.collection("catalysts").add({
+        const catalystData = {
           userId,
           stockTickers: [match.ticker.toUpperCase()],
           title: ocrResult.headline || ocrResult.text?.substring(0, 100) || "Screenshot Catalyst",
@@ -98,21 +118,40 @@ export async function POST(request: NextRequest) {
           imageUrl: imageStoragePath,
           isManual: false,
           createdAt: new Date().toISOString(),
-        })
+        };
+        
+        console.log("Creating catalyst entry:", catalystData);
+        
+        const catalystDoc = await db.collection("catalysts").add(catalystData)
         newsEntryResults.push({ ticker: match.ticker, id: catalystDoc.id, success: true })
         // Debug log: Firestore write success
-        console.log('Catalyst written to Firestore:', { ticker: match.ticker, id: catalystDoc.id })
+        console.log('Catalyst written to Firestore:', { 
+          ticker: match.ticker, 
+          id: catalystDoc.id, 
+          date: todayIso,
+          createdAt: catalystData.createdAt
+        })
       } catch (error) {
         newsEntryResults.push({ ticker: match.ticker, success: false, error: error instanceof Error ? error.message : "Unknown error" })
         // Debug log: Firestore write error
         console.error('Error writing catalyst to Firestore:', error)
       }
     }
+    
+    console.log("Screenshot analysis completed:", {
+      totalMatches: ocrResult.matches?.length || 0,
+      filteredMatches: filteredMatches.length,
+      successfulEntries: newsEntryResults.filter(r => r.success).length,
+      failedEntries: newsEntryResults.filter(r => !r.success).length,
+      dateUsed: todayIso
+    });
+    
     return NextResponse.json({
       ...ocrResult,
       matches: filteredMatches,
       newsEntryResults,
       imageUrl: imageStoragePath,
+      dateUsed: todayIso, // Include the date used for debugging
     })
   } catch (error) {
     console.error("Screenshot analysis error:", error)
