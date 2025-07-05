@@ -32,6 +32,10 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
   
   const isPositive = change >= 0
 
+  console.log('price value:', price, typeof price);
+  console.log('change value:', change, typeof change);
+  console.log('changePercent value:', changePercent, typeof changePercent);
+
   return (
     <Link href={`/stocks/${symbol}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -60,7 +64,7 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
           {stock ? (
             <div className="space-y-1">
               <div className="text-2xl font-bold">
-                ${typeof price === 'number' ? price.toFixed(2) : 'N/A'}
+                ${typeof price === 'number' && !isNaN(price) ? price.toFixed(2) : 'N/A'}
                 {isLastClose && (
                   <span className="ml-2 text-xs text-yellow-500">(Last Close)</span>
                 )}
@@ -68,11 +72,11 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
               <div className="flex items-center space-x-2">
                 <Badge variant={isPositive ? "default" : "destructive"} className="text-xs">
                   {isPositive ? "+" : ""}
-                  {typeof change === 'number' ? change.toFixed(2) : 'N/A'}
+                  {typeof change === 'number' && !isNaN(change) ? change.toFixed(2) : 'N/A'}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
                   {isPositive ? "+" : ""}
-                  {typeof changePercent === 'number' ? changePercent.toFixed(2) : 'N/A'}%
+                  {typeof changePercent === 'number' && !isNaN(changePercent) ? changePercent.toFixed(2) : 'N/A'}%
                 </Badge>
               </div>
             </div>

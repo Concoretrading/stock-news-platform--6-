@@ -86,6 +86,10 @@ export default function StockPage() {
 
   const isPositive = stockData.change >= 0
 
+  console.log('stockData.price value:', stockData.price, typeof stockData.price);
+  console.log('stockData.change value:', stockData.change, typeof stockData.change);
+  console.log('stockData.changePercent value:', stockData.changePercent, typeof stockData.changePercent);
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
@@ -120,18 +124,18 @@ export default function StockPage() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Price</p>
-                <p className="text-2xl font-bold">{typeof stockData.price === 'number' ? stockData.price.toFixed(2) : 'N/A'}</p>
+                <p className="text-2xl font-bold">{typeof stockData.price === 'number' && !isNaN(stockData.price) ? stockData.price.toFixed(2) : 'N/A'}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Change</p>
                 <div className="flex items-center space-x-2">
                   <Badge variant={isPositive ? "default" : "destructive"}>
                     {isPositive ? "+" : ""}
-                    {typeof stockData.change === 'number' ? stockData.change.toFixed(2) : 'N/A'}
+                    {typeof stockData.change === 'number' && !isNaN(stockData.change) ? stockData.change.toFixed(2) : 'N/A'}
                   </Badge>
                   <span className={`text-sm ${isPositive ? "text-green-600" : "text-red-600"}`}>
                     {isPositive ? "+" : ""}
-                    {typeof stockData.changePercent === 'number' ? stockData.changePercent.toFixed(2) : 'N/A'}%
+                    {typeof stockData.changePercent === 'number' && !isNaN(stockData.changePercent) ? stockData.changePercent.toFixed(2) : 'N/A'}%
                   </span>
                 </div>
               </div>
