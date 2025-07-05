@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
-import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc } from "firebase/firestore"
+import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore"
 import { getAuth } from "firebase/auth"
 import AddCatalystForm from "./add-catalyst-form"
 import { deleteCatalyst, getUserStocks } from "@/lib/firebase-services"
@@ -27,19 +27,6 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline"
 import { ToastAction } from "@/components/ui/toast"
-import { DateDebugPanel } from "./date-debug-panel"
-
-// Utility function for date debugging
-const debugDateInfo = (dateString: string, context: string) => {
-  const date = new Date(dateString + 'T00:00:00.000Z');
-  console.log(`Date debug [${context}]:`, {
-    original: dateString,
-    parsed: date.toISOString(),
-    local: date.toLocaleDateString(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-  });
-  return date;
-};
 
 interface Catalyst {
   id: string
@@ -181,44 +168,40 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     });
   }
 
-  const loadCatalysts = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await fetchWithAuth(`/api/catalysts${ticker ? `?ticker=${ticker}` : ""}`)
-      if (!response.ok) {
-        setCatalysts([])
-        return
-      }
-      const data = await response.json()
-      if (data.success) {
-        const catalystsData = data.data || [];
-        console.log("Loaded catalysts:", {
-          count: catalystsData.length,
-          ticker: ticker,
-          sampleDates: catalystsData.slice(0, 3).map((c: any) => c.date)
-        });
-        
-        // Debug date information for first few catalysts
-        catalystsData.slice(0, 3).forEach((catalyst: any, index: number) => {
-          debugDateInfo(catalyst.date, `catalyst-${index}`);
-        });
-        
-        setCatalysts(catalystsData)
-      } else {
-        setCatalysts([])
-      }
-    } catch (error) {
-      console.error("Error loading catalysts:", error);
-      setCatalysts([])
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
-    loadCatalysts()
-  }, [ticker, refreshKey])
+    const db = getFirestore();
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    let q = query(
+      collection(db, "catalysts"),
+      where("userId", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+    if (ticker && ticker !== "all") {
+      q = query(
+        collection(db, "catalysts"),
+        where("userId", "==", user.uid),
+        where("stockTickers", "array-contains", ticker.toUpperCase()),
+        orderBy("createdAt", "desc")
+      );
+    }
+
+    setLoading(true);
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const catalysts: Catalyst[] = [];
+      querySnapshot.forEach((doc) => {
+        catalysts.push({ id: doc.id, ...doc.data() } as Catalyst);
+      });
+      setCatalysts(catalysts);
+      setLoading(false);
+    }, (error) => {
+      setError(error.message || "Failed to fetch news");
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, [ticker, refreshKey]);
 
   const toggleMonth = (monthKey: string) => {
     const newOpenMonths = new Set(openMonths)
@@ -256,46 +239,28 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     : catalysts
 
   const getCatalystsForWeek = (weekStart: Date, weekEnd: Date) => {
-    console.log("Filtering catalysts for week:", {
-      weekStart: weekStart.toISOString(),
-      weekEnd: weekEnd.toISOString(),
-      totalCatalysts: filteredCatalysts.length
-    });
-    
-    const weekCatalysts = filteredCatalysts.filter((catalyst) => {
-      const catalystDate = new Date(catalyst.date + 'T00:00:00.000Z'); // Ensure UTC parsing
+    const debugInfo: string[] = [];
+    const catalysts = filteredCatalysts.filter((catalyst) => {
+      const catalystDate = new Date(catalyst.date + 'T00:00:00.000Z');
       const isInWeek = isWithinInterval(catalystDate, { start: weekStart, end: weekEnd });
-      
-      // Debug logging for date matching
-      if (catalyst.stockTickers?.length) {
-        console.log("Catalyst date check:", {
-          ticker: catalyst.stockTickers[0],
-          catalystDate: catalyst.date,
-          parsedDate: catalystDate.toISOString(),
-          isInWeek,
-          weekStart: weekStart.toISOString(),
-          weekEnd: weekEnd.toISOString()
-        });
-      }
-      
+      debugInfo.push(
+        `Catalyst: ${catalyst.title || catalyst.id} | Date: ${catalyst.date} (parsed: ${catalystDate.toISOString()}) | Week: ${weekStart.toISOString()} - ${weekEnd.toISOString()} | Match: ${isInWeek}`
+      );
       return isInWeek;
     });
-    
-    console.log("Catalysts found for week:", weekCatalysts.length);
-    return weekCatalysts;
-  }
+    return { catalysts, debugInfo };
+  };
 
   const handleCatalystAdded = () => {
     setShowAddForm(null)
-    loadCatalysts()
   }
 
   const handleCatalystUpdated = () => {
-    loadCatalysts()
+    // Implementation needed
   }
 
   const handleCatalystDeleted = () => {
-    loadCatalysts()
+    // Implementation needed
   }
 
   const addCustomMonth = (monthDate: Date) => {
@@ -387,6 +352,20 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     URL.revokeObjectURL(url)
   }
 
+  const handleDeleteCatalyst = async (id: string) => {
+    try {
+      const db = getFirestore();
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error("Not authenticated");
+      await deleteDoc(doc(db, "catalysts", id));
+      setCatalysts(prev => prev.filter(c => c.id !== id));
+      toast({ title: "Catalyst deleted", description: "The news catalyst was deleted successfully." });
+    } catch (error) {
+      toast({ title: "Delete failed", description: error instanceof Error ? error.message : String(error), variant: "destructive" });
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -402,10 +381,25 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const months = getAllVisibleMonths()
   const deletedMonthsForRestore = getDeletedMonthsForRestore()
 
+  const todayIso = new Date().toISOString().split('T')[0];
+  const missingTodayCatalysts = catalysts.filter(c => c.date === todayIso);
+  const shownCatalystIds = new Set();
+  months.forEach(month => {
+    const weeks = generateWeeksForMonth(month);
+    weeks.forEach(week => {
+      const weekResult = getCatalystsForWeek(week.start, week.end);
+      weekResult.catalysts.forEach(c => shownCatalystIds.add(c.id));
+    });
+  });
+  const missingToday = missingTodayCatalysts.filter(c => !shownCatalystIds.has(c.id));
+
+  if (missingToday.length > 0) {
+    console.warn(`Warning: ${missingToday.length} catalyst(s) with today's date (${todayIso}) are not shown in any week. Check date logic!`);
+  }
+
   return (
     <div className="space-y-4">
       {/* Debug Panel - Remove this in production */}
-      <DateDebugPanel />
       
       {error && (
         <Card className="border-red-200 bg-red-50">
@@ -492,7 +486,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
               const weeks = generateWeeksForMonth(month)
               const monthStart = startOfMonth(month)
               const monthEnd = endOfMonth(month)
-              const monthCatalysts = getCatalystsForWeek(monthStart, monthEnd)
+              const monthResult = getCatalystsForWeek(monthStart, monthEnd)
               return (
                 <Collapsible key={monthKey} open={isOpen} onOpenChange={() => toggleMonth(monthKey)}>
                   <CollapsibleTrigger asChild>
@@ -516,7 +510,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
-                          {monthCatalysts.length} catalyst{monthCatalysts.length !== 1 ? "s" : ""}
+                          {monthResult.catalysts.length} catalyst{monthResult.catalysts.length !== 1 ? "s" : ""}
                         </span>
                         <Button
                           variant="ghost"
@@ -535,7 +529,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                   <CollapsibleContent className="pl-6 pt-2 space-y-2">
                     {weeks.map((week, weekIndex) => {
                       const weekKey = `${monthKey}-week-${weekIndex}`
-                      const weekCatalysts = getCatalystsForWeek(week.start, week.end)
+                      const weekResult = getCatalystsForWeek(week.start, week.end)
                       const isWeekOpen = openWeeks.has(weekKey)
                       const weekLabel =
                         weekIndex === 3
@@ -554,13 +548,13 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                 <span>{weekLabel}</span>
                               </div>
                               <span className="text-xs text-muted-foreground">
-                                {weekCatalysts.length} catalyst{weekCatalysts.length !== 1 ? "s" : ""}
+                                {weekResult.catalysts.length} catalyst{weekResult.catalysts.length !== 1 ? "s" : ""}
                               </span>
                             </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="pl-6 pt-2 space-y-2">
-                            {weekCatalysts.length > 0 ? (
-                              weekCatalysts.map((catalyst) => (
+                            {weekResult.catalysts.length > 0 ? (
+                              weekResult.catalysts.map((catalyst) => (
                                 <div key={catalyst.id} className="border rounded-lg p-3 bg-gray-900">
                                   <div className="flex items-start justify-between">
                                     <div className="flex-1">
@@ -632,15 +626,9 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                           <Button
                                             variant="ghost"
                                             size="sm"
-                                            onClick={() => setEditingId(catalyst.id)}
-                                            className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
-                                          >
-                                            <Edit className="h-4 w-4" />
-                                          </Button>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => {/* Delete logic here */}}
+                                            onClick={() => {
+                                              handleDeleteCatalyst(catalyst.id)
+                                            }}
                                             className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
                                           >
                                             <Trash2 className="h-4 w-4" />
@@ -675,6 +663,11 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                 </Button>
                               )}
                             </div>
+                            {weekResult.debugInfo && (
+                              <div className="text-xs text-orange-400 whitespace-pre-wrap font-mono mb-2">
+                                {weekResult.debugInfo.join('\n')}
+                              </div>
+                            )}
                           </CollapsibleContent>
                         </Collapsible>
                       )
