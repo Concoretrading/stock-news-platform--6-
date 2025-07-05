@@ -620,10 +620,39 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                             </Button>
                                           </div>
                                         ) : (
-                                          <>
-                                            <h4 className="font-medium text-sm">{catalyst.title}</h4>
-                                            {formatPriceChange(catalyst.priceBefore, catalyst.priceAfter)}
-                                          </>
+                                          <div className="flex items-center gap-4 w-full">
+                                            <span className="w-32 text-xs text-muted-foreground">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
+                                            <span className="font-medium text-sm flex-1">{catalyst.title}</span>
+                                            <span className="flex-1 text-xs text-muted-foreground">{catalyst.description}</span>
+                                            {typeof catalyst.priceBefore === 'number' && typeof catalyst.priceAfter === 'number' && (
+                                              <span className={`font-bold ml-2 ${catalyst.priceAfter - catalyst.priceBefore > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {Math.abs(catalyst.priceAfter - catalyst.priceBefore)}
+                                              </span>
+                                            )}
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => {
+                                                setEditingId(catalyst.id);
+                                                setEditForm({
+                                                  title: catalyst.title || "",
+                                                  description: catalyst.description || "",
+                                                  date: catalyst.date || ""
+                                                });
+                                              }}
+                                              className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                                            >
+                                              <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleDeleteCatalyst(catalyst.id)}
+                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
                                         )}
                                       </div>
                                       {catalyst.description && (
