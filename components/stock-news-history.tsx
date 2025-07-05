@@ -461,11 +461,6 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
                             Custom
                           </Badge>
                         )}
-                        {isDefaultMonth && !isCustomMonth && (
-                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                            Default
-                          </Badge>
-                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">
