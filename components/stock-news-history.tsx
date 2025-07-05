@@ -660,8 +660,21 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => {
-                                              handleDeleteCatalyst(catalyst.id)
+                                              setEditingId(catalyst.id);
+                                              setEditForm({
+                                                title: catalyst.title || "",
+                                                description: catalyst.description || "",
+                                                date: catalyst.date || ""
+                                              });
                                             }}
+                                            className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleDeleteCatalyst(catalyst.id)}
                                             className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
                                           >
                                             <Trash2 className="h-4 w-4" />
