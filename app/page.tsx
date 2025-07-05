@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useStockPrices } from "@/hooks/useStockPrices"
+import { useRealTimePrices } from "@/hooks/useRealTimePrices"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist, getIdToken } from "@/lib/firebase-services"
@@ -44,11 +44,24 @@ export default function HomePage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
 
-  // Get tickers for live price fetching
+  // Get tickers for real-time price fetching
   const tickers = watchlist.map(stock => stock.symbol)
-  const { prices, loading: pricesLoading, error: pricesError, refresh: refreshPrices } = useStockPrices(tickers, {
-    interval: 5000, // 5 second interval - well within Alpaca's 200 req/min limit
-    enabled: !!user && watchlist.length > 0
+  const { 
+    prices: realTimePrices, 
+    loading: pricesLoading, 
+    error: pricesError, 
+    refresh: refreshPrices,
+    connectionStatus
+  } = useRealTimePrices({
+    symbols: tickers,
+    enabled: !!user && watchlist.length > 0,
+    onError: (error) => {
+      toast({
+        title: "Price Update Error",
+        description: error,
+        variant: "destructive",
+      })
+    }
   })
 
   // Redirect to login if not authenticated
@@ -119,19 +132,15 @@ export default function HomePage() {
     }
   }
 
-  // Merge live prices with watchlist
+  // Merge real-time prices with watchlist
   const watchlistWithLivePrices = watchlist.map(stock => {
-    const livePrice = prices[stock.symbol]
-    if (livePrice !== null && livePrice !== undefined) {
-      // Calculate change and change percent (simplified - you might want to store previous prices)
-      const change = livePrice - stock.price || 0
-      const changePercent = stock.price > 0 ? (change / stock.price) * 100 : 0
-      
+    const realTimePrice = realTimePrices[stock.symbol]
+    if (realTimePrice) {
       return {
         ...stock,
-        price: livePrice,
-        change,
-        changePercent
+        price: realTimePrice.price,
+        change: realTimePrice.change || 0,
+        changePercent: realTimePrice.changePercent || 0
       }
     }
     return stock
@@ -276,6 +285,12 @@ export default function HomePage() {
                 <Badge variant="secondary">{watchlist.length} stocks</Badge>
               </div>
               <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-xs">
+                  <div className={`w-2 h-2 rounded-full ${connectionStatus.websocketConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <span className="text-muted-foreground">
+                    {connectionStatus.websocketConnected ? 'Live' : 'Delayed'}
+                  </span>
+                </div>
                 <Button 
                   variant="outline" 
                   size="sm" 
