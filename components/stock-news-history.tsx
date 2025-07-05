@@ -79,7 +79,7 @@ export function NewsImage({ imagePath }: { imagePath: string }) {
   return <img src={url} alt="Screenshot" className="mt-2 max-h-32 rounded" />
 }
 
-export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: string, searchQuery?: string }) {
+export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { ticker?: string, searchQuery?: string, refreshKey?: number }) {
   const [catalysts, setCatalysts] = useState<Catalyst[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -192,7 +192,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery }: { ticker?: str
 
   useEffect(() => {
     loadCatalysts()
-  }, [ticker])
+  }, [ticker, refreshKey])
 
   const toggleMonth = (monthKey: string) => {
     const newOpenMonths = new Set(openMonths)

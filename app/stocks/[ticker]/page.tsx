@@ -173,7 +173,7 @@ export default function StockPage() {
           </TabsList>
 
           <TabsContent value="history">
-            <StockNewsHistory ticker={stockData.symbol} />
+            <StockNewsHistory ticker={stockData.symbol} refreshKey={refreshKey} />
           </TabsContent>
 
           <TabsContent value="search">
