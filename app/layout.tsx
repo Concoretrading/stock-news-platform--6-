@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { AuthProvider } from "@/components/auth-provider"
 import { PriceAlertNotifications } from "@/components/price-alert-notifications"
+import { useEffect } from "react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,6 +21,16 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  }, []);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
