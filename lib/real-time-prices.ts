@@ -1,5 +1,6 @@
 import { getCachedPrice, setCachedPrice } from './redis'
 import { initializeAlpacaWebSocket, getAlpacaWebSocket, type PriceUpdate } from './alpaca-websocket'
+import { auth } from './firebase'
 
 interface PriceData {
   price: number
@@ -10,9 +11,24 @@ interface PriceData {
   source: 'websocket' | 'rest' | 'cache'
 }
 
+interface AlertCallback {
+  (alert: {
+    ticker: string
+    catalystId: string
+    catalystTitle: string
+    priceBefore: number
+    priceAfter: number
+    currentPrice: number
+    tolerancePoints: number
+    minimumMove: number
+    triggeredAt: string
+  }): void
+}
+
 class RealTimePriceService {
   private prices = new Map<string, PriceData>()
   private callbacks = new Map<string, ((data: PriceData) => void)[]>()
+  private alertCallbacks: AlertCallback[] = []
   private websocket: any = null
   private isInitialized = false
   private useRealTime = false
@@ -104,8 +120,51 @@ class RealTimePriceService {
     // Cache the price
     setCachedPrice(symbol, update.price)
     
+    // Check for price alerts
+    this.checkPriceAlerts(symbol, update.price)
+    
     // Notify callbacks
     this.notifyCallbacks(symbol, priceData)
+  }
+
+  // Check for price revisit alerts
+  private async checkPriceAlerts(ticker: string, currentPrice: number): Promise<void> {
+    try {
+      // Get current user's auth token
+      const user = auth.currentUser
+      if (!user) {
+        console.warn('No authenticated user for price alert check')
+        return
+      }
+      
+      const idToken = await user.getIdToken()
+      
+      // Call the check-alerts API to see if this price triggers any alerts
+      const response = await fetch(`/api/check-alerts?ticker=${ticker}&currentPrice=${currentPrice}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.alerts && data.alerts.length > 0) {
+          // Notify all alert callbacks
+          data.alerts.forEach((alert: any) => {
+            this.alertCallbacks.forEach(callback => {
+              try {
+                callback(alert)
+              } catch (error) {
+                console.error('Error in alert callback:', error)
+              }
+            })
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error checking price alerts:', error)
+    }
   }
 
   // Fetch initial prices via REST API
@@ -201,6 +260,19 @@ class RealTimePriceService {
           console.error('Error in price update callback:', error)
         }
       })
+    }
+  }
+
+  // Register callback for price alerts
+  onAlert(callback: AlertCallback): void {
+    this.alertCallbacks.push(callback)
+  }
+
+  // Remove alert callback
+  offAlert(callback: AlertCallback): void {
+    const index = this.alertCallbacks.indexOf(callback)
+    if (index > -1) {
+      this.alertCallbacks.splice(index, 1)
     }
   }
 

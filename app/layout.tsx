@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { AuthProvider } from "@/components/auth-provider"
+import { PriceAlertNotifications } from "@/components/price-alert-notifications"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,8 +30,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-          {children}
-          <Toaster />
+            {children}
+            <Toaster />
+            <PriceAlertNotifications />
             {/* Floating Screenshot Button and Modal moved to ScreenshotButton */}
             <ScreenshotButton />
           </AuthProvider>

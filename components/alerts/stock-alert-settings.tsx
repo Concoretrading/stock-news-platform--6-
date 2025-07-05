@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
+import { saveStockAlertSettings } from '@/lib/firebase-services'
 
 interface StockAlertSettings {
   ticker: string
@@ -110,9 +111,11 @@ export function StockAlertSettings({ ticker, stockName }: StockAlertSettingsProp
   const saveSettings = async () => {
     setIsLoading(true)
     try {
-      // Mock API call - would be replaced with actual implementation
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
+      await saveStockAlertSettings(
+        ticker,
+        settings.defaultTolerancePoints,
+        settings.defaultMinimumMovement
+      )
       toast({
         title: "Settings Saved",
         description: `Alert settings for ${ticker} have been updated successfully.`,

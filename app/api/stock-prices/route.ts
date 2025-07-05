@@ -26,7 +26,7 @@ async function isMarketOpen() {
 
 async function getLastClosePrice(symbol: string): Promise<number | null> {
   try {
-    const res = await fetch(`${ALPACA_DATA_URL}/${symbol}/bars?timeframe=1Day&limit=2`, {
+    const res = await fetch(`${ALPACA_DATA_URL}/${symbol}/bars?timeframe=1Day&limit=5`, {
       headers: {
         "APCA-API-KEY-ID": ALPACA_API_KEY!,
         "APCA-API-SECRET-KEY": ALPACA_API_SECRET!,
@@ -35,19 +35,79 @@ async function getLastClosePrice(symbol: string): Promise<number | null> {
     })
     if (!res.ok) return null
     const data = await res.json()
-    // The most recent bar is the last close
     if (data.bars && data.bars.length > 0) {
-      // If today is a trading day, the last bar is today, so use the previous bar
-      if (data.bars.length > 1) {
-        return data.bars[data.bars.length - 2].c
-      } else {
-        return data.bars[0].c
+      const now = new Date()
+      // Find the most recent bar that is before today (skip today if not a trading day)
+      for (let i = data.bars.length - 1; i >= 0; i--) {
+        const bar = data.bars[i]
+        const barDate = new Date(bar.t)
+        // Only consider bars before today
+        if (
+          barDate.getUTCFullYear() < now.getUTCFullYear() ||
+          barDate.getUTCMonth() < now.getUTCMonth() ||
+          barDate.getUTCDate() < now.getUTCDate()
+        ) {
+          return bar.c
+        }
       }
+      // If all bars are from today or future (shouldn't happen), fallback to the last bar
+      return data.bars[data.bars.length - 1].c
     }
     return null
   } catch {
     return null
   }
+}
+
+async function getMostRecentPrice(symbol: string): Promise<{ price: number | null, priceTime: string | null }> {
+  // 1. Try latest quote (live or after-hours)
+  try {
+    const quoteRes = await fetch(`${ALPACA_DATA_URL}/${symbol}/quotes/latest`, {
+      headers: {
+        "APCA-API-KEY-ID": ALPACA_API_KEY!,
+        "APCA-API-SECRET-KEY": ALPACA_API_SECRET!,
+      },
+      cache: "no-store"
+    })
+    if (quoteRes.ok) {
+      const quoteData = await quoteRes.json()
+      const price = quoteData.quote?.ap || quoteData.quote?.bp || quoteData.quote?.p || null
+      const priceTime = quoteData.quote?.t ? new Date(quoteData.quote.t).toISOString() : null
+      if (price && price > 0) {
+        return { price, priceTime }
+      }
+    }
+  } catch {}
+
+  // 2. Fallback: Most recent daily bar from last 7 days
+  try {
+    const barRes = await fetch(`${ALPACA_DATA_URL}/${symbol}/bars?timeframe=1Day&limit=7`, {
+      headers: {
+        "APCA-API-KEY-ID": ALPACA_API_KEY!,
+        "APCA-API-SECRET-KEY": ALPACA_API_SECRET!,
+      },
+      cache: "no-store"
+    })
+    if (barRes.ok) {
+      const barData = await barRes.json()
+      if (barData.bars && barData.bars.length > 0) {
+        // Find the most recent bar with a valid close
+        let mostRecentBar = null
+        let mostRecentDate = 0
+        for (const bar of barData.bars) {
+          const barDate = new Date(bar.t).getTime()
+          if (bar.c && bar.c > 0 && barDate > mostRecentDate) {
+            mostRecentBar = bar
+            mostRecentDate = barDate
+          }
+        }
+        if (mostRecentBar) {
+          return { price: mostRecentBar.c, priceTime: new Date(mostRecentBar.t).toISOString() }
+        }
+      }
+    }
+  } catch {}
+  return { price: null, priceTime: null }
 }
 
 export async function GET(request: NextRequest) {
@@ -62,52 +122,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const marketOpen = await isMarketOpen()
-    const results: Record<string, { price: number | null, isLastClose: boolean }> = {}
-    const tickersToFetch: string[] = []
-
-    // Check cache first
-    for (const ticker of tickers) {
-      const cached = await getCachedPrice(ticker)
-      if (cached) {
-        results[ticker] = { price: cached.price, isLastClose: false }
-      } else {
-        tickersToFetch.push(ticker)
-      }
-    }
-
-    if (tickersToFetch.length > 0) {
-      await Promise.all(
-        tickersToFetch.map(async (ticker) => {
-          try {
-            if (marketOpen) {
-              // Try to get the latest quote
-              const res = await fetch(`${ALPACA_DATA_URL}/${ticker}/quotes/latest`, {
-                headers: {
-                  "APCA-API-KEY-ID": ALPACA_API_KEY!,
-                  "APCA-API-SECRET-KEY": ALPACA_API_SECRET!,
-                },
-                cache: "no-store"
-              })
-              if (!res.ok) throw new Error(`Failed to fetch price for ${ticker}`)
-              const data = await res.json()
-              const price = data.quote?.ap || null
-              if (price !== null) {
-                await setCachedPrice(ticker, price)
-                results[ticker] = { price, isLastClose: false }
-                return
-              }
-            }
-            // If market is closed or no price, get last close
-            const lastClose = await getLastClosePrice(ticker)
-            results[ticker] = { price: lastClose, isLastClose: true }
-          } catch {
-            results[ticker] = { price: null, isLastClose: false }
-          }
-        })
-      )
-    }
-    return NextResponse.json({ prices: results, marketOpen })
+    const results: Record<string, { price: number | null, priceTime: string | null }> = {}
+    await Promise.all(
+      tickers.map(async (ticker) => {
+        results[ticker] = await getMostRecentPrice(ticker)
+      })
+    )
+    return NextResponse.json({ prices: results })
   } catch (err) {
     return NextResponse.json({ error: "Failed to fetch prices" }, { status: 500 })
   }
