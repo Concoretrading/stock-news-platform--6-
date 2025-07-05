@@ -18,9 +18,11 @@ interface StockCardProps {
   ticker?: string
   name?: string
   newsCount?: number
+  isLastClose?: boolean
+  marketOpen?: boolean
 }
 
-export function StockCard({ stock, ticker, name, newsCount }: StockCardProps) {
+export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketOpen }: StockCardProps) {
   // Handle both prop patterns
   const symbol = stock?.symbol || ticker || "N/A"
   const stockName = stock?.name || name || "Unknown"
@@ -39,7 +41,10 @@ export function StockCard({ stock, ticker, name, newsCount }: StockCardProps) {
               <h3 className="font-bold text-lg">{symbol}</h3>
               <p className="text-sm text-muted-foreground truncate">{stockName}</p>
             </div>
-            {stock ? (
+            {isLastClose && (
+              <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Last Close</Badge>
+            )}
+            {stock && !isLastClose ? (
               isPositive ? (
                 <TrendingUp className="h-5 w-5 text-green-600" />
               ) : (
@@ -54,7 +59,12 @@ export function StockCard({ stock, ticker, name, newsCount }: StockCardProps) {
 
           {stock ? (
             <div className="space-y-1">
-              <div className="text-2xl font-bold">${price.toFixed(2)}</div>
+              <div className="text-2xl font-bold">
+                ${price.toFixed(2)}
+                {isLastClose && (
+                  <span className="ml-2 text-xs text-yellow-500">(Last Close)</span>
+                )}
+              </div>
               <div className="flex items-center space-x-2">
                 <Badge variant={isPositive ? "default" : "destructive"} className="text-xs">
                   {isPositive ? "+" : ""}

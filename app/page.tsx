@@ -64,6 +64,22 @@ export default function HomePage() {
     }
   })
 
+  // Fetch market open status and isLastClose from API
+  const [marketOpen, setMarketOpen] = useState(true)
+  useEffect(() => {
+    async function fetchMarketStatus() {
+      if (tickers.length === 0) return
+      try {
+        const res = await fetch(`/api/stock-prices?tickers=${tickers.join(",")}`)
+        if (res.ok) {
+          const data = await res.json()
+          setMarketOpen(data.marketOpen)
+        }
+      } catch {}
+    }
+    fetchMarketStatus()
+  }, [tickers.join(",")])
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!loading && !user) {
@@ -140,7 +156,8 @@ export default function HomePage() {
         ...stock,
         price: realTimePrice.price,
         change: realTimePrice.change || 0,
-        changePercent: realTimePrice.changePercent || 0
+        changePercent: realTimePrice.changePercent || 0,
+        isLastClose: realTimePrice.isLastClose || false
       }
     }
     return stock
@@ -283,6 +300,9 @@ export default function HomePage() {
                 <TrendingUp className="h-5 w-5 text-blue-600" />
                 <CardTitle>Your Watchlist</CardTitle>
                 <Badge variant="secondary">{watchlist.length} stocks</Badge>
+                {!marketOpen && (
+                  <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
+                )}
               </div>
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1 text-xs">
@@ -327,7 +347,7 @@ export default function HomePage() {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {visibleStocks.map((stock) => (
-                <StockCard key={stock.symbol} stock={stock} />
+                <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={marketOpen} />
               ))}
             </div>
             {pricesLoading && (
