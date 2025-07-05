@@ -624,8 +624,9 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                             <span className="w-32 text-xs text-muted-foreground">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
                                             <span className="font-medium text-sm flex-1">{catalyst.title}</span>
                                             <span className="flex-1 text-xs text-muted-foreground">{catalyst.description}</span>
-                                            {typeof catalyst.priceBefore === 'number' && typeof catalyst.priceAfter === 'number' && (
-                                              <span className={`font-bold ml-2 ${catalyst.priceAfter - catalyst.priceBefore > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {typeof catalyst.priceBefore === 'number' && typeof catalyst.priceAfter === 'number' && catalyst.priceAfter !== catalyst.priceBefore && (
+                                              <span className={`font-bold ml-2 flex items-center gap-1 ${catalyst.priceAfter - catalyst.priceBefore > 0 ? 'text-green-600' : 'text-red-600'}`}> 
+                                                {catalyst.priceAfter - catalyst.priceBefore > 0 ? '▲' : '▼'}
                                                 {Math.abs(catalyst.priceAfter - catalyst.priceBefore)}
                                               </span>
                                             )}
