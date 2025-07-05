@@ -10,11 +10,10 @@ import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
-import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc } from "firebase/firestore"
+import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc, updateDoc } from "firebase/firestore"
 import { getAuth } from "firebase/auth"
 import AddCatalystForm from "./add-catalyst-form"
 import { deleteCatalyst, getUserStocks } from "@/lib/firebase-services"
-import { updateDoc } from "firebase/firestore"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import {
   ChevronDownIcon,
@@ -91,7 +90,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const [customMonths, setCustomMonths] = useState<Date[]>([])
   const { toast } = useToast()
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState<{title: string, description?: string, source?: string}>({title: ""})
+  const [editForm, setEditForm] = useState<{title: string, description?: string, source?: string, date?: string}>({title: ""})
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [undoData, setUndoData] = useState<Catalyst | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
@@ -560,32 +559,66 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-2">
                                         {editingId === catalyst.id ? (
-                                          <>
+                                          <div className="flex items-center gap-3 w-full">
+                                            <input
+                                              type="date"
+                                              name="date"
+                                              value={editForm.date || catalyst.date}
+                                              onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                                              className="px-2 py-1 border rounded-md w-36"
+                                            />
                                             <input
                                               type="text"
                                               name="title"
                                               value={editForm.title}
                                               onChange={e => setEditForm({ ...editForm, title: e.target.value })}
-                                              className="px-3 py-2 border rounded-md"
+                                              className="px-2 py-1 border rounded-md flex-1"
+                                              placeholder="Title"
                                             />
-                                            {catalyst.description && (
-                                              <textarea
-                                                name="description"
-                                                value={editForm.description || ""}
-                                                onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                                                className="px-3 py-2 border rounded-md"
-                                              />
-                                            )}
-                                            {catalyst.source && (
-                                              <input
-                                                type="text"
-                                                name="source"
-                                                value={editForm.source || ""}
-                                                onChange={e => setEditForm({ ...editForm, source: e.target.value })}
-                                                className="px-3 py-2 border rounded-md"
-                                              />
-                                            )}
-                                          </>
+                                            <input
+                                              type="text"
+                                              name="description"
+                                              value={editForm.description || ''}
+                                              onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                                              className="px-2 py-1 border rounded-md flex-1"
+                                              placeholder="Description"
+                                            />
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={async () => {
+                                                // Save logic
+                                                const db = getFirestore();
+                                                const docRef = doc(db, "catalysts", catalyst.id);
+                                                await updateDoc(docRef, {
+                                                  date: editForm.date || catalyst.date,
+                                                  title: editForm.title,
+                                                  description: editForm.description || '',
+                                                });
+                                                setEditingId(null);
+                                                toast({ title: "Catalyst updated", description: "The news catalyst was updated successfully." });
+                                              }}
+                                              className="h-6 w-6 p-0 text-green-600 hover:text-green-800"
+                                            >
+                                              Save
+                                            </Button>
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => setEditingId(null)}
+                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                                            >
+                                              Cancel
+                                            </Button>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleDeleteCatalyst(catalyst.id)}
+                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800 ml-2"
+                                            >
+                                              <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                          </div>
                                         ) : (
                                           <>
                                             <h4 className="font-medium text-sm">{catalyst.title}</h4>
