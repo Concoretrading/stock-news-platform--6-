@@ -142,9 +142,9 @@ export function LiveTwitterFeed() {
 
   const formatCount = (count: number) => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`
+      return `${typeof count === 'number' ? (count / 1000000).toFixed(1) : 'N/A'}M`
     } else if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`
+      return `${typeof count === 'number' ? (count / 1000).toFixed(1) : 'N/A'}K`
     }
     return count.toString()
   }

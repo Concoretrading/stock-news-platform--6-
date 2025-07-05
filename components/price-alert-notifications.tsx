@@ -51,20 +51,20 @@ export function PriceAlertNotifications() {
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Current:</span>
-                    <span className="font-medium">${alert.currentPrice.toFixed(2)}</span>
+                    <span className="font-medium">{typeof alert.currentPrice === 'number' ? alert.currentPrice.toFixed(2) : 'N/A'}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Target:</span>
-                    <span className="font-medium">${alert.priceBefore.toFixed(2)}</span>
+                    <span className="font-medium">{typeof alert.priceBefore === 'number' ? alert.priceBefore.toFixed(2) : 'N/A'}</span>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    Tolerance: ±${alert.tolerancePoints.toFixed(2)}
+                    Tolerance: ±{typeof alert.tolerancePoints === 'number' ? alert.tolerancePoints.toFixed(2) : 'N/A'}
                   </Badge>
                   <Badge variant="outline" className="text-xs">
-                    Min Move: ${alert.minimumMove.toFixed(2)}
+                    Min Move: {typeof alert.minimumMove === 'number' ? alert.minimumMove.toFixed(2) : 'N/A'}
                   </Badge>
                 </div>
                 
@@ -75,8 +75,8 @@ export function PriceAlertNotifications() {
                     <TrendingDown className="h-3 w-3 text-red-500" />
                   )}
                   <span className={isPositive ? "text-green-500" : "text-red-500"}>
-                    Original move: {isPositive ? "+" : ""}${priceChange.toFixed(2)} 
-                    ({isPositive ? "+" : ""}{((priceChange / alert.priceBefore) * 100).toFixed(1)}%)
+                    Original move: {isPositive ? "+" : ""}{typeof priceChange === 'number' ? priceChange.toFixed(2) : 'N/A'} 
+                    ({isPositive ? "+" : ""}{typeof priceChange === 'number' && typeof alert.priceBefore === 'number' ? ((priceChange / alert.priceBefore) * 100).toFixed(1) : 'N/A'}%)
                   </span>
                 </div>
               </div>

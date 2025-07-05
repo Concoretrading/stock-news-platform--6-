@@ -182,7 +182,7 @@ export function PriceAlertManager({ ticker, isOpen, onClose }: PriceAlertManager
         tolerancePoints: tolerancePoints,
         minimumMovement: minimumMovement,
         isActive: true,
-        alertMessage: `Manual alert: ${newAlert.ticker.toUpperCase()} target price $${triggerPrice.toFixed(2)}`,
+        alertMessage: `Manual alert: ${newAlert.ticker.toUpperCase()} target price $${typeof triggerPrice === 'number' ? triggerPrice.toFixed(2) : 'N/A'}`,
         createdAt: new Date().toISOString(),
       }
 
@@ -192,7 +192,7 @@ export function PriceAlertManager({ ticker, isOpen, onClose }: PriceAlertManager
 
       toast({
         title: "Alert Created",
-        description: `Price alert created for ${alert.ticker} at $${alert.triggerPrice.toFixed(2)}`,
+        description: `Price alert created for ${alert.ticker} at $${typeof alert.triggerPrice === 'number' ? alert.triggerPrice.toFixed(2) : 'N/A'}`,
       })
     } catch (error) {
       toast({
@@ -251,15 +251,14 @@ export function PriceAlertManager({ ticker, isOpen, onClose }: PriceAlertManager
                           <div className="flex items-center gap-2 mb-2">
                             <Badge className="bg-red-100 text-red-800">{alert.ticker}</Badge>
                             <Badge variant="outline" className="text-xs">
-                              ${alert.triggerPrice.toFixed(2)}
+                              {typeof alert.triggerPrice === 'number' ? alert.triggerPrice.toFixed(2) : 'N/A'}
                             </Badge>
                             {alert.originalPriceMovement && (
                               <Badge
                                 variant={alert.originalPriceMovement > 0 ? "default" : "destructive"}
                                 className="text-xs"
                               >
-                                {alert.originalPriceMovement > 0 ? "+" : ""}
-                                {alert.originalPriceMovement.toFixed(1)} pts
+                                {typeof alert.originalPriceMovement === 'number' ? (alert.originalPriceMovement > 0 ? "+" : "") + alert.originalPriceMovement.toFixed(1) : 'N/A'} pts
                               </Badge>
                             )}
                           </div>
@@ -381,7 +380,7 @@ export function PriceAlertManager({ ticker, isOpen, onClose }: PriceAlertManager
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <Badge variant="outline">{alert.ticker}</Badge>
-                            <Badge className="bg-blue-100 text-blue-800">${alert.triggerPrice.toFixed(2)}</Badge>
+                            <Badge className="bg-blue-100 text-blue-800">{typeof alert.triggerPrice === 'number' ? alert.triggerPrice.toFixed(2) : 'N/A'}</Badge>
                             {alert.alertType === "price_revisit" && (
                               <Badge variant="secondary" className="text-xs">
                                 News Revisit
@@ -392,8 +391,7 @@ export function PriceAlertManager({ ticker, isOpen, onClose }: PriceAlertManager
                                 variant={alert.originalPriceMovement > 0 ? "default" : "destructive"}
                                 className="text-xs"
                               >
-                                {alert.originalPriceMovement > 0 ? "+" : ""}
-                                {alert.originalPriceMovement.toFixed(1)} pts
+                                {typeof alert.originalPriceMovement === 'number' ? (alert.originalPriceMovement > 0 ? "+" : "") + alert.originalPriceMovement.toFixed(1) : 'N/A'} pts
                               </Badge>
                             )}
                             {alert.newsDate && (
@@ -420,8 +418,8 @@ export function PriceAlertManager({ ticker, isOpen, onClose }: PriceAlertManager
 
                           <p className="text-sm text-gray-700 mb-1">{alert.alertMessage}</p>
                           <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span>Tolerance: ±{alert.tolerancePoints} pts</span>
-                            <span>Min Movement: {alert.minimumMovement} pts</span>
+                            <span>Tolerance: ±{typeof alert.tolerancePoints === 'number' ? alert.tolerancePoints.toFixed(1) : 'N/A'} pts</span>
+                            <span>Min Movement: {typeof alert.minimumMovement === 'number' ? alert.minimumMovement.toFixed(1) : 'N/A'} pts</span>
                             <span>Created: {new Date(alert.createdAt).toLocaleDateString()}</span>
                           </div>
                         </div>

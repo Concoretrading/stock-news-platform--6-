@@ -76,7 +76,7 @@ export function AlertNotificationCenter() {
                   <Bell className="h-4 w-4 text-red-600" />
                   <Badge className="bg-red-100 text-red-800">{notification.ticker}</Badge>
                   <Badge variant="outline" className="text-xs">
-                    ${notification.triggerPrice.toFixed(2)}
+                    ${typeof notification.triggerPrice === 'number' ? notification.triggerPrice.toFixed(2) : 'N/A'}
                   </Badge>
                   {notification.newsDate && (
                     <Badge variant="outline" className="text-xs bg-gray-100">
@@ -93,7 +93,7 @@ export function AlertNotificationCenter() {
                       <TrendingDown className="h-3 w-3 mr-1" />
                     )}
                     {notification.priceMovement > 0 ? "+" : ""}
-                    {notification.priceMovement.toFixed(1)} pts
+                    {typeof notification.priceMovement === 'number' ? notification.priceMovement.toFixed(1) : 'N/A'} pts
                   </Badge>
                 </div>
 
@@ -108,7 +108,7 @@ export function AlertNotificationCenter() {
                 )}
 
                 <p className="text-xs text-red-600 mb-2">
-                  Current: ${notification.currentPrice.toFixed(2)} | Target: ${notification.triggerPrice.toFixed(2)}
+                  Current: ${typeof notification.currentPrice === 'number' ? notification.currentPrice.toFixed(2) : 'N/A'} | Target: ${typeof notification.triggerPrice === 'number' ? notification.triggerPrice.toFixed(2) : 'N/A'}
                 </p>
                 <p className="text-xs text-gray-500">{new Date(notification.timestamp).toLocaleTimeString()}</p>
               </div>

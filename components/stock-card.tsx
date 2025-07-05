@@ -60,7 +60,7 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
           {stock ? (
             <div className="space-y-1">
               <div className="text-2xl font-bold">
-                ${price.toFixed(2)}
+                ${typeof price === 'number' ? price.toFixed(2) : 'N/A'}
                 {isLastClose && (
                   <span className="ml-2 text-xs text-yellow-500">(Last Close)</span>
                 )}
@@ -68,11 +68,11 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
               <div className="flex items-center space-x-2">
                 <Badge variant={isPositive ? "default" : "destructive"} className="text-xs">
                   {isPositive ? "+" : ""}
-                  {change.toFixed(2)}
+                  {typeof change === 'number' ? change.toFixed(2) : 'N/A'}
                 </Badge>
                 <Badge variant="outline" className="text-xs">
                   {isPositive ? "+" : ""}
-                  {changePercent.toFixed(2)}%
+                  {typeof changePercent === 'number' ? changePercent.toFixed(2) : 'N/A'}%
                 </Badge>
               </div>
             </div>

@@ -314,8 +314,8 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const formatPriceChange = (change: number | null | undefined, percentage: number | null | undefined) => {
     if (change === null || change === undefined) return null
     const isPositive = change > 0
-    const changeStr = change > 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`
-    const percentageStr = percentage ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%)` : ""
+    const changeStr = typeof change === 'number' ? (change > 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`) : 'N/A';
+    const percentageStr = typeof percentage === 'number' ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%)` : "";
     return (
       <div className={`flex items-center gap-1 ${isPositive ? "text-green-600" : "text-red-600"}`}>
         {isPositive ? <ArrowTrendingUpIcon className="h-4 w-4" /> : <ArrowTrendingDownIcon className="h-4 w-4" />}

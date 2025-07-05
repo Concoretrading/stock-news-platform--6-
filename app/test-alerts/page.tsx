@@ -66,11 +66,11 @@ export default function TestAlertsPage() {
                       <div>
                         <p className="font-medium">{alert.ticker} - {alert.catalystTitle}</p>
                         <p className="text-sm text-muted-foreground">
-                          Current: ${alert.currentPrice.toFixed(2)} | Target: ${alert.priceBefore.toFixed(2)}
+                          Current: {typeof alert.currentPrice === 'number' ? alert.currentPrice.toFixed(2) : 'N/A'} | Target: {typeof alert.priceBefore === 'number' ? alert.priceBefore.toFixed(2) : 'N/A'}
                         </p>
                       </div>
                       <Badge variant="outline">
-                        ±${alert.tolerancePoints.toFixed(2)}
+                        {typeof alert.tolerancePoints === 'number' ? alert.tolerancePoints.toFixed(2) : 'N/A'}
                       </Badge>
                     </div>
                   </div>
