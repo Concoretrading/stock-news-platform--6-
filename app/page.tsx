@@ -8,8 +8,9 @@ import { StockSelector } from "@/components/stock-selector"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar } from "lucide-react"
+import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useStockPrices } from "@/hooks/useStockPrices"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist, getIdToken } from "@/lib/firebase-services"
@@ -42,6 +43,13 @@ export default function HomePage() {
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
+
+  // Get tickers for live price fetching
+  const tickers = watchlist.map(stock => stock.symbol)
+  const { prices, loading: pricesLoading, error: pricesError, refresh: refreshPrices } = useStockPrices(tickers, {
+    interval: 5000, // 5 second interval - well within Alpaca's 200 req/min limit
+    enabled: !!user && watchlist.length > 0
+  })
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -85,18 +93,18 @@ export default function HomePage() {
           id: stock.id,
           symbol: stock.ticker,
           name: stock.companyName,
-          price: Math.random() * 500 + 50,
-          change: (Math.random() - 0.5) * 20,
-          changePercent: (Math.random() - 0.5) * 5,
+          price: 0, // Will be updated with live prices
+          change: 0,
+          changePercent: 0,
         })))
       } else {
         setWatchlist(userStocks.slice(0, 10).map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
           name: stock.companyName,
-          price: Math.random() * 500 + 50,
-          change: (Math.random() - 0.5) * 20,
-          changePercent: (Math.random() - 0.5) * 5,
+          price: 0, // Will be updated with live prices
+          change: 0,
+          changePercent: 0,
         })))
       }
     } catch (error) {
@@ -111,10 +119,28 @@ export default function HomePage() {
     }
   }
 
+  // Merge live prices with watchlist
+  const watchlistWithLivePrices = watchlist.map(stock => {
+    const livePrice = prices[stock.symbol]
+    if (livePrice !== null && livePrice !== undefined) {
+      // Calculate change and change percent (simplified - you might want to store previous prices)
+      const change = livePrice - stock.price || 0
+      const changePercent = stock.price > 0 ? (change / stock.price) * 100 : 0
+      
+      return {
+        ...stock,
+        price: livePrice,
+        change,
+        changePercent
+      }
+    }
+    return stock
+  })
+
   const stocksPerPage = 8
-  const totalPages = Math.ceil(watchlist.length / stocksPerPage)
+  const totalPages = Math.ceil(watchlistWithLivePrices.length / stocksPerPage)
   const startIndex = currentPage * stocksPerPage
-  const visibleStocks = watchlist.slice(startIndex, startIndex + stocksPerPage)
+  const visibleStocks = watchlistWithLivePrices.slice(startIndex, startIndex + stocksPerPage)
 
   const handleUpdateWatchlist = async (newStocks: any[]) => {
     try {
@@ -250,6 +276,16 @@ export default function HomePage() {
                 <Badge variant="secondary">{watchlist.length} stocks</Badge>
               </div>
               <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={refreshPrices}
+                  disabled={pricesLoading}
+                  className="flex items-center space-x-1"
+                >
+                  <RefreshCw className={`h-4 w-4 ${pricesLoading ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </Button>
                 <Button variant="outline" size="sm" onClick={prevPage} disabled={currentPage === 0}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
@@ -267,11 +303,23 @@ export default function HomePage() {
             </div>
           </CardHeader>
           <CardContent>
+            {pricesError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                <p className="text-sm text-red-600">
+                  Error loading live prices: {pricesError}
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {visibleStocks.map((stock) => (
                 <StockCard key={stock.symbol} stock={stock} />
               ))}
             </div>
+            {pricesLoading && (
+              <div className="mt-4 text-center text-sm text-muted-foreground">
+                Updating live prices...
+              </div>
+            )}
           </CardContent>
         </Card>
 

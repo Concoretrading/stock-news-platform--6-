@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, dialog, globalShortcut, clipboard, nativeImage } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, dialog, globalShortcut, clipboard, nativeImage, Tray } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { desktopCapturer } = require('electron');
@@ -8,6 +8,8 @@ const WEB_APP_URL = process.env.CONCORE_WEB_URL || 'http://localhost:3000';
 
 let mainWindow;
 let pendingFileToOpen = null;
+let tray = null;
+let floatingWindow = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -199,7 +201,73 @@ function processPendingFile() {
   }
 }
 
+function createFloatingWindow() {
+  if (floatingWindow) {
+    floatingWindow.show();
+    return;
+  }
+  floatingWindow = new BrowserWindow({
+    width: 80,
+    height: 80,
+    frame: false,
+    alwaysOnTop: true,
+    resizable: false,
+    transparent: true,
+    hasShadow: true,
+    skipTaskbar: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+    icon: path.join(__dirname, '../public/images/concore-logo.png'),
+  });
+  floatingWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
+    <html><body style="margin:0;padding:0;overflow:hidden;background:transparent;">
+      <div id='drop' style="width:80px;height:80px;border-radius:50%;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.18);display:flex;align-items:center;justify-content:center;cursor:move;">
+        <img src='file://${path.join(__dirname, '../public/images/concore-logo.png')}' style="width:60px;height:60px;border-radius:50%;object-fit:cover;" />
+      </div>
+      <script>
+        const { ipcRenderer } = require('electron');
+        const drop = document.getElementById('drop');
+        drop.ondragover = (e) => { e.preventDefault(); drop.style.boxShadow = '0 0 0 4px #3b82f6'; };
+        drop.ondragleave = (e) => { e.preventDefault(); drop.style.boxShadow = '0 2px 12px rgba(0,0,0,0.18)'; };
+        drop.ondrop = (e) => {
+          e.preventDefault();
+          drop.style.boxShadow = '0 2px 12px rgba(0,0,0,0.18)';
+          if (e.dataTransfer.files.length > 0) {
+            ipcRenderer.send('floating-file-dropped', e.dataTransfer.files[0].path);
+          }
+        };
+        // Make draggable
+        let isDragging = false, offsetX = 0, offsetY = 0;
+        drop.onmousedown = (e) => {
+          isDragging = true;
+          offsetX = e.clientX;
+          offsetY = e.clientY;
+        };
+        window.onmousemove = (e) => {
+          if (isDragging) {
+            window.moveBy(e.movementX, e.movementY);
+          }
+        };
+        window.onmouseup = () => { isDragging = false; };
+      </script>
+    </body></html>
+  `)}`);
+  floatingWindow.on('closed', () => { floatingWindow = null; });
+}
+
 app.whenReady().then(() => {
+  tray = new Tray(path.join(__dirname, '../public/images/concore-logo.png'));
+  tray.setToolTip('Concore Screenshot Drop');
+  tray.on('click', () => {
+    if (floatingWindow && !floatingWindow.isDestroyed()) {
+      floatingWindow.isVisible() ? floatingWindow.hide() : floatingWindow.show();
+    } else {
+      createFloatingWindow();
+    }
+  });
   createWindow();
 
   app.on('activate', function () {
@@ -214,4 +282,9 @@ app.on('window-all-closed', function () {
 app.on('will-quit', () => {
   // Unregister all shortcuts
   globalShortcut.unregisterAll();
+});
+
+ipcMain.on('floating-file-dropped', (event, filePath) => {
+  // Handle the dropped file (e.g., upload to Firebase Storage)
+  handleFileDrop(filePath);
 }); 
