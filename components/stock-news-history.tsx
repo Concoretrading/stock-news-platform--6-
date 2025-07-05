@@ -559,13 +559,13 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-2">
                                         {editingId === catalyst.id ? (
-                                          <div className="flex items-center gap-3 w-full">
+                                          <div className="flex items-center gap-4 w-full">
                                             <input
                                               type="date"
                                               name="date"
                                               value={editForm.date || catalyst.date}
                                               onChange={e => setEditForm({ ...editForm, date: e.target.value })}
-                                              className="px-2 py-1 border rounded-md w-36"
+                                              className="px-2 py-1 border rounded-md w-32"
                                             />
                                             <input
                                               type="text"
@@ -587,7 +587,6 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                               variant="outline"
                                               size="sm"
                                               onClick={async () => {
-                                                // Save logic
                                                 const db = getFirestore();
                                                 const docRef = doc(db, "catalysts", catalyst.id);
                                                 await updateDoc(docRef, {
@@ -624,12 +623,6 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                             <span className="w-32 text-xs text-muted-foreground">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
                                             <span className="font-medium text-sm flex-1">{catalyst.title}</span>
                                             <span className="flex-1 text-xs text-muted-foreground">{catalyst.description}</span>
-                                            {typeof catalyst.priceBefore === 'number' && typeof catalyst.priceAfter === 'number' && catalyst.priceAfter !== catalyst.priceBefore && (
-                                              <span className={`font-bold ml-2 flex items-center gap-1 ${catalyst.priceAfter - catalyst.priceBefore > 0 ? 'text-green-600' : 'text-red-600'}`}> 
-                                                {catalyst.priceAfter - catalyst.priceBefore > 0 ? '▲' : '▼'}
-                                                {Math.abs(catalyst.priceAfter - catalyst.priceBefore)}
-                                              </span>
-                                            )}
                                             <Button
                                               variant="ghost"
                                               size="sm"
@@ -644,14 +637,6 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                               className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
                                             >
                                               <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => handleDeleteCatalyst(catalyst.id)}
-                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
-                                            >
-                                              <Trash2 className="h-4 w-4" />
                                             </Button>
                                           </div>
                                         )}
