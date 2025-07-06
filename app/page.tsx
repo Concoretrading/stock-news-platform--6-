@@ -414,6 +414,47 @@ export default function HomePage() {
                 <Calendar className="h-6 w-6 mt-3 text-purple-400" />
               </div>
             </div>
+            {/* Alerts Workflow Card - Centered below */}
+            <div className="flex justify-center mt-8">
+              <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-yellow-400/30 hover:border-yellow-400/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center max-w-lg w-full">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-yellow-400/30 rounded-full flex items-center justify-center group-hover:bg-yellow-400/50 transition-colors">
+                    <span className="text-yellow-400 font-bold text-lg">4</span>
+                  </div>
+                  <h3 className="font-semibold text-lg text-yellow-200">Set Smart Price Alerts</h3>
+                </div>
+                <p className="text-yellow-100 leading-relaxed mb-2">
+                  Set price alerts for the <span className="font-semibold">three news catalysts closest to the current price</span> of any stock. For each, you'll see the difference from the current price with an <span className="font-semibold">up</span> <span className="text-green-400">↑</span> or <span className="font-semibold">down</span> <span className="text-red-400">↓</span> arrow. Toggle alerts on or off with a slider—get notified when the price revisits a key news level!
+                </p>
+                <div className="flex flex-col gap-2 w-full mt-2">
+                  {/* Example catalyst entries */}
+                  <div className="flex items-center justify-between bg-slate-900/60 rounded-lg px-4 py-2">
+                    <span className="text-yellow-100">Q1 Earnings Release</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-green-400 font-bold">+10</span>
+                      <span className="text-green-400">↑</span>
+                      <span className="ml-2">{/* Slider toggle */}<span className="inline-block align-middle"><input type="checkbox" checked readOnly className="slider-toggle" /></span></span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-900/60 rounded-lg px-4 py-2">
+                    <span className="text-yellow-100">New Model Launch</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-red-400 font-bold">-8</span>
+                      <span className="text-red-400">↓</span>
+                      <span className="ml-2">{/* Slider toggle */}<span className="inline-block align-middle"><input type="checkbox" readOnly className="slider-toggle" /></span></span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-900/60 rounded-lg px-4 py-2">
+                    <span className="text-yellow-100">Gigafactory Expansion</span>
+                    <span className="flex items-center gap-1">
+                      <span className="text-green-400 font-bold">+5</span>
+                      <span className="text-green-400">↑</span>
+                      <span className="ml-2">{/* Slider toggle */}<span className="inline-block align-middle"><input type="checkbox" checked readOnly className="slider-toggle" /></span></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
