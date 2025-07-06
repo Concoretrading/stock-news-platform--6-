@@ -61,7 +61,7 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
             <div className="space-y-1">
               <div className="text-2xl font-bold">
                 ${typeof price === 'number' && !isNaN(price) ? price.toFixed(2) : 'N/A'}
-                {isLastClose && (
+                {isLastClose && !marketOpen && (
                   <span className="ml-2 text-xs text-yellow-500">(Last Close)</span>
                 )}
               </div>
@@ -74,6 +74,9 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
                   {isPositive ? "+" : ""}
                   {typeof changePercent === 'number' && !isNaN(changePercent) ? changePercent.toFixed(2) : 'N/A'}%
                 </Badge>
+                {!marketOpen && (
+                  <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100 ml-2">Market Closed</Badge>
+                )}
               </div>
             </div>
           ) : (
