@@ -468,6 +468,9 @@ export default function HomePage() {
               <p>
                 You can set price alerts for the three catalyst entries closest to the current price of a stock. Use the toggle to turn alerts on or off for each catalyst. When enabled, you'll receive a notification if the stock price revisits that catalyst level.
               </p>
+              <div className="mt-4 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-sm">
+                <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
+              </div>
             </div>
           </div>
         </section>
