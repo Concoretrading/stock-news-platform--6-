@@ -68,9 +68,6 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
                   {isPositive ? "+" : ""}
                   {typeof changePercent === 'number' && !isNaN(changePercent) ? changePercent.toFixed(2) : 'N/A'}%
                 </Badge>
-                {!marketOpen && (
-                  <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100 ml-2">Market Closed</Badge>
-                )}
               </div>
             </div>
           ) : (
