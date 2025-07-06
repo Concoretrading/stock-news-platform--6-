@@ -291,7 +291,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
         </CardHeader>
 
         {/* Make CardContent scrollable and flex-1 */}
-        <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-0">
+        <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-2 items-start">
           {/* Remove Section (Selected Stocks) */}
           <div className="flex-1 p-6 flex flex-col min-h-0 items-start">
             <h3 className="text-xl font-semibold mb-4 text-foreground">Remove</h3>
