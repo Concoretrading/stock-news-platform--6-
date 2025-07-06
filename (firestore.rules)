@@ -1,14 +1,49 @@
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Catalysts: Only owner can read/write
-    match /catalysts/{catalystId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+
+    // Allow only authenticated users
+    function isSignedIn() {
+      return request.auth != null;
     }
-    // Stocks: Only owner can read/write
+
+    // Allow users to access only their own documents
+    function isOwner(userIdField) {
+      return isSignedIn() && request.auth.uid == resource.data[userIdField];
+    }
+
+    // Stocks (watchlist)
     match /stocks/{stockId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, write: if isSignedIn() && request.auth.uid == resource.data.userId;
+      // On create, allow if the user is setting their own userId
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
+
+    // Catalysts (news entries)
+    match /catalysts/{catalystId} {
+      // Require only 'title' (headline) on create, everything else optional
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+      // On read, update, delete: only allow owner
+      allow read, update, delete: if isSignedIn() && request.auth.uid == resource.data.userId;
+    }
+
+    // Alerts (user-specific)
+    match /alerts/{alertId} {
+      // Only the owner can read/write their alerts
+      allow read, write: if isSignedIn() && request.auth.uid == resource.data.userId;
+      // On create, userId must match the authenticated user
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Watchlist (user-specific, if you use a separate collection)
+    match /watchlist/{watchId} {
+      allow read, write: if isSignedIn() && request.auth.uid == resource.data.userId;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // (Add similar rules for any other user-specific collections)
   }
 }
