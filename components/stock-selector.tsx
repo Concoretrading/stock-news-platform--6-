@@ -291,10 +291,11 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
         </CardHeader>
 
         {/* Make CardContent scrollable and flex-1 */}
-        <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-8 md:flex-row flex-col md:gap-8 gap-4">
-          {/* Left Side - Selected Stocks (on mobile, top section) */}
-          <div className="flex-1 p-6 border-r md:border-r border-b-0 md:border-b-0 border-b flex flex-col min-h-0 items-center md:items-stretch">
-            <h3 className="text-xl font-semibold mb-4 text-foreground text-center md:text-left">Selected Stocks <span className="inline-block font-mono text-base align-middle">({selectedStocks.length}/10)</span></h3>
+        <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-8">
+          {/* Remove Section (Selected Stocks) */}
+          <div className="flex-1 p-6 border-r flex flex-col min-h-0 items-center">
+            <h3 className="text-xl font-semibold mb-4 text-foreground text-center">Remove</h3>
+            <div className="text-base text-muted-foreground mb-2 text-center">Remove stocks from your watchlist below.</div>
             <div className="space-y-3 overflow-y-auto max-h-[420px] min-h-[420px] flex-1 rounded-lg bg-background border w-full">
               {selectedStocks.map((stock) => (
                 <div key={stock.ticker} className="bg-muted/50 rounded-lg p-4 flex items-center justify-between">
@@ -323,9 +324,10 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
             )}
           </div>
 
-          {/* Right Side - Add Stocks (on mobile, bottom section) */}
-          <div className="flex-1 p-6 flex flex-col min-h-0 items-center md:items-stretch">
-            <h3 className="text-xl font-semibold mb-6 text-foreground text-center md:text-left">Add Stocks</h3>
+          {/* Add Section (Search/Add Stocks) */}
+          <div className="flex-1 p-6 flex flex-col min-h-0 items-center">
+            <h3 className="text-xl font-semibold mb-6 text-foreground text-center">Add</h3>
+            <div className="text-base text-muted-foreground mb-2 text-center">Search and add new stocks to your watchlist below.</div>
             {/* Search with Real-time Results */}
             <div className="mb-4 flex-1 min-h-0 w-full">
               <div className="relative">
@@ -378,7 +380,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
               {/* Popular Stocks when no search */}
               {!searchQuery && (
                 <div className="mt-4 w-full">
-                  <h4 className="font-medium mb-3 text-foreground text-center md:text-left">Popular Stocks</h4>
+                  <h4 className="font-medium mb-3 text-foreground text-center">Popular Stocks</h4>
                   <div className="grid gap-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background w-full">
                     {EXTENDED_STOCKS.slice(0, 20)
                       .filter((stock) => !selectedStocks.some((selected) => selected.ticker === stock.ticker))
