@@ -347,7 +347,7 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
                             </Badge>
                           </div>
                           
-                          <h4 className="font-semibold text-lg mb-1">
+                          <h4 className="font-semibold text-lg mb-1 text-white">
                             {catalyst.description || catalyst.title || "Catalyst"}
                           </h4>
                           
