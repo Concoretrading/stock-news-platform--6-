@@ -306,9 +306,11 @@ export default function HomePage() {
                 <TrendingUp className="h-5 w-5 text-blue-600" />
                 <CardTitle>Your Watchlist</CardTitle>
                 <Badge variant="secondary">{watchlist.length} stocks</Badge>
-                {!isMarketOpenNow() && (
-                  <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
-                )}
+                <span className="hidden md:inline">
+                  {!isMarketOpenNow() && (
+                    <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
+                  )}
+                </span>
               </div>
               {/* Mobile: Manage button directly under header, not full width */}
               <div className="md:hidden w-full mt-2 mb-2 flex justify-center">
