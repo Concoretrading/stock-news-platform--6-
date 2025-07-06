@@ -9,6 +9,23 @@ interface UseStockPricesOptions {
   enabled?: boolean // Whether to enable polling
 }
 
+// Helper to check if US market is open (Eastern Time)
+function isMarketOpen() {
+  const now = new Date()
+  // Convert to US Eastern Time
+  const utcHour = now.getUTCHours()
+  const utcMinute = now.getUTCMinutes()
+  // US Eastern is UTC-4 (EDT) or UTC-5 (EST); for simplicity, assume UTC-4 (EDT)
+  // For production, use a timezone library for DST
+  const estHour = utcHour - 4 < 0 ? utcHour + 20 : utcHour - 4
+  const day = now.getUTCDay() // 0 = Sunday, 6 = Saturday
+  // Market open: Mon-Fri, 9:30am–4:00pm ET
+  if (day === 0 || day === 6) return false // Weekend
+  if (estHour < 9 || (estHour === 9 && utcMinute < 30)) return false // Before 9:30am
+  if (estHour > 16 || (estHour === 16 && utcMinute > 0)) return false // After 4:00pm
+  return true
+}
+
 export function useStockPrices(
   tickers: string[],
   options: UseStockPricesOptions = {}
@@ -57,9 +74,27 @@ export function useStockPrices(
   useEffect(() => {
     if (!enabled || tickers.length === 0) return
 
-    const intervalId = setInterval(fetchPrices, interval)
-    return () => clearInterval(intervalId)
-  }, [fetchPrices, interval, enabled, tickers])
+    let intervalId: NodeJS.Timeout | null = null
+
+    function pollIfMarketOpen() {
+      if (isMarketOpen()) {
+        fetchPrices()
+        intervalId = setInterval(() => {
+          if (isMarketOpen()) {
+            fetchPrices()
+          }
+        }, 5 * 60 * 1000) // 5 minutes
+      } else {
+        // Optionally: fetch last close price here if needed
+      }
+    }
+
+    pollIfMarketOpen()
+
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+    }
+  }, [fetchPrices, enabled, tickers])
 
   // Manual refresh function
   const refresh = useCallback(() => {
