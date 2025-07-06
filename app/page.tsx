@@ -417,44 +417,46 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Left: Example card with toggles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl items-stretch" style={{alignItems: 'stretch'}}>
-          {/* Left: 4 rows for header and 3 items */}
-          <div className="flex flex-col h-full justify-between min-h-[340px]">
-            <div className="flex items-center gap-4 mb-6" style={{minHeight: '56px'}}>
-              <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500 text-white font-bold text-2xl">4</span>
+        {/* Centered workflow section */}
+        <div className="flex justify-center w-full">
+          <div className="w-full max-w-6xl mx-auto">
+            {/* Header row spanning both columns */}
+            <div className="flex items-center gap-4 mb-2" style={{minHeight: '56px'}}>
+              <span className="inline-flex items-center justify-center w-12 h-12 bg-red-500 text-white font-bold text-2xl rounded-lg">4</span>
               <span className="text-2xl font-bold text-white">Set Smart Price Alerts</span>
             </div>
-            <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-              <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
-              <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
-            </div>
-            <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-              <span className="font-semibold text-yellow-100 text-xl">New Model Launch</span>
-              <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-off slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
-            </div>
-            <div className="flex items-center py-4" style={{minHeight: '48px'}}>
-              <span className="font-semibold text-yellow-100 text-xl">Gigafactory Expansion</span>
-              <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
-            </div>
-          </div>
-          {/* Right: 4 bullets, each in its own row */}
-          <div className="flex flex-col h-full justify-between min-h-[340px]">
-            <div className="flex items-start gap-3 mb-6" style={{minHeight: '56px'}}>
-              <span className="text-2xl">🧠</span>
-              <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
-            </div>
-            <div className="flex items-start gap-3 border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-              <span className="text-2xl">🎚️</span>
-              <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
-            </div>
-            <div className="flex items-start gap-3 border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-              <span className="text-2xl">📲</span>
-              <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
-            </div>
-            <div className="flex items-start gap-3 py-4" style={{minHeight: '48px'}}>
-              <span className="text-2xl">⚙️</span>
-              <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
+            {/* 3-row grid for items and bullets */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch" style={{alignItems: 'stretch'}}>
+              {/* Left: 3 items */}
+              <div className="flex flex-col h-full justify-between min-h-[210px]">
+                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
+                  <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
+                </div>
+                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl">New Model Launch</span>
+                  <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-off slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
+                </div>
+                <div className="flex items-center py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl">Gigafactory Expansion</span>
+                  <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
+                </div>
+              </div>
+              {/* Right: 3 bullets, each aligned with a left item */}
+              <div className="flex flex-col h-full justify-between min-h-[210px]">
+                <div className="flex items-start gap-3 border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="text-2xl">🎚️</span>
+                  <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
+                </div>
+                <div className="flex items-start gap-3 border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="text-2xl">📲</span>
+                  <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
+                </div>
+                <div className="flex items-start gap-3 py-4" style={{minHeight: '48px'}}>
+                  <span className="text-2xl">⚙️</span>
+                  <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
