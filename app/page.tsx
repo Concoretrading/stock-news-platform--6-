@@ -346,10 +346,39 @@ export default function HomePage() {
                 </p>
               </div>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {visibleStocks.map((stock) => (
-                <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
-              ))}
+            {/* Mobile: Swipeable carousel, 5 stocks per view */}
+            <div className="block md:hidden">
+              <div className="flex items-center space-x-2 mb-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  disabled={pricesLoading}
+                  className="flex items-center space-x-1"
+                >
+                  <RefreshCw className={`w-3 h-3 ${pricesLoading ? 'animate-spin' : ''}`} />
+                  <span>Refresh</span>
+                </Button>
+                {/* Remove 'Last Close' label on mobile */}
+              </div>
+              <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
+                <div className="flex space-x-4 min-w-full">
+                  {watchlistWithLivePrices.slice(0, 10).map((stock, idx) => (
+                    <div key={stock.symbol} className="min-w-[80vw] max-w-[80vw] flex-shrink-0">
+                      <StockCard stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Desktop: grid as before */}
+            <div className="hidden md:block">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {visibleStocks.map((stock) => (
+                  <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                ))}
+              </div>
             </div>
             {pricesLoading && (
               <div className="mt-4 text-center text-sm text-muted-foreground">
