@@ -340,14 +340,14 @@ export default function HomePage() {
             {/* Mobile: Swipeable carousel, 5 stocks per view, with page indicator and dots */}
             <div className="block md:hidden">
               <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
-                <div className="flex space-x-4 min-w-full transition-transform duration-300" style={{ transform: `translateX(-${mobilePage * 100}vw)` }}>
+                <div className="flex min-w-full transition-transform duration-300" style={{ transform: `translateX(-${mobilePage * 100}vw)` }}>
                   {Array.from({ length: totalMobilePages }).map((_, pageIdx) => (
-                    <div key={pageIdx} className="flex min-w-[100vw] max-w-[100vw] flex-shrink-0">
-                      {watchlistWithLivePrices.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
-                        <div key={stock.symbol} className="w-full">
-                          <StockCard stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
-                        </div>
-                      ))}
+                    <div key={pageIdx} className="min-w-[100vw] max-w-[100vw] flex-shrink-0">
+                      <div className="flex flex-col space-y-4">
+                        {watchlistWithLivePrices.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
+                          <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>
