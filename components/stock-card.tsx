@@ -41,9 +41,6 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
               <h3 className="font-bold text-lg">{symbol}</h3>
               <p className="text-sm text-muted-foreground truncate">{stockName}</p>
             </div>
-            {isLastClose && (
-              <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Last Close</Badge>
-            )}
             {stock && !isLastClose ? (
               isPositive ? (
                 <TrendingUp className="h-5 w-5 text-green-600" />
@@ -61,9 +58,6 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
             <div className="space-y-1">
               <div className="text-2xl font-bold">
                 ${typeof price === 'number' && !isNaN(price) ? price.toFixed(2) : 'N/A'}
-                {isLastClose && !marketOpen && (
-                  <span className="ml-2 text-xs text-yellow-500">(Last Close)</span>
-                )}
               </div>
               <div className="flex items-center space-x-2">
                 <Badge variant={isPositive ? "default" : "destructive"} className="text-xs">
