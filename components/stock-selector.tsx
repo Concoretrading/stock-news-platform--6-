@@ -291,11 +291,11 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
         </CardHeader>
 
         {/* Make CardContent scrollable and flex-1 */}
-        <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-8">
-          {/* Left Side - Selected Stocks */}
-          <div className="flex-1 p-6 border-r flex flex-col min-h-0">
-            <h3 className="text-xl font-semibold mb-4 text-foreground">Selected Stocks ({selectedStocks.length}/10)</h3>
-            <div className="space-y-3 overflow-y-auto max-h-[420px] min-h-[420px] flex-1 rounded-lg bg-background border">
+        <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-8 md:flex-row flex-col md:gap-8 gap-4">
+          {/* Left Side - Selected Stocks (on mobile, top section) */}
+          <div className="flex-1 p-6 border-r md:border-r border-b-0 md:border-b-0 border-b flex flex-col min-h-0 items-center md:items-stretch">
+            <h3 className="text-xl font-semibold mb-4 text-foreground text-center md:text-left">Selected Stocks <span className="inline-block font-mono text-base align-middle">({selectedStocks.length}/10)</span></h3>
+            <div className="space-y-3 overflow-y-auto max-h-[420px] min-h-[420px] flex-1 rounded-lg bg-background border w-full">
               {selectedStocks.map((stock) => (
                 <div key={stock.ticker} className="bg-muted/50 rounded-lg p-4 flex items-center justify-between">
                   <div>
@@ -317,17 +317,17 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
               )}
             </div>
             {selectedStocks.length > 0 && (
-              <div className="flex justify-end mt-4">
+              <div className="flex justify-end mt-4 w-full">
                 <Button onClick={handleSave} className="min-w-[120px]">Save</Button>
               </div>
             )}
           </div>
 
-          {/* Right Side - Add Stocks */}
-          <div className="flex-1 p-6 flex flex-col min-h-0">
-            <h3 className="text-xl font-semibold mb-6 text-foreground">Add Stocks</h3>
+          {/* Right Side - Add Stocks (on mobile, bottom section) */}
+          <div className="flex-1 p-6 flex flex-col min-h-0 items-center md:items-stretch">
+            <h3 className="text-xl font-semibold mb-6 text-foreground text-center md:text-left">Add Stocks</h3>
             {/* Search with Real-time Results */}
-            <div className="mb-4 flex-1 min-h-0">
+            <div className="mb-4 flex-1 min-h-0 w-full">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -339,7 +339,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
               </div>
               {/* Real-time Search Results */}
               {searchQuery && (
-                <div className="mt-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background">
+                <div className="mt-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background w-full">
                   {filteredStocks.slice(0, 15).map((stock) => (
                     <div
                       key={stock.ticker}
@@ -377,9 +377,9 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
               )}
               {/* Popular Stocks when no search */}
               {!searchQuery && (
-                <div className="mt-4">
-                  <h4 className="font-medium mb-3 text-foreground">Popular Stocks</h4>
-                  <div className="grid gap-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background">
+                <div className="mt-4 w-full">
+                  <h4 className="font-medium mb-3 text-foreground text-center md:text-left">Popular Stocks</h4>
+                  <div className="grid gap-2 max-h-[420px] min-h-[420px] overflow-y-auto border rounded-lg bg-background w-full">
                     {EXTENDED_STOCKS.slice(0, 20)
                       .filter((stock) => !selectedStocks.some((selected) => selected.ticker === stock.ticker))
                       .map((stock) => (
@@ -409,26 +409,6 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
                   </div>
                 </div>
               )}
-              {/* Quick Navigation to Stock Pages */}
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-900 mb-2">💡 Quick Access:</h4>
-                <p className="text-sm text-blue-700 mb-3">
-                  Click on any stock above to view its detailed analysis page, or add it to your watchlist first.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {EXTENDED_STOCKS.slice(0, 8).map((stock) => (
-                    <Button
-                      key={stock.ticker}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStockSelect(stock.ticker)}
-                      className="text-xs border-blue-300 text-blue-700 hover:bg-blue-100"
-                    >
-                      {stock.ticker}
-                    </Button>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </CardContent>
