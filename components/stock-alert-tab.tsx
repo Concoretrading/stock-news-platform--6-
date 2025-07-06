@@ -93,6 +93,7 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
       other: true,
     },
   });
+  const [savedPreferences, setSavedPreferences] = useState<AlertPreferences | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -136,14 +137,14 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
     fetchAlerts();
   }, [user, ticker]);
 
-  // Filter and sort catalysts based on user preferences
-  const filteredCatalysts: Catalyst[] = (currentPrice !== null && catalysts.length > 0)
+  // Filter and sort catalysts based on saved preferences (only after user clicks save)
+  const filteredCatalysts: Catalyst[] = (currentPrice !== null && catalysts.length > 0 && savedPreferences)
     ? [...catalysts]
         .filter(c => {
           // Check if catalyst meets minimum movement requirement
           if (c.priceBefore && c.priceAfter) {
             const movement = Math.abs(c.priceAfter - c.priceBefore);
-            if (movement < preferences.minimumMovement) return false;
+            if (movement < savedPreferences.minimumMovement) return false;
           }
           
           // Check if catalyst type is selected in relevance criteria
@@ -154,12 +155,12 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
           const hasRegulatory = catalystType.includes('fda') || catalystType.includes('approval') || catalystType.includes('regulation') || catalystType.includes('legal');
           const hasFinancial = catalystType.includes('revenue') || catalystType.includes('profit') || catalystType.includes('financial') || catalystType.includes('guidance');
           
-          if (hasEarnings && !preferences.relevanceCriteria.earnings) return false;
-          if (hasProductLaunch && !preferences.relevanceCriteria.productLaunches) return false;
-          if (hasPartnership && !preferences.relevanceCriteria.partnerships) return false;
-          if (hasRegulatory && !preferences.relevanceCriteria.regulatory) return false;
-          if (hasFinancial && !preferences.relevanceCriteria.financial) return false;
-          if (!hasEarnings && !hasProductLaunch && !hasPartnership && !hasRegulatory && !hasFinancial && !preferences.relevanceCriteria.other) return false;
+          if (hasEarnings && !savedPreferences.relevanceCriteria.earnings) return false;
+          if (hasProductLaunch && !savedPreferences.relevanceCriteria.productLaunches) return false;
+          if (hasPartnership && !savedPreferences.relevanceCriteria.partnerships) return false;
+          if (hasRegulatory && !savedPreferences.relevanceCriteria.regulatory) return false;
+          if (hasFinancial && !savedPreferences.relevanceCriteria.financial) return false;
+          if (!hasEarnings && !hasProductLaunch && !hasPartnership && !hasRegulatory && !hasFinancial && !savedPreferences.relevanceCriteria.other) return false;
           
           return true;
         })
@@ -206,9 +207,10 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
   };
 
   const savePreferences = () => {
+    setSavedPreferences(preferences);
     toast({
       title: "Preferences Updated",
-      description: "Your alert preferences have been saved.",
+      description: "Finding catalysts that match your criteria...",
     });
   };
 
@@ -325,16 +327,22 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
 
       {/* Filtered Catalysts */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Bell className="h-5 w-5" />
-            <span>Top 3 Relevant Catalysts for {ticker}</span>
-            <Badge variant="secondary">{filteredCatalysts.length} found</Badge>
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Based on your preferences: {preferences.minimumMovement}+ point moves, within ±{preferences.proximityPoints} points of current price
-          </p>
-        </CardHeader>
+                  <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Bell className="h-5 w-5" />
+              <span>Top 3 Relevant Catalysts for {ticker}</span>
+              {savedPreferences && <Badge variant="secondary">{filteredCatalysts.length} found</Badge>}
+            </CardTitle>
+            {savedPreferences ? (
+              <p className="text-sm text-muted-foreground">
+                Based on your preferences: {savedPreferences.minimumMovement}+ point moves, within ±{savedPreferences.proximityPoints} points of current price
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Click "Save Preferences" above to see matching catalysts
+              </p>
+            )}
+          </CardHeader>
         <CardContent>
           {priceLoading ? (
             <div className="text-center py-8">
@@ -344,6 +352,14 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
           ) : currentPrice === null ? (
             <div className="text-center py-8 text-red-600">
               Unable to fetch current price
+            </div>
+          ) : !savedPreferences ? (
+            <div className="text-center py-8">
+              <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-2">Set your preferences first</p>
+              <p className="text-sm text-gray-500">
+                Configure your criteria above and click "Save Preferences" to see matching catalysts
+              </p>
             </div>
           ) : filteredCatalysts.length === 0 ? (
             <div className="text-center py-8">
@@ -359,8 +375,8 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
                 const priceBefore = catalyst.priceBefore || 0;
                 const priceAfter = catalyst.priceAfter || 0;
                 const movement = priceAfter - priceBefore;
-                const distance = Math.abs(priceBefore - currentPrice);
-                const isInRange = distance <= preferences.proximityPoints;
+                                 const distance = Math.abs(priceBefore - currentPrice);
+                 const isInRange = distance <= savedPreferences.proximityPoints;
                 
                 return (
                   <Card key={catalyst.id} className={`border-2 ${isInRange ? 'border-green-200 bg-green-50' : 'border-gray-200'}`}>
