@@ -33,6 +33,19 @@ interface FirebaseStock {
   createdAt: any
 }
 
+// Helper to check if US market is open (Eastern Time)
+function isMarketOpenNow() {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0 = Sunday, 6 = Saturday
+  const hour = now.getUTCHours();
+  const minute = now.getUTCMinutes();
+  // US market open: Mon-Fri, 9:30am-4:00pm ET (13:30-20:00 UTC)
+  if (day === 0 || day === 6) return false;
+  if (hour < 13 || (hour === 13 && minute < 30)) return false;
+  if (hour > 20 || (hour === 20 && minute > 0)) return false;
+  return true;
+}
+
 export default function HomePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
@@ -64,22 +77,6 @@ export default function HomePage() {
       })
     }
   })
-
-  // Fetch market open status and isLastClose from API
-  const [marketOpen, setMarketOpen] = useState(true)
-  useEffect(() => {
-    async function fetchMarketStatus() {
-      if (tickers.length === 0) return
-      try {
-        const res = await fetch(`/api/stock-prices?tickers=${tickers.join(",")}`)
-        if (res.ok) {
-          const data = await res.json()
-          setMarketOpen(data.marketOpen)
-        }
-      } catch {}
-    }
-    fetchMarketStatus()
-  }, [tickers.join(",")])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -304,7 +301,7 @@ export default function HomePage() {
                 <TrendingUp className="h-5 w-5 text-blue-600" />
                 <CardTitle>Your Watchlist</CardTitle>
                 <Badge variant="secondary">{watchlist.length} stocks</Badge>
-                {!marketOpen && (
+                {!isMarketOpenNow() && (
                   <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
                 )}
               </div>
@@ -351,7 +348,7 @@ export default function HomePage() {
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {visibleStocks.map((stock) => (
-                <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={marketOpen} />
+                <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
               ))}
             </div>
             {pricesLoading && (
