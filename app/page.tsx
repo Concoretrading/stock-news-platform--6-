@@ -420,22 +420,22 @@ export default function HomePage() {
         {/* Left: Example card with toggles */}
         <div className="flex flex-col md:flex-row items-stretch gap-8 w-full max-w-6xl">
           <div className="bg-slate-800/50 rounded-2xl shadow-lg p-10 w-full md:w-2/3 border border-blue-700/30 flex flex-col justify-center min-h-[340px] h-full">
-            <h4 className="text-2xl font-bold text-slate-100 mb-8 flex items-center gap-4">
-              <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-400/30 text-yellow-300 font-bold text-2xl">4</span>
+            <h4 className="text-2xl font-bold text-white mb-8 flex items-center gap-4">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-red-500 text-white font-bold text-2xl">4</span>
               Set Smart Price Alerts
             </h4>
             <div className="flex flex-col gap-8 flex-1 justify-center">
               <div className="flex items-center justify-between border-b border-blue-700/30 pb-6">
                 <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
-                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg" /></span>
+                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
               </div>
               <div className="flex items-center justify-between border-b border-blue-700/30 pb-6">
                 <span className="font-semibold text-yellow-100 text-xl">New Model Launch</span>
-                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off slider-toggle-mock-lg" /></span>
+                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-yellow-100 text-xl">Gigafactory Expansion</span>
-                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg" /></span>
+                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
               </div>
             </div>
           </div>
