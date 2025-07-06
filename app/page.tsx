@@ -428,7 +428,7 @@ export default function HomePage() {
           <div className="bg-[#181f2a] border border-red-500 rounded-2xl shadow-lg px-8 py-6 flex flex-col items-center justify-center max-w-xl w-full">
             <div className="flex flex-col items-center justify-center">
               <span className="inline-flex items-center justify-center w-12 h-12 bg-red-500 text-white font-bold text-2xl rounded-full mb-2">4</span>
-              <span className="text-2xl font-bold text-white text-center">Set Smart Price Alerts</span>
+              <span className="text-4xl font-bold text-white text-center">Set Smart Price Alerts</span>
             </div>
           </div>
         </div>
@@ -437,7 +437,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 w-full">
             {/* Features column (left) */}
             <div className="flex flex-col items-start w-full">
-              <h3 className="text-xl font-bold text-white text-center w-full mb-4">Features</h3>
+              <h3 className="text-3xl font-bold text-white text-center w-full mb-4">Features</h3>
               <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
                 <div className="flex items-start gap-3 py-2">
                   <span className="text-2xl">🧠</span>
@@ -459,7 +459,7 @@ export default function HomePage() {
             </div>
             {/* Example column (right) */}
             <div className="flex flex-col items-end w-full">
-              <h3 className="text-xl font-bold text-white text-center w-full mb-4">Example</h3>
+              <h3 className="text-3xl font-bold text-white text-center w-full mb-4">Example</h3>
               <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
                 <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
                   <span className="font-semibold text-yellow-100 text-xl flex-1">Q1 Earnings Release</span>
