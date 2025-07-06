@@ -440,9 +440,9 @@ export default function HomePage() {
             </div>
           </div>
           {/* Right: Bullet points and tip */}
-          <div className="flex flex-col w-full md:w-1/2 items-stretch min-h-[340px] h-[340px]">
+          <div className="flex flex-col w-full md:w-2/3 items-stretch min-h-[340px] h-[340px]">
             <div className="flex-1 flex flex-col justify-between h-full">
-              <ul className="flex flex-col justify-between h-full list-none text-base p-0 m-0">
+              <ul className="flex flex-col justify-between h-full list-none text-base p-0 m-0 max-w-full">
                 <li className="flex items-start gap-3"><span className="text-2xl">🧠</span><span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span></li>
                 <li className="flex items-start gap-3"><span className="text-2xl">🎚️</span><span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span></li>
                 <li className="flex items-start gap-3"><span className="text-2xl">📲</span><span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span></li>
