@@ -444,7 +444,7 @@ export default function HomePage() {
                 </div>
               </div>
               {/* Right: 4 bullets, evenly distributed, last aligns with Gigafactory Expansion */}
-              <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0">
+              <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8">
                 <div className="flex items-start gap-3 py-2 flex-1">
                   <span className="text-2xl">🧠</span>
                   <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
