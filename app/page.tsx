@@ -434,7 +434,7 @@ export default function HomePage() {
         <div className="flex justify-center w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch w-full max-w-6xl mx-auto" style={{alignItems: 'stretch'}}>
             {/* Left: Features header and bullets */}
-            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8">
+            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8 mt-8">
               <h3 className="text-xl font-bold text-white mb-4">Features</h3>
               <div className="flex items-start gap-3 py-2 flex-1">
                 <span className="text-2xl">🧠</span>
