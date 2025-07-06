@@ -425,8 +425,8 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex justify-center w-full mt-12 mb-2">
-          <div className="flex items-center justify-center gap-4 bg-red-500 rounded-lg px-6 py-3 shadow-lg">
-            <span className="inline-flex items-center justify-center w-12 h-12 bg-red-500 text-white font-bold text-2xl rounded-lg">4</span>
+          <div className="bg-[#181f2a] border border-green-700/40 rounded-2xl shadow-lg px-8 py-6 flex items-center gap-4 max-w-xl w-full">
+            <span className="inline-flex items-center justify-center w-12 h-12 bg-red-500 text-white font-bold text-2xl rounded-full">4</span>
             <span className="text-2xl font-bold text-white">Set Smart Price Alerts</span>
           </div>
         </div>
