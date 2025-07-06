@@ -158,3 +158,20 @@ body {
 .slider-toggle-mock-off::before {
   transform: translateX(0);
 }
+
+.slider-toggle-mock-lg {
+  width: 56px;
+  height: 32px;
+}
+.slider-toggle-mock-lg::before {
+  width: 24px;
+  height: 24px;
+  top: 4px;
+  left: 4px;
+}
+.slider-toggle-mock-on.slider-toggle-mock-lg::before {
+  transform: translateX(24px);
+}
+.slider-toggle-mock-off.slider-toggle-mock-lg::before {
+  transform: translateX(0);
+}

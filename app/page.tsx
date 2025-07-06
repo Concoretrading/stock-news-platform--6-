@@ -418,36 +418,36 @@ export default function HomePage() {
         </Card>
 
         {/* Left: Example card with toggles */}
-        <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-4xl">
-          <div className="bg-slate-800/50 rounded-xl shadow-md p-6 w-full md:w-1/2 border border-blue-700/30">
-            <h4 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
-              <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-400/30 text-yellow-300 font-bold">4</span>
+        <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-6xl">
+          <div className="bg-slate-800/50 rounded-2xl shadow-lg p-10 w-full md:w-2/3 border border-blue-700/30 flex flex-col justify-center min-h-[340px]">
+            <h4 className="text-2xl font-bold text-slate-100 mb-8 flex items-center gap-4">
+              <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-400/30 text-yellow-300 font-bold text-2xl">4</span>
               Set Smart Price Alerts
             </h4>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between border-b border-blue-700/30 pb-3">
-                <span className="font-medium text-yellow-100">Q1 Earnings Release</span>
-                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span>
+            <div className="flex flex-col gap-8">
+              <div className="flex items-center justify-between border-b border-blue-700/30 pb-6">
+                <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
+                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg" /></span>
               </div>
-              <div className="flex items-center justify-between border-b border-blue-700/30 pb-3">
-                <span className="font-medium text-yellow-100">New Model Launch</span>
-                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off" /></span>
+              <div className="flex items-center justify-between border-b border-blue-700/30 pb-6">
+                <span className="font-semibold text-yellow-100 text-xl">New Model Launch</span>
+                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off slider-toggle-mock-lg" /></span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-medium text-yellow-100">Gigafactory Expansion</span>
-                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span>
+                <span className="font-semibold text-yellow-100 text-xl">Gigafactory Expansion</span>
+                <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg" /></span>
               </div>
             </div>
           </div>
           {/* Right: Bullet points and tip */}
-          <div className="flex flex-col justify-center w-full md:w-1/2 space-y-4">
-            <ul className="text-gray-100 mb-2 list-none space-y-3">
-              <li className="flex items-start gap-2"><span>🧠</span><span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span></li>
-              <li className="flex items-start gap-2"><span>🎚️</span><span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span></li>
-              <li className="flex items-start gap-2"><span>📲</span><span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span></li>
-              <li className="flex items-start gap-2"><span>⚙️</span><span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span></li>
+          <div className="flex flex-col justify-center w-full md:w-1/2 space-y-6">
+            <ul className="text-gray-100 mb-2 list-none space-y-6 text-lg">
+              <li className="flex items-start gap-3"><span className="text-2xl">🧠</span><span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span></li>
+              <li className="flex items-start gap-3"><span className="text-2xl">🎚️</span><span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span></li>
+              <li className="flex items-start gap-3"><span className="text-2xl">📲</span><span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span></li>
+              <li className="flex items-start gap-3"><span className="text-2xl">⚙️</span><span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span></li>
             </ul>
-            <div className="p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-sm">
+            <div className="p-4 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-base">
               <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
             </div>
           </div>
