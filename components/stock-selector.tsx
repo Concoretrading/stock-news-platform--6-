@@ -280,12 +280,12 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
       }}>
       <Card className="bg-card border rounded-2xl w-full max-w-5xl h-[90vh] overflow-hidden shadow-2xl flex flex-col p-0 m-0">
         {/* Header */}
-        <CardHeader className="flex items-center justify-between p-12 border-b">
-          <div className="flex items-center justify-center w-full gap-6">
+        <CardHeader className="flex items-center justify-between py-4 border-b relative">
+          <div className="flex items-center justify-center w-full gap-6 mb-2">
             <img src="/images/concore-logo.png" alt="ConcoreTrading" className="h-10 w-10 md:h-12 md:w-12" />
-            <span className="font-extrabold text-2xl md:text-4xl text-foreground whitespace-nowrap tracking-tight text-center">Manage Your Stock Watchlist</span>
+            <span className="font-extrabold text-2xl md:text-4xl text-foreground whitespace-nowrap tracking-tight text-center mb-1">Manage Your Stock Watchlist</span>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-accent absolute right-12 top-12">
+          <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-accent absolute right-4 top-4 md:right-8 md:top-4">
             <X className="h-5 w-5" />
           </Button>
         </CardHeader>
