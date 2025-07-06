@@ -3,11 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
-import ScreenshotButton from "@/components/ScreenshotButton"
-import { AuthProvider } from "@/components/auth-provider"
-import { PriceAlertNotifications } from "@/components/price-alert-notifications"
-import { useEffect } from "react"
+import ClientLayout from "./ClientLayout"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,16 +17,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function(registrations) {
-        for(let registration of registrations) {
-          registration.unregister();
-        }
-      });
-    }
-  }, []);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -40,13 +26,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
+          <ClientLayout>
             {children}
-            <Toaster />
-            <PriceAlertNotifications />
-            {/* Floating Screenshot Button and Modal moved to ScreenshotButton */}
-            <ScreenshotButton />
-          </AuthProvider>
+          </ClientLayout>
         </ThemeProvider>
       </body>
     </html>

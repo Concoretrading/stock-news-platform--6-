@@ -156,7 +156,7 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
                 <div>
                   <div className="font-semibold">{c.description || c.title || "Catalyst"}</div>
                   <div className="text-sm text-muted-foreground">Price Before: {typeof c.priceBefore === 'number' ? c.priceBefore : 'N/A'}</div>
-                  <div className="text-xs text-muted-foreground">Current: {currentPrice.toFixed(2)} (Δ {typeof c.priceBefore === 'number' ? (currentPrice - c.priceBefore).toFixed(2) : 'N/A'})</div>
+                  <div className="text-xs text-muted-foreground">Current: {typeof currentPrice === 'number' ? currentPrice.toFixed(2) : 'N/A'} (Δ {typeof c.priceBefore === 'number' && typeof currentPrice === 'number' ? (currentPrice - c.priceBefore).toFixed(2) : 'N/A'})</div>
                 </div>
                 <label className="flex items-center space-x-2">
                   <input

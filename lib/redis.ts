@@ -4,10 +4,12 @@ import { Redis } from '@upstash/redis'
 let redis: Redis | null = null
 
 try {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  })
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  }
 } catch (error) {
   console.warn('Redis not configured, falling back to in-memory cache')
 }
@@ -23,7 +25,6 @@ export interface CachedPrice {
 
 export async function getCachedPrice(ticker: string): Promise<CachedPrice | null> {
   const now = Date.now()
-  
   if (redis) {
     try {
       const cached = await redis.get<CachedPrice>(`price:${ticker}`)
@@ -34,20 +35,17 @@ export async function getCachedPrice(ticker: string): Promise<CachedPrice | null
       console.warn('Redis error, falling back to memory cache:', error)
     }
   }
-  
   // Fallback to memory cache
   const cached = memoryCache.get(ticker)
   if (cached && (now - cached.timestamp) < CACHE_DURATION) {
     return cached
   }
-  
   return null
 }
 
 export async function setCachedPrice(ticker: string, price: number): Promise<void> {
   const now = Date.now()
   const cachedPrice: CachedPrice = { price, timestamp: now }
-  
   if (redis) {
     try {
       // Set with TTL (5 seconds)
