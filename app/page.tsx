@@ -432,7 +432,7 @@ export default function HomePage() {
         </div>
         {/* 3-row grid for items and bullets */}
         <div className="flex justify-center w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch w-full max-w-6xl mx-auto" style={{alignItems: 'stretch'}}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch w-full max-w-6xl mx-auto" style={{alignItems: 'stretch'}}>
             {/* Left: 4 bullets, evenly distributed, last aligns with Gigafactory Expansion */}
             <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8">
               <div className="flex items-start gap-3 py-2 flex-1">
