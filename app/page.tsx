@@ -418,13 +418,13 @@ export default function HomePage() {
         </Card>
 
         {/* Left: Example card with toggles */}
-        <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-6xl">
-          <div className="bg-slate-800/50 rounded-2xl shadow-lg p-10 w-full md:w-2/3 border border-blue-700/30 flex flex-col justify-center min-h-[340px]">
+        <div className="flex flex-col md:flex-row items-stretch gap-8 w-full max-w-6xl">
+          <div className="bg-slate-800/50 rounded-2xl shadow-lg p-10 w-full md:w-2/3 border border-blue-700/30 flex flex-col justify-center min-h-[340px] h-full">
             <h4 className="text-2xl font-bold text-slate-100 mb-8 flex items-center gap-4">
               <span className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-yellow-400/30 text-yellow-300 font-bold text-2xl">4</span>
               Set Smart Price Alerts
             </h4>
-            <div className="flex flex-col gap-8">
+            <div className="flex flex-col gap-8 flex-1 justify-center">
               <div className="flex items-center justify-between border-b border-blue-700/30 pb-6">
                 <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
                 <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg" /></span>
@@ -440,7 +440,7 @@ export default function HomePage() {
             </div>
           </div>
           {/* Right: Bullet points and tip */}
-          <div className="flex flex-col justify-center w-full md:w-1/2 space-y-6">
+          <div className="flex flex-col justify-center h-full w-full md:w-1/2 space-y-6">
             <ul className="text-gray-100 mb-2 list-none space-y-6 text-lg">
               <li className="flex items-start gap-3"><span className="text-2xl">🧠</span><span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span></li>
               <li className="flex items-start gap-3"><span className="text-2xl">🎚️</span><span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span></li>
