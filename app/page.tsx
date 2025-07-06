@@ -425,7 +425,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex justify-center w-full mt-12 mb-2">
-          <div className="flex items-center gap-4" style={{minHeight: '56px'}}>
+          <div className="flex items-center justify-center gap-4 bg-red-500 rounded-lg px-6 py-3 shadow-lg">
             <span className="inline-flex items-center justify-center w-12 h-12 bg-red-500 text-white font-bold text-2xl rounded-lg">4</span>
             <span className="text-2xl font-bold text-white">Set Smart Price Alerts</span>
           </div>
@@ -436,35 +436,32 @@ export default function HomePage() {
             {/* Left: 3 items */}
             <div className="flex flex-col h-full justify-between min-h-[210px]">
               <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
-                <Switch checked={true} onCheckedChange={() => {}} className="ml-auto scale-125" />
+                <div className="flex items-start gap-3 flex-1">
+                  <span className="text-2xl">🧠</span>
+                  <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
+                </div>
+                <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
               </div>
               <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl">New Model Launch</span>
-                <Switch checked={false} onCheckedChange={() => {}} className="ml-auto scale-125" />
+                <div className="flex items-start gap-3 flex-1">
+                  <span className="text-2xl">🎚️</span>
+                  <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
+                </div>
+                <Switch checked={false} onCheckedChange={() => {}} className="ml-4 scale-125" />
+              </div>
+              <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                <div className="flex items-start gap-3 flex-1">
+                  <span className="text-2xl">📲</span>
+                  <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
+                </div>
+                <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
               </div>
               <div className="flex items-center py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl">Gigafactory Expansion</span>
-                <Switch checked={true} onCheckedChange={() => {}} className="ml-auto scale-125" />
-              </div>
-            </div>
-            {/* Right: 4 bullets, evenly distributed, last aligns with Gigafactory Expansion */}
-            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8">
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">🧠</span>
-                <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
-              </div>
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">🎚️</span>
-                <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
-              </div>
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">📲</span>
-                <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
-              </div>
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">⚙️</span>
-                <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
+                <div className="flex items-start gap-3 flex-1">
+                  <span className="text-2xl">⚙️</span>
+                  <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
+                </div>
+                <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
               </div>
             </div>
           </div>
