@@ -443,7 +443,7 @@ export default function HomePage() {
               </div>
             </div>
             {/* Left: bullet points */}
-            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8 mt-8">
+            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8 mt-4 bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70">
               <div className="flex items-start gap-3 py-2 flex-1">
                 <span className="text-2xl">🧠</span>
                 <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
@@ -462,7 +462,7 @@ export default function HomePage() {
               </div>
             </div>
             {/* Right: toggles */}
-            <div className="flex flex-col h-full justify-between min-h-[210px]">
+            <div className="flex flex-col h-full justify-between min-h-[210px] bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70">
               <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
                 <span className="font-semibold text-yellow-100 text-xl flex-1">Q1 Earnings Release</span>
                 <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
