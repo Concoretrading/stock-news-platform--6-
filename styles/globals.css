@@ -92,3 +92,34 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.slider-toggle {
+  appearance: none;
+  width: 40px;
+  height: 22px;
+  background: #e5e7eb;
+  border-radius: 9999px;
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  vertical-align: middle;
+}
+.slider-toggle:checked {
+  background: #3b82f6;
+}
+.slider-toggle::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+.slider-toggle:checked::before {
+  transform: translateX(18px);
+}
