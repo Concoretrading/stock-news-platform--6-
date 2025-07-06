@@ -35,15 +35,15 @@ interface FirebaseStock {
 
 // Helper to check if US market is open (Eastern Time)
 function isMarketOpenNow() {
-  const now = new Date();
-  const day = now.getUTCDay(); // 0 = Sunday, 6 = Saturday
-  const hour = now.getUTCHours();
-  const minute = now.getUTCMinutes();
-  // US market open: Mon-Fri, 9:30am-4:00pm ET (13:30-20:00 UTC)
-  if (day === 0 || day === 6) return false;
-  if (hour < 13 || (hour === 13 && minute < 30)) return false;
-  if (hour > 20 || (hour === 20 && minute > 0)) return false;
-  return true;
+  const now = new Date()
+  const utcHour = now.getUTCHours()
+  const utcMinute = now.getUTCMinutes()
+  const estHour = utcHour - 4 < 0 ? utcHour + 20 : utcHour - 4
+  const day = now.getUTCDay()
+  if (day === 0 || day === 6) return false
+  if (estHour < 9 || (estHour === 9 && utcMinute < 30)) return false
+  if (estHour > 16 || (estHour === 16 && utcMinute > 0)) return false
+  return true
 }
 
 export default function HomePage() {
