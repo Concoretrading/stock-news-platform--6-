@@ -59,6 +59,11 @@ export default function HomePage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
 
+  // Add state for mobile carousel page
+  const [mobilePage, setMobilePage] = useState(0);
+  const stocksPerMobilePage = 5;
+  const totalMobilePages = Math.ceil(watchlist.length / stocksPerMobilePage);
+
   // Get tickers for price fetching
   const tickers = useMemo(() => watchlist.map(stock => stock.symbol), [watchlist])
   const { 
@@ -305,13 +310,8 @@ export default function HomePage() {
                   <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
                 )}
               </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-1 text-xs">
-                  <div className={`w-2 h-2 rounded-full ${isMarketOpenNow() ? 'bg-green-500' : 'bg-yellow-500'}`} />
-                  <span className="text-muted-foreground">
-                    {isMarketOpenNow() ? 'Live' : 'Last Close'}
-                  </span>
-                </div>
+              {/* Mobile: Refresh and Manage buttons side by side */}
+              <div className="flex md:hidden w-full justify-between mt-2 mb-2">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -321,15 +321,6 @@ export default function HomePage() {
                 >
                   <RefreshCw className={`w-3 h-3 ${pricesLoading ? 'animate-spin' : ''}`} />
                   <span>Refresh</span>
-                </Button>
-                <Button variant="outline" size="sm" onClick={prevPage} disabled={currentPage === 0}>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {currentPage + 1} of {totalPages}
-                </span>
-                <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === totalPages - 1}>
-                  <ChevronRight className="h-4 w-4" />
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)}>
                   <Settings className="h-4 w-4 mr-2" />
@@ -346,33 +337,33 @@ export default function HomePage() {
                 </p>
               </div>
             )}
-            {/* Mobile: Swipeable carousel, 5 stocks per view */}
+            {/* Mobile: Swipeable carousel, 5 stocks per view, with page indicator and dots */}
             <div className="block md:hidden">
-              <div className="flex items-center space-x-2 mb-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleRefresh}
-                  disabled={pricesLoading}
-                  className="flex items-center space-x-1"
-                >
-                  <RefreshCw className={`w-3 h-3 ${pricesLoading ? 'animate-spin' : ''}`} />
-                  <span>Refresh</span>
-                </Button>
-                {/* Remove 'Last Close' label on mobile */}
-              </div>
               <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
-                <div className="flex space-x-4 min-w-full">
-                  {watchlistWithLivePrices.slice(0, 10).map((stock, idx) => (
-                    <div key={stock.symbol} className="min-w-[80vw] max-w-[80vw] flex-shrink-0">
-                      <StockCard stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                <div className="flex space-x-4 min-w-full transition-transform duration-300" style={{ transform: `translateX(-${mobilePage * 100}vw)` }}>
+                  {Array.from({ length: totalMobilePages }).map((_, pageIdx) => (
+                    <div key={pageIdx} className="flex min-w-[100vw] max-w-[100vw] flex-shrink-0">
+                      {watchlistWithLivePrices.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
+                        <div key={stock.symbol} className="w-full">
+                          <StockCard stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                        </div>
+                      ))}
                     </div>
+                  ))}
+                </div>
+              </div>
+              {/* Page indicator and dots */}
+              <div className="flex flex-col items-center mt-2">
+                <span className="text-xs text-muted-foreground mb-1">{mobilePage + 1}/{totalMobilePages}</span>
+                <div className="flex space-x-2">
+                  {Array.from({ length: totalMobilePages }).map((_, idx) => (
+                    <span key={idx} className={`w-2 h-2 rounded-full ${mobilePage === idx ? 'bg-blue-600' : 'bg-gray-300'}`}></span>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* Desktop: grid as before */}
+            {/* Desktop: grid as before, remove Refresh button from controls */}
             <div className="hidden md:block">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {visibleStocks.map((stock) => (
