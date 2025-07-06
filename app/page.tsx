@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useRealTimePrices } from "@/hooks/useRealTimePrices"
+import { useStockPrices } from "@/hooks/useStockPrices"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist, getIdToken } from "@/lib/firebase-services"
@@ -58,24 +58,16 @@ export default function HomePage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
 
-  // Get tickers for real-time price fetching
+  // Get tickers for price fetching
   const tickers = useMemo(() => watchlist.map(stock => stock.symbol), [watchlist])
   const { 
-    prices: realTimePrices, 
+    prices: stockPrices, 
     loading: pricesLoading, 
     error: pricesError, 
-    refresh: refreshPrices,
-    connectionStatus
-  } = useRealTimePrices({
-    symbols: tickers,
+    refresh: refreshPrices
+  } = useStockPrices(tickers, {
     enabled: !!user && watchlist.length > 0,
-    onError: (error) => {
-      toast({
-        title: "Price Update Error",
-        description: error,
-        variant: "destructive",
-      })
-    }
+    interval: 300000 // 5 minutes
   })
 
   // Redirect to login if not authenticated
@@ -148,16 +140,16 @@ export default function HomePage() {
     }
   }
 
-  // Merge real-time prices with watchlist
+  // Merge stock prices with watchlist
   const watchlistWithLivePrices = watchlist.map(stock => {
-    const realTimePrice = realTimePrices[stock.symbol]
-    if (realTimePrice) {
+    const stockPrice = stockPrices[stock.symbol]
+    if (stockPrice !== null && stockPrice !== undefined) {
       return {
         ...stock,
-        price: realTimePrice.price,
-        change: realTimePrice.change || 0,
-        changePercent: realTimePrice.changePercent || 0,
-        isLastClose: realTimePrice.isLastClose || false
+        price: stockPrice,
+        change: 0, // We don't have change data in this hook
+        changePercent: 0, // We don't have change percent data in this hook
+        isLastClose: !isMarketOpenNow() // Assume last close when market is closed
       }
     }
     return stock
@@ -200,6 +192,13 @@ export default function HomePage() {
 
   const prevPage = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 0))
+  }
+
+  const handleRefresh = async () => {
+    setRefreshKey(prev => prev + 1)
+    if (refreshPrices) {
+      await refreshPrices()
+    }
   }
 
   // Global drag-and-drop handlers
@@ -307,19 +306,19 @@ export default function HomePage() {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-1 text-xs">
-                  <div className={`w-2 h-2 rounded-full ${connectionStatus.websocketConnected ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                  <div className={`w-2 h-2 rounded-full ${isMarketOpenNow() ? 'bg-green-500' : 'bg-yellow-500'}`} />
                   <span className="text-muted-foreground">
-                    {connectionStatus.websocketConnected ? 'Live' : 'Delayed'}
+                    {isMarketOpenNow() ? 'Live' : 'Last Close'}
                   </span>
                 </div>
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={refreshPrices}
+                  onClick={handleRefresh}
                   disabled={pricesLoading}
                   className="flex items-center space-x-1"
                 >
-                  <RefreshCw className={`h-4 w-4 ${pricesLoading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3 h-3 ${pricesLoading ? 'animate-spin' : ''}`} />
                   <span>Refresh</span>
                 </Button>
                 <Button variant="outline" size="sm" onClick={prevPage} disabled={currentPage === 0}>
@@ -353,7 +352,7 @@ export default function HomePage() {
             </div>
             {pricesLoading && (
               <div className="mt-4 text-center text-sm text-muted-foreground">
-                Updating live prices...
+                {isMarketOpenNow() ? 'Updating live prices...' : 'Loading last close prices...'}
               </div>
             )}
           </CardContent>
