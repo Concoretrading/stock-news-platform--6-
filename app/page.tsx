@@ -433,9 +433,13 @@ export default function HomePage() {
         {/* 3-row grid for items and bullets */}
         <div className="flex justify-center w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch w-full max-w-6xl mx-auto" style={{alignItems: 'stretch'}}>
-            {/* Left: Features header and bullets */}
+            {/* Header row for Features and Example */}
+            <div className="col-span-1 md:col-span-2 grid grid-cols-2 mb-2">
+              <h3 className="text-xl font-bold text-white text-left">Features</h3>
+              <h3 className="text-xl font-bold text-white text-left">Example</h3>
+            </div>
+            {/* Left: bullet points */}
             <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8 mt-8">
-              <h3 className="text-xl font-bold text-white mb-4">Features</h3>
               <div className="flex items-start gap-3 py-2 flex-1">
                 <span className="text-2xl">🧠</span>
                 <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
@@ -453,9 +457,8 @@ export default function HomePage() {
                 <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
               </div>
             </div>
-            {/* Right: Example header and toggles */}
+            {/* Right: toggles */}
             <div className="flex flex-col h-full justify-between min-h-[210px]">
-              <h3 className="text-xl font-bold text-white mb-4">Example</h3>
               <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
                 <span className="font-semibold text-yellow-100 text-xl flex-1">Q1 Earnings Release</span>
                 <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
