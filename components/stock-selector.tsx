@@ -293,7 +293,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
         {/* Make CardContent scrollable and flex-1 */}
         <CardContent className="flex-1 overflow-y-auto p-12 flex flex-row gap-8">
           {/* Remove Section (Selected Stocks) */}
-          <div className="flex-1 p-6 pr-8 border-r flex flex-col min-h-0 items-center">
+          <div className="flex-1 p-6 pr-4 border-r flex flex-col min-h-0 items-center">
             <h3 className="text-xl font-semibold mb-4 text-foreground text-center">Remove</h3>
             <div className="text-base text-muted-foreground mb-4 text-center">Remove stocks from your watchlist below.</div>
             <div className="space-y-3 flex-1 rounded-lg bg-background border w-full p-4">
@@ -325,7 +325,7 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
           </div>
 
           {/* Add Section (Search/Add Stocks) */}
-          <div className="flex-1 p-6 pl-8 flex flex-col min-h-0 items-center">
+          <div className="flex-1 p-6 pl-4 flex flex-col min-h-0 items-center">
             <h3 className="text-xl font-semibold mb-4 text-foreground text-center">Add</h3>
             <div className="text-base text-muted-foreground mb-4 text-center">Add new stocks to your watchlist below.</div>
             {/* Search with Real-time Results */}
