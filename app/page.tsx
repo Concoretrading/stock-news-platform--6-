@@ -434,9 +434,13 @@ export default function HomePage() {
         <div className="flex justify-center w-full">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-stretch w-full max-w-6xl mx-auto" style={{alignItems: 'stretch'}}>
             {/* Header row for Features and Example */}
-            <div className="col-span-1 md:col-span-2 grid grid-cols-2 mb-2">
-              <h3 className="text-xl font-bold text-white text-left">Features</h3>
-              <h3 className="text-xl font-bold text-white text-left">Example</h3>
+            <div className="flex flex-row mb-2 gap-16">
+              <div className="flex-1 text-center">
+                <h3 className="text-xl font-bold text-white">Features</h3>
+              </div>
+              <div className="flex-1 text-center">
+                <h3 className="text-xl font-bold text-white">Example</h3>
+              </div>
             </div>
             {/* Left: bullet points */}
             <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 md:ml-8 mt-8">
