@@ -310,24 +310,11 @@ export default function HomePage() {
                   <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
                 )}
               </div>
-              {/* Mobile: Manage button directly under header */}
-              <div className="md:hidden w-full mt-2 mb-2">
-                <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)} className="w-full">
+              {/* Mobile: Manage button directly under header, not full width */}
+              <div className="md:hidden w-full mt-2 mb-2 flex justify-center">
+                <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)} className="px-6">
                   <Settings className="h-4 w-4 mr-2" />
                   Manage
-                </Button>
-              </div>
-              {/* Mobile: Refresh button stays in its own spot */}
-              <div className="flex md:hidden w-full justify-between mb-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleRefresh}
-                  disabled={pricesLoading}
-                  className="flex items-center space-x-1"
-                >
-                  <RefreshCw className={`w-3 h-3 ${pricesLoading ? 'animate-spin' : ''}`} />
-                  <span>Refresh</span>
                 </Button>
               </div>
             </div>
