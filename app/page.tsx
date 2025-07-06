@@ -423,9 +423,11 @@ export default function HomePage() {
                   </div>
                   <h3 className="font-semibold text-lg text-yellow-200">Set Smart Price Alerts</h3>
                 </div>
-                <p className="text-yellow-100 leading-relaxed mb-2">
-                  Set price alerts for the <span className="font-semibold">three news catalysts closest to the current price</span> of any stock. For each, you'll see the difference from the current price with an <span className="font-semibold">up</span> <span className="text-green-400">↑</span> or <span className="font-semibold">down</span> <span className="text-red-400">↓</span> arrow. Toggle alerts on or off with a slider—get notified when the price revisits a key news level!
-                </p>
+                <ul className="text-yellow-100 leading-relaxed mb-2 list-disc list-inside text-left">
+                  <li>Set price alerts for the <span className="font-semibold">three news catalysts closest to the current price</span> of any stock.</li>
+                  <li>See the difference from the current price with an <span className="font-semibold">up</span> <span className="text-green-400">↑</span> or <span className="font-semibold">down</span> <span className="text-red-400">↓</span> arrow.</li>
+                  <li>Toggle alerts on or off with a slider—get notified when the price revisits a key news level!</li>
+                </ul>
                 <div className="flex flex-col gap-2 w-full mt-2">
                   {/* Example catalyst entries */}
                   <div className="flex items-center justify-between bg-slate-900/60 rounded-lg px-4 py-2">
@@ -433,7 +435,7 @@ export default function HomePage() {
                     <span className="flex items-center gap-1">
                       <span className="text-green-400 font-bold">+10</span>
                       <span className="text-green-400">↑</span>
-                      <span className="ml-2">{/* Slider toggle */}<span className="inline-block align-middle"><input type="checkbox" checked readOnly className="slider-toggle" /></span></span>
+                      <span className="ml-2"><span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span></span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between bg-slate-900/60 rounded-lg px-4 py-2">
@@ -441,7 +443,7 @@ export default function HomePage() {
                     <span className="flex items-center gap-1">
                       <span className="text-red-400 font-bold">-8</span>
                       <span className="text-red-400">↓</span>
-                      <span className="ml-2">{/* Slider toggle */}<span className="inline-block align-middle"><input type="checkbox" readOnly className="slider-toggle" /></span></span>
+                      <span className="ml-2"><span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off" /></span></span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between bg-slate-900/60 rounded-lg px-4 py-2">
@@ -449,7 +451,7 @@ export default function HomePage() {
                     <span className="flex items-center gap-1">
                       <span className="text-green-400 font-bold">+5</span>
                       <span className="text-green-400">↑</span>
-                      <span className="ml-2">{/* Slider toggle */}<span className="inline-block align-middle"><input type="checkbox" checked readOnly className="slider-toggle" /></span></span>
+                      <span className="ml-2"><span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span></span>
                     </span>
                   </div>
                 </div>
