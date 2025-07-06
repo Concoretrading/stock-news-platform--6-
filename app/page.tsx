@@ -442,17 +442,21 @@ export default function HomePage() {
                   <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
                 </div>
               </div>
-              {/* Right: 3 bullets, each aligned with a left item */}
-              <div className="flex flex-col h-full justify-between min-h-[210px]">
-                <div className="flex items-start gap-3 border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+              {/* Right: 4 bullets, evenly distributed, last aligns with Gigafactory Expansion */}
+              <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0">
+                <div className="flex items-start gap-3 py-2 flex-1">
+                  <span className="text-2xl">🧠</span>
+                  <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
+                </div>
+                <div className="flex items-start gap-3 py-2 flex-1">
                   <span className="text-2xl">🎚️</span>
                   <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
                 </div>
-                <div className="flex items-start gap-3 border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                <div className="flex items-start gap-3 py-2 flex-1">
                   <span className="text-2xl">📲</span>
                   <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
                 </div>
-                <div className="flex items-start gap-3 py-4" style={{minHeight: '48px'}}>
+                <div className="flex items-start gap-3 py-2 flex-1">
                   <span className="text-2xl">⚙️</span>
                   <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
                 </div>
