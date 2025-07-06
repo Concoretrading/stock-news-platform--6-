@@ -414,102 +414,42 @@ export default function HomePage() {
                 <Calendar className="h-6 w-6 mt-3 text-purple-400" />
               </div>
             </div>
-            {/* Alerts Workflow Card - Centered below */}
-            <div className="flex justify-center mt-8">
-              <div className="flex flex-col md:flex-row items-center gap-8 w-full max-w-4xl">
-                {/* Left: Example card with toggles */}
-                <div className="bg-slate-800/50 rounded-xl shadow-md p-6 w-full md:w-1/2 border border-blue-700/30">
-                  <h4 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-400/30 text-yellow-300 font-bold">4</span>
-                    Set Smart Price Alerts
-                  </h4>
-                  <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between border-b border-blue-700/30 pb-3">
-                      <span className="font-medium text-yellow-100">Q1 Earnings Release</span>
-                      <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span>
-                    </div>
-                    <div className="flex items-center justify-between border-b border-blue-700/30 pb-3">
-                      <span className="font-medium text-yellow-100">New Model Launch</span>
-                      <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off" /></span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-yellow-100">Gigafactory Expansion</span>
-                      <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span>
-                    </div>
-                  </div>
-                </div>
-                {/* Right: Bullet points and tip */}
-                <div className="flex flex-col justify-center w-full md:w-1/2">
-                  <ul className="text-gray-100 mb-4 list-disc list-inside">
-                    <li>Set price alerts for the <span className="font-semibold">three news catalysts closest to the current price</span> of any stock.</li>
-                    <li>Toggle alerts on or off with a slider—get notified when the price revisits a key news level!</li>
-                  </ul>
-                  <div className="mt-2 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-sm">
-                    <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
-                  </div>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
-        {/* Alerts Feature Mockup Section */}
-        <section className="mt-8">
-          <h2 className="text-xl font-semibold mb-2">Set Price Alerts for Catalysts</h2>
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="w-full md:w-1/2">
-              <div className="bg-white rounded-lg border shadow-md p-6">
-                <div className="flex items-center space-x-2 mb-4">
-                  <span className="inline-flex items-center justify-center rounded-full bg-blue-100 p-2"><svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="text-blue-600"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg></span>
-                  <span className="font-bold text-lg">Price Alerts for TSLA</span>
-                </div>
-                <ul className="space-y-4">
-                  <li className="flex items-center justify-between border-b pb-2">
-                    <div>
-                      <div className="font-semibold">Q1 Earnings Release</div>
-                      <div className="text-sm text-muted-foreground">Price Before: 180.00</div>
-                      <div className="text-xs text-muted-foreground">Current: 185.50 (Δ +5.50)</div>
-                    </div>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" checked readOnly />
-                      <span>On</span>
-                    </label>
-                  </li>
-                  <li className="flex items-center justify-between border-b pb-2">
-                    <div>
-                      <div className="font-semibold">New Model Launch</div>
-                      <div className="text-sm text-muted-foreground">Price Before: 200.00</div>
-                      <div className="text-xs text-muted-foreground">Current: 185.50 (Δ -14.50)</div>
-                    </div>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" checked={false} readOnly />
-                      <span>Off</span>
-                    </label>
-                  </li>
-                  <li className="flex items-center justify-between border-b pb-2">
-                    <div>
-                      <div className="font-semibold">Gigafactory Expansion</div>
-                      <div className="text-sm text-muted-foreground">Price Before: 170.00</div>
-                      <div className="text-xs text-muted-foreground">Current: 185.50 (Δ +15.50)</div>
-                    </div>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" checked readOnly />
-                      <span>On</span>
-                    </label>
-                  </li>
-                </ul>
-              </div>
+        {/* Left: Example card with toggles */}
+        <div className="bg-slate-800/50 rounded-xl shadow-md p-6 w-full md:w-1/2 border border-blue-700/30">
+          <h4 className="text-lg font-bold text-slate-100 mb-4 flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-400/30 text-yellow-300 font-bold">4</span>
+            Set Smart Price Alerts
+          </h4>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between border-b border-blue-700/30 pb-3">
+              <span className="font-medium text-yellow-100">Q1 Earnings Release</span>
+              <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span>
             </div>
-            <div className="max-w-md">
-              <p>
-                You can set price alerts for the three catalyst entries closest to the current price of a stock. Use the toggle to turn alerts on or off for each catalyst. When enabled, you'll receive a notification if the stock price revisits that catalyst level.
-              </p>
-              <div className="mt-4 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-sm">
-                <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
-              </div>
+            <div className="flex items-center justify-between border-b border-blue-700/30 pb-3">
+              <span className="font-medium text-yellow-100">New Model Launch</span>
+              <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-off" /></span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-yellow-100">Gigafactory Expansion</span>
+              <span className="inline-block align-middle"><span className="slider-toggle-mock slider-toggle-mock-on" /></span>
             </div>
           </div>
-        </section>
+        </div>
+        {/* Right: Bullet points and tip */}
+        <div className="flex flex-col justify-center w-full md:w-1/2">
+          <ul className="text-gray-100 mb-4 list-disc list-inside">
+            <li><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</li>
+            <li><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</li>
+            <li><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</li>
+            <li><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</li>
+          </ul>
+          <div className="mt-2 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-sm">
+            <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
+          </div>
+        </div>
 
         {/* Stock Selector Modal - Only show when showStockSelector is true */}
         {showStockSelector && (
