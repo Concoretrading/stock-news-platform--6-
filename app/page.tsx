@@ -15,6 +15,7 @@ import ScreenshotButton from "@/components/ScreenshotButton"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist, getIdToken } from "@/lib/firebase-services"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
+import { Switch } from '@/components/ui/switch'
 
 interface Stock {
   id?: string
@@ -431,15 +432,15 @@ export default function HomePage() {
               <div className="flex flex-col h-full justify-between min-h-[210px]">
                 <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
                   <span className="font-semibold text-yellow-100 text-xl">Q1 Earnings Release</span>
-                  <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
+                  <Switch checked={true} onCheckedChange={() => {}} className="ml-auto scale-125" />
                 </div>
                 <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
                   <span className="font-semibold text-yellow-100 text-xl">New Model Launch</span>
-                  <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-off slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
+                  <Switch checked={false} onCheckedChange={() => {}} className="ml-auto scale-125" />
                 </div>
                 <div className="flex items-center py-4" style={{minHeight: '48px'}}>
                   <span className="font-semibold text-yellow-100 text-xl">Gigafactory Expansion</span>
-                  <span className="inline-block align-middle ml-auto"><span className="slider-toggle-mock slider-toggle-mock-on slider-toggle-mock-lg slider-toggle-mock-visible" /></span>
+                  <Switch checked={true} onCheckedChange={() => {}} className="ml-auto scale-125" />
                 </div>
               </div>
               {/* Right: 4 bullets, evenly distributed, last aligns with Gigafactory Expansion */}
