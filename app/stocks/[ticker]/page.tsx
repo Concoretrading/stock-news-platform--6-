@@ -86,9 +86,9 @@ export default function StockPage() {
 
   const isPositive = stockData.change >= 0
 
-  console.log('stockData.price value:', stockData.price, typeof stockData.price);
-  console.log('stockData.change value:', stockData.change, typeof stockData.change);
-  console.log('stockData.changePercent value:', stockData.changePercent, typeof stockData.changePercent);
+  // console.log('stockData.price value:', stockData.price, typeof stockData.price);
+  // console.log('stockData.change value:', stockData.change, typeof stockData.change);
+  // console.log('stockData.changePercent value:', stockData.changePercent, typeof stockData.changePercent);
 
   return (
     <div className="min-h-screen bg-background">

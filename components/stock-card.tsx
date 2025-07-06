@@ -32,9 +32,9 @@ export function StockCard({ stock, ticker, name, newsCount, isLastClose, marketO
   
   const isPositive = change >= 0
 
-  console.log('price value:', price, typeof price);
-  console.log('change value:', change, typeof change);
-  console.log('changePercent value:', changePercent, typeof changePercent);
+  // console.log('price value:', price, typeof price);
+  // console.log('change value:', change, typeof change);
+  // console.log('changePercent value:', changePercent, typeof changePercent);
 
   return (
     <Link href={`/stocks/${symbol}`}>

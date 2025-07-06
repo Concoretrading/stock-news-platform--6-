@@ -4,6 +4,8 @@ import { getFirestore } from "firebase-admin/firestore"
 
 const db = getFirestore()
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization") || ""

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { StockCard } from "@/components/stock-card"
@@ -23,6 +23,7 @@ interface Stock {
   price: number
   change: number
   changePercent: number
+  isLastClose?: boolean
 }
 
 interface FirebaseStock {
@@ -45,7 +46,7 @@ export default function HomePage() {
   const { toast } = useToast()
 
   // Get tickers for real-time price fetching
-  const tickers = watchlist.map(stock => stock.symbol)
+  const tickers = useMemo(() => watchlist.map(stock => stock.symbol), [watchlist])
   const { 
     prices: realTimePrices, 
     loading: pricesLoading, 
@@ -125,6 +126,7 @@ export default function HomePage() {
           price: 0, // Will be updated with live prices
           change: 0,
           changePercent: 0,
+          isLastClose: false
         })))
       } else {
         setWatchlist(userStocks.slice(0, 10).map(stock => ({
@@ -134,6 +136,7 @@ export default function HomePage() {
           price: 0, // Will be updated with live prices
           change: 0,
           changePercent: 0,
+          isLastClose: false
         })))
       }
     } catch (error) {
@@ -177,6 +180,7 @@ export default function HomePage() {
         price: Math.random() * 500 + 50,
         change: (Math.random() - 0.5) * 20,
         changePercent: (Math.random() - 0.5) * 5,
+        isLastClose: false
       })))
       setCurrentPage(0)
       
@@ -229,7 +233,7 @@ export default function HomePage() {
           setDroppedFile(null)
           return
         }
-        console.log("Frontend ID Token:", idToken)
+        // console.log("Frontend ID Token:", idToken)
         const formData = new FormData()
         formData.append("image", file)
         const response = await fetchWithAuth("/api/analyze-screenshot", {

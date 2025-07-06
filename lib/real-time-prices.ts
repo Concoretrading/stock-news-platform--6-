@@ -56,17 +56,17 @@ class RealTimePriceService {
       
       // Set up connection change handler
       this.websocket.onConnectionChange((connected: boolean) => {
-        console.log('WebSocket connection status:', connected ? 'Connected' : 'Disconnected')
+        // console.log('WebSocket connection status:', connected ? 'Connected' : 'Disconnected')
       })
 
       // Connect to WebSocket
       await this.websocket.connect()
       
       this.isInitialized = true
-      console.log('Real-time price service initialized', {
-        useRealTime: this.useRealTime,
-        websocketConnected: this.websocket.connected
-      })
+      // console.log('Real-time price service initialized', {
+      //   useRealTime: this.useRealTime,
+      //   websocketConnected: this.websocket.connected
+      // })
     } catch (error) {
       console.error('Failed to initialize real-time price service:', error)
       this.isInitialized = true // Mark as initialized to prevent retries

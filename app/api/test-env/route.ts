@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  console.log("=== TEST ENV ENDPOINT CALLED ===");
+  // console.log("=== TEST ENV ENDPOINT CALLED ===");
   
   const envCheck = {
     GOOGLE_APPLICATION_CREDENTIALS_JSON: {
@@ -16,7 +16,7 @@ export async function GET() {
     }
   };
   
-  console.log("Environment check:", JSON.stringify(envCheck, null, 2));
+  // console.log("Environment check:", JSON.stringify(envCheck, null, 2));
   
   return NextResponse.json({
     message: "Environment variables check",

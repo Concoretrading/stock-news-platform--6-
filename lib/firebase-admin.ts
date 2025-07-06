@@ -15,7 +15,7 @@ const app: App = !getApps().length
   : getApps()[0];
 
 // Log project ID and bucket for debugging
-console.log('Firebase Admin Project ID:', app.options.projectId);
-console.log('Firebase Admin Storage Bucket:', app.options.storageBucket);
+// console.log('Firebase Admin Project ID:', app.options.projectId);
+// console.log('Firebase Admin Storage Bucket:', app.options.storageBucket);
 
 export { getAuth, getStorage }; 
