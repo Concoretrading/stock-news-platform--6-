@@ -434,51 +434,49 @@ export default function HomePage() {
         </div>
         {/* 3-row grid for items and bullets */}
         <div className="flex justify-center w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 mb-2 w-full">
-            <div className="flex flex-col items-center md:items-start w-full">
-              <h3 className="text-xl font-bold text-white text-center md:text-left w-full">Features</h3>
-            </div>
-            <div className="flex flex-col items-center md:items-end w-full">
-              <h3 className="text-xl font-bold text-white text-center md:text-right w-full">Example</h3>
-            </div>
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16 w-full">
-            {/* Left: bullet points */}
-            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 gap-0 mt-4 bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70">
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">🧠</span>
-                <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
-              </div>
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">🎚️</span>
-                <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
-              </div>
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">📲</span>
-                <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
-              </div>
-              <div className="flex items-start gap-3 py-2 flex-1">
-                <span className="text-2xl">⚙️</span>
-                <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
+            {/* Features column (left) */}
+            <div className="flex flex-col items-start w-full">
+              <h3 className="text-xl font-bold text-white text-center w-full mb-4">Features</h3>
+              <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
+                <div className="flex items-start gap-3 py-2">
+                  <span className="text-2xl">🧠</span>
+                  <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
+                </div>
+                <div className="flex items-start gap-3 py-2">
+                  <span className="text-2xl">🎚️</span>
+                  <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
+                </div>
+                <div className="flex items-start gap-3 py-2">
+                  <span className="text-2xl">📲</span>
+                  <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
+                </div>
+                <div className="flex items-start gap-3 py-2">
+                  <span className="text-2xl">⚙️</span>
+                  <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
+                </div>
               </div>
             </div>
-            {/* Right: toggles */}
-            <div className="flex flex-col h-full justify-between min-h-[210px] flex-1 bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70">
-              <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl flex-1">Q1 Earnings Release</span>
-                <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
-              </div>
-              <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl flex-1">New Model Launch</span>
-                <Switch checked={false} onCheckedChange={() => {}} className="ml-4 scale-125" />
-              </div>
-              <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl flex-1">Gigafactory Expansion</span>
-                <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
-              </div>
-              <div className="flex items-center py-4" style={{minHeight: '48px'}}>
-                <span className="font-semibold text-yellow-100 text-xl flex-1">Catalyst Customization</span>
-                <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
+            {/* Example column (right) */}
+            <div className="flex flex-col items-end w-full">
+              <h3 className="text-xl font-bold text-white text-center w-full mb-4">Example</h3>
+              <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
+                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl flex-1">Q1 Earnings Release</span>
+                  <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
+                </div>
+                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl flex-1">New Model Launch</span>
+                  <Switch checked={false} onCheckedChange={() => {}} className="ml-4 scale-125" />
+                </div>
+                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl flex-1">Gigafactory Expansion</span>
+                  <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
+                </div>
+                <div className="flex items-center py-4" style={{minHeight: '48px'}}>
+                  <span className="font-semibold text-yellow-100 text-xl flex-1">Catalyst Customization</span>
+                  <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
+                </div>
               </div>
             </div>
           </div>
