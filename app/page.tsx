@@ -398,8 +398,8 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Create Watch List */}
               <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-blue-900/50 rounded-full flex items-center justify-center group-hover:bg-blue-800/70 transition-colors">
+                <div className="flex flex-col items-center mb-4">
+                  <div className="w-10 h-10 bg-blue-900/50 rounded-full flex items-center justify-center group-hover:bg-blue-800/70 transition-colors mb-2">
                     <span className="text-blue-300 font-bold text-lg">1</span>
                   </div>
                   <h3 className="font-semibold text-lg text-slate-200">Create Your Watch List</h3>
@@ -412,8 +412,8 @@ export default function HomePage() {
 
               {/* Upload Screenshots Anywhere */}
               <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-green-700/30 hover:border-green-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-green-900/50 rounded-full flex items-center justify-center group-hover:bg-green-800/70 transition-colors">
+                <div className="flex flex-col items-center mb-4">
+                  <div className="w-10 h-10 bg-green-900/50 rounded-full flex items-center justify-center group-hover:bg-green-800/70 transition-colors mb-2">
                     <span className="text-green-300 font-bold text-lg">2</span>
                   </div>
                   <h3 className="font-semibold text-lg text-slate-200">Upload Screenshots Anywhere</h3>
@@ -426,8 +426,8 @@ export default function HomePage() {
 
               {/* Automatic Filing */}
               <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-purple-700/30 hover:border-purple-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="w-10 h-10 bg-purple-900/50 rounded-full flex items-center justify-center group-hover:bg-purple-800/70 transition-colors">
+                <div className="flex flex-col items-center mb-4">
+                  <div className="w-10 h-10 bg-purple-900/50 rounded-full flex items-center justify-center group-hover:bg-purple-800/70 transition-colors mb-2">
                     <span className="text-purple-300 font-bold text-lg">3</span>
                   </div>
                   <h3 className="font-semibold text-lg text-slate-200">Automatic Stock History</h3>
