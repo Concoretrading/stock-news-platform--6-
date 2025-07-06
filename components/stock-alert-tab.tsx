@@ -268,56 +268,6 @@ export function StockAlertTab({ ticker }: { ticker: string }) {
               </p>
             </div>
           </div>
-
-          {/* Relevance Criteria */}
-          <div>
-            <Label className="text-blue-900 font-medium mb-3 block">Relevance Criteria</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                <Switch
-                  checked={preferences.relevanceCriteria.earnings}
-                  onCheckedChange={(value) => handleRelevanceChange("earnings", value)}
-                />
-                <span className="text-sm font-medium">Earnings</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                <Switch
-                  checked={preferences.relevanceCriteria.productLaunches}
-                  onCheckedChange={(value) => handleRelevanceChange("productLaunches", value)}
-                />
-                <span className="text-sm font-medium">Product Launches</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                <Switch
-                  checked={preferences.relevanceCriteria.partnerships}
-                  onCheckedChange={(value) => handleRelevanceChange("partnerships", value)}
-                />
-                <span className="text-sm font-medium">Partnerships</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                <Switch
-                  checked={preferences.relevanceCriteria.regulatory}
-                  onCheckedChange={(value) => handleRelevanceChange("regulatory", value)}
-                />
-                <span className="text-sm font-medium">Regulatory</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                <Switch
-                  checked={preferences.relevanceCriteria.financial}
-                  onCheckedChange={(value) => handleRelevanceChange("financial", value)}
-                />
-                <span className="text-sm font-medium">Financial</span>
-              </div>
-              <div className="flex items-center space-x-2 p-2 bg-white rounded border">
-                <Switch
-                  checked={preferences.relevanceCriteria.other}
-                  onCheckedChange={(value) => handleRelevanceChange("other", value)}
-                />
-                <span className="text-sm font-medium">Other</span>
-              </div>
-            </div>
-          </div>
-
           <Button onClick={savePreferences} className="bg-blue-600 hover:bg-blue-700">
             <Save className="mr-2 h-4 w-4" />
             Save Preferences
