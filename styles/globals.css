@@ -175,3 +175,9 @@ body {
 .slider-toggle-mock-off.slider-toggle-mock-lg::before {
   transform: translateX(0);
 }
+
+.slider-toggle-mock-visible {
+  border: 2px solid #fff;
+  background-clip: padding-box;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.15);
+}
