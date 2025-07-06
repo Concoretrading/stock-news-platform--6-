@@ -248,15 +248,10 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
   const handleSave = async () => {
     // Delete all previous stocks for the user
     const prevStocks = await getUserStocks();
-    console.log('Previous stocks before delete:', prevStocks);
-    for (const stock of prevStocks) {
-      if (stock.id) await deleteStock(stock.id);
-    }
     // Add each selected stock
     for (const stock of selectedStocks) {
       await addStockToWatchlist(stock.ticker, stock.name);
     }
-    console.log('Selected stocks after save:', selectedStocks);
     onUpdate(selectedStocks);
     onClose();
   }
@@ -265,7 +260,6 @@ export function StockSelector({ currentStocks, onUpdate, onClose }: StockSelecto
   useEffect(() => {
     async function loadWatchlist() {
       const stocks = await getUserStocks();
-      console.log('Loaded watchlist on mount:', stocks);
     }
     loadWatchlist();
   }, []);

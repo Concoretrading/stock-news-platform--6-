@@ -36,18 +36,18 @@ export function DateDebugPanel() {
       new Date().toISOString().split("T")[0], // Today
     ]
 
-    console.log("=== Date Parsing Test ===")
+    // console.log("=== Date Parsing Test ===")
     testDates.forEach(dateStr => {
       const date1 = new Date(dateStr)
       const date2 = new Date(dateStr + 'T00:00:00.000Z')
       const date3 = new Date(dateStr + 'T00:00:00')
       
-      console.log(`Date: ${dateStr}`)
-      console.log(`  new Date(dateStr): ${date1.toISOString()}`)
-      console.log(`  new Date(dateStr + 'T00:00:00.000Z'): ${date2.toISOString()}`)
-      console.log(`  new Date(dateStr + 'T00:00:00'): ${date3.toISOString()}`)
-      console.log(`  Local: ${date1.toLocaleDateString()}`)
-      console.log("---")
+      // console.log(`Date: ${dateStr}`)
+      // console.log(`  new Date(dateStr): ${date1.toISOString()}`)
+      // console.log(`  new Date(dateStr + 'T00:00:00.000Z'): ${date2.toISOString()}`)
+      // console.log(`  new Date(dateStr + 'T00:00:00'): ${date3.toISOString()}`)
+      // console.log(`  Local: ${date1.toLocaleDateString()}`)
+      // console.log("---")
     })
   }
 

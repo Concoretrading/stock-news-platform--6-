@@ -136,27 +136,27 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
       setLoading(true)
       setError(null)
 
-      console.log(`Loading catalysts for ${ticker}...`)
+      // console.log(`Loading catalysts for ${ticker}...`)
 
       const response = await fetch(`/api/catalysts?ticker=${ticker}`)
 
       if (!response.ok) {
         // If API fails, use empty array instead of throwing error
-        console.log("API request failed, using empty data")
+        // console.log("API request failed, using empty data")
         setCatalysts([])
         return
       }
 
       const data = await response.json()
 
-      console.log("API response status:", response.status)
-      console.log("API response data:", data)
+      // console.log("API response status:", response.status)
+      // console.log("API response data:", data)
 
       if (data.success) {
         setCatalysts(data.data || [])
-        console.log(`Loaded ${data.data?.length || 0} catalysts`)
+        // console.log(`Loaded ${data.data?.length || 0} catalysts`)
       } else {
-        console.log("No catalysts found or API returned empty data")
+        // console.log("No catalysts found or API returned empty data")
         setCatalysts([])
       }
     } catch (error) {
@@ -298,10 +298,10 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
   const formatPriceChange = (change: number | null | undefined, percentage: number | null | undefined) => {
     if (change === null || change === undefined) return null
 
-    console.log('change value:', change, typeof change);
+    // console.log('change value:', change, typeof change);
     const isPositive = change > 0
     const changeStr = typeof change === 'number' && !isNaN(change) ? (change > 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`) : 'N/A';
-    console.log('percentage value:', percentage, typeof percentage);
+    // console.log('percentage value:', percentage, typeof percentage);
     const percentageStr = typeof percentage === 'number' && !isNaN(percentage) ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%)` : "";
 
     return (

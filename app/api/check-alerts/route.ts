@@ -104,4 +104,6 @@ export async function GET(request: NextRequest) {
     console.error('Error checking alerts:', error)
     return NextResponse.json({ error: 'Failed to check alerts' }, { status: 500 })
   }
-} 
+}
+
+export const dynamic = "force-dynamic"; 

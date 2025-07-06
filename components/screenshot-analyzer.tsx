@@ -175,13 +175,13 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       const formData = new FormData()
       formData.append("image", file)
 
-      console.log("Starting screenshot analysis:", {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        currentTime: new Date().toISOString(),
-        userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-      })
+      // console.log("Starting screenshot analysis:", {
+      //   fileName: file.name,
+      //   fileSize: file.size,
+      //   fileType: file.type,
+      //   currentTime: new Date().toISOString(),
+      //   userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+      // })
 
       const response = await fetchWithAuth("/api/analyze-screenshot", {
         method: "POST",
@@ -194,25 +194,25 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       }
 
       const data = await response.json()
-      console.log("Screenshot analysis response:", {
-        success: data.success,
-        matches: data.matches?.length || 0,
-        newsEntryResults: data.newsEntryResults?.length || 0,
-        dateUsed: data.dateUsed,
-        imageUrl: data.imageUrl
-      })
+      // console.log("Screenshot analysis response:", {
+      //   success: data.success,
+      //   matches: data.matches?.length || 0,
+      //   newsEntryResults: data.newsEntryResults?.length || 0,
+      //   dateUsed: data.dateUsed,
+      //   imageUrl: data.imageUrl
+      // })
 
       setResults(data)
       
       // Log detailed results for debugging
       if (data.newsEntryResults) {
         data.newsEntryResults.forEach((result: any, index: number) => {
-          console.log(`Entry ${index + 1}:`, {
-            ticker: result.ticker,
-            success: result.success,
-            id: result.id,
-            error: result.error
-          })
+          // console.log(`Entry ${index + 1}:`, {
+          //   ticker: result.ticker,
+          //   success: result.success,
+          //   id: result.id,
+          //   error: result.error
+          // })
         })
       }
       
@@ -223,7 +223,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       
       return data; // Return the data for use in analyzeAll
     } catch (error) {
-      console.error("Screenshot analysis error:", error)
+      // console.error("Screenshot analysis error:", error)
       setError(error instanceof Error ? error.message : "Failed to analyze screenshot")
       toast({
         title: "Analysis Failed",

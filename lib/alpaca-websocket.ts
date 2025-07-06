@@ -52,7 +52,7 @@ class AlpacaWebSocket {
       this.ws = new WebSocket(wsUrl)
 
       this.ws.on('open', () => {
-        console.log('Alpaca WebSocket connected')
+        // console.log('Alpaca WebSocket connected')
         this.isConnected = true
         this.reconnectAttempts = 0
         this.notifyConnectionChange(true)
@@ -71,7 +71,7 @@ class AlpacaWebSocket {
       })
 
       this.ws.on('close', () => {
-        console.log('Alpaca WebSocket disconnected')
+        // console.log('Alpaca WebSocket disconnected')
         this.isConnected = false
         this.notifyConnectionChange(false)
         this.scheduleReconnect()
@@ -104,13 +104,9 @@ class AlpacaWebSocket {
 
   private handleMessage(message: any): void {
     if (message.T === 'success' && message.msg === 'authenticated') {
-      console.log('Alpaca WebSocket authenticated')
-      // Resubscribe to symbols after reconnection
-      if (this.subscribedSymbols.size > 0) {
-        this.subscribeToSymbols(Array.from(this.subscribedSymbols))
-      }
+      // console.log('Alpaca WebSocket authenticated')
     } else if (message.T === 'subscription') {
-      console.log('Subscription confirmed:', message)
+      // console.log('Subscription confirmed:', message)
     } else if (message.T === 'q' && message.S) {
       // Quote update
       this.handleQuoteUpdate(message)
@@ -156,7 +152,7 @@ class AlpacaWebSocket {
   // Subscribe to symbols for real-time updates
   subscribeToSymbols(symbols: string[]): void {
     if (!this.ws || !this.isConnected) {
-      console.warn('WebSocket not connected, will subscribe when connected')
+      // console.log('WebSocket not connected, will subscribe when connected')
       symbols.forEach(symbol => this.subscribedSymbols.add(symbol))
       return
     }
@@ -170,7 +166,7 @@ class AlpacaWebSocket {
     this.ws.send(JSON.stringify(subscribeMessage))
     
     symbols.forEach(symbol => this.subscribedSymbols.add(symbol))
-    console.log('Subscribed to symbols:', symbols)
+    // console.log('Subscribed to symbols:', symbols)
   }
 
   // Unsubscribe from symbols
@@ -186,7 +182,7 @@ class AlpacaWebSocket {
     this.ws.send(JSON.stringify(unsubscribeMessage))
     
     symbols.forEach(symbol => this.subscribedSymbols.delete(symbol))
-    console.log('Unsubscribed from symbols:', symbols)
+    // console.log('Unsubscribed from symbols:', symbols)
   }
 
   // Register callback for price updates
@@ -217,7 +213,7 @@ class AlpacaWebSocket {
     this.reconnectAttempts++
     const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1)
     
-    console.log(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`)
+    // console.log(`Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`)
     
     setTimeout(() => {
       this.connect()

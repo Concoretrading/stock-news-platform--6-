@@ -17,6 +17,7 @@ interface RealTimePrice {
   source: 'websocket' | 'rest' | 'cache'
   change?: number
   changePercent?: number
+  isLastClose?: boolean
 }
 
 export function useRealTimePrices(options: UseRealTimePricesOptions) {
