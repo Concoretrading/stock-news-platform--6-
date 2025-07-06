@@ -440,15 +440,19 @@ export default function HomePage() {
             </div>
           </div>
           {/* Right: Bullet points and tip */}
-          <div className="flex flex-col h-full w-full md:w-1/2">
-            <ul className="flex flex-col flex-1 justify-between text-gray-100 list-none text-lg h-full">
-              <li className="flex items-start gap-3"><span className="text-2xl">🧠</span><span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span></li>
-              <li className="flex items-start gap-3"><span className="text-2xl">🎚️</span><span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span></li>
-              <li className="flex items-start gap-3"><span className="text-2xl">📲</span><span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span></li>
-              <li className="flex items-start gap-3"><span className="text-2xl">⚙️</span><span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span></li>
-            </ul>
-            <div className="p-4 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-base mt-6">
-              <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
+          <div className="flex flex-col w-full md:w-1/2">
+            <div className="flex-1 flex flex-col justify-between h-full overflow-hidden">
+              <ul className="flex flex-col justify-between h-full list-none text-lg">
+                <li className="flex items-start gap-3"><span className="text-2xl">🧠</span><span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span></li>
+                <li className="flex items-start gap-3"><span className="text-2xl">🎚️</span><span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span></li>
+                <li className="flex items-start gap-3"><span className="text-2xl">📲</span><span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span></li>
+                <li className="flex items-start gap-3"><span className="text-2xl">⚙️</span><span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span></li>
+              </ul>
+            </div>
+            <div className="flex justify-center mt-6">
+              <div className="p-4 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-base w-full max-w-md text-center">
+                <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
+              </div>
             </div>
           </div>
         </div>
