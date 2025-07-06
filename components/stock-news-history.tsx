@@ -95,6 +95,8 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const [undoData, setUndoData] = useState<Catalyst | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   // Generate the default 6 months
   const generateDefault6Months = () => {
     const months = []
@@ -532,7 +534,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                       const isWeekOpen = openWeeks.has(weekKey)
                       const weekLabel =
                         weekIndex === 3
-                          ? `Week 4: ${format(week.start, "MMM d")} - ${format(week.end, "MMM d")} (End of Month)`
+                          ? `Week 4: ${format(week.start, "MMM d")} - ${format(week.end, "MMM d")}${!isMobile ? ' (End of Month)' : ''}`
                           : `Week ${weekIndex + 1}: ${format(week.start, "MMM d")} - ${format(week.end, "MMM d")}`
                       return (
                         <Collapsible key={weekKey} open={isWeekOpen} onOpenChange={() => toggleWeek(weekKey)}>
