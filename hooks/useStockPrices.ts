@@ -35,32 +35,54 @@ export function useStockPrices(
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Helper to batch tickers
+  function batchTickers(allTickers: string[], batchSize: number) {
+    const batches = []
+    for (let i = 0; i < allTickers.length; i += batchSize) {
+      batches.push(allTickers.slice(i, i + batchSize))
+    }
+    return batches
+  }
+
   const fetchPrices = useCallback(async () => {
     if (!tickers.length) return
-
-    try {
-      setLoading(true)
-      setError(null)
-      
-      const tickersParam = tickers.join(',')
-      const response = await fetch(`/api/stock-prices?tickers=${tickersParam}`)
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch prices: ${response.status}`)
+    setLoading(true)
+    setError(null)
+    const batchSize = 5
+    const batches = batchTickers(tickers, batchSize)
+    let allPrices: StockPrices = {}
+    let failedTickers: string[] = []
+    for (const batch of batches) {
+      try {
+        const tickersParam = batch.join(',')
+        const response = await fetch(`/api/stock-prices?tickers=${tickersParam}`)
+        if (!response.ok) {
+          failedTickers.push(...batch)
+          continue
+        }
+        const data = await response.json()
+        if (data.error) {
+          failedTickers.push(...batch)
+          continue
+        }
+        allPrices = { ...allPrices, ...(data.prices || {}) }
+        // If any ticker in batch is missing, mark as failed
+        batch.forEach(ticker => {
+          if (!(ticker in (data.prices || {}))) {
+            failedTickers.push(ticker)
+          }
+        })
+      } catch (err) {
+        failedTickers.push(...batch)
       }
-      
-      const data = await response.json()
-      if (data.error) {
-        throw new Error(data.error)
-      }
-      
-      setPrices(data.prices || {})
-    } catch (err) {
-      console.error('Error fetching stock prices:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch prices')
-    } finally {
-      setLoading(false)
     }
+    setPrices(allPrices)
+    if (failedTickers.length > 0) {
+      setError(`Failed to fetch: ${failedTickers.join(', ')}`)
+    } else {
+      setError(null)
+    }
+    setLoading(false)
   }, [tickers])
 
   // Initial fetch
