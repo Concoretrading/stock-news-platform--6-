@@ -312,8 +312,23 @@ export default function HomePage() {
                   )}
                 </span>
               </div>
-              {/* Mobile: Manage button directly under header, not full width */}
-              <div className="md:hidden w-full mt-2 mb-2 flex justify-center">
+              {/* Desktop: Refresh and Manage buttons */}
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={pricesLoading}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {pricesLoading ? "Refreshing..." : "Refresh"}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Manage
+                </Button>
+              </div>
+              {/* Mobile: Manage and Refresh buttons under header */}
+              <div className="md:hidden w-full mt-2 mb-2 flex justify-center gap-2">
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={pricesLoading} className="px-6">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  {pricesLoading ? "Refreshing..." : "Refresh"}
+                </Button>
                 <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)} className="px-6">
                   <Settings className="h-4 w-4 mr-2" />
                   Manage
