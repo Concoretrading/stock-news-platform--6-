@@ -30,7 +30,8 @@ import {
   isSameMonth,
   isSameDay,
   addDays,
-  getDay
+  getDay,
+  parseISO
 } from "date-fns";
 
 const TABS = [
@@ -670,6 +671,15 @@ const PERSONAL_WATCHLISTS = [
   }
 ];
 
+// Helper: Compare two dates by year, month, and day (ignoring time and timezone)
+function isSameLocalDay(date1: Date, date2: Date) {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}
+
 export default function CalendarPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState("events");
@@ -682,9 +692,25 @@ export default function CalendarPage() {
   const [selectedPersonalStock, setSelectedPersonalStock] = useState<any>(null);
   const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
   const [showStockSelector, setShowStockSelector] = useState(false);
-
-  // Only show the real calendar to the admin
+  const [earnings, setEarnings] = useState<any[]>([]); // <-- real earnings
+  const [earningsLoading, setEarningsLoading] = useState(false);
   const isAdmin = user?.email === "handrigannick@gmail.com";
+
+  useEffect(() => {
+    async function fetchEarnings() {
+      setEarningsLoading(true);
+      try {
+        const res = await fetch("/api/earnings-calendar");
+        const data = await res.json();
+        setEarnings(data.earnings || []);
+      } catch (err) {
+        setEarnings([]);
+      } finally {
+        setEarningsLoading(false);
+      }
+    }
+    fetchEarnings();
+  }, []);
 
   // Helper: Get week key for a date
   function getWeekKey(date: Date) {
@@ -697,11 +723,14 @@ export default function CalendarPage() {
     const currentDate = new Date();
     const fourMonthsAhead = new Date();
     fourMonthsAhead.setMonth(currentDate.getMonth() + 4);
-    
-    return MOCK_EARNINGS.filter(stock => {
-      const earningsDate = new Date(stock.nextEarnings);
-      // Show earnings from current date to 4 months ahead
-      return earningsDate >= currentDate && earningsDate <= fourMonthsAhead && earningsDate >= weekStart && earningsDate <= weekEnd;
+    return earnings.filter(stock => {
+      const earningsDate = new Date(stock.earningsDate);
+      return (
+        earningsDate >= currentDate &&
+        earningsDate <= fourMonthsAhead &&
+        earningsDate >= weekStart &&
+        earningsDate <= weekEnd
+      );
     });
   }
 
@@ -733,11 +762,14 @@ export default function CalendarPage() {
     const currentDate = new Date();
     const fourMonthsAhead = new Date();
     fourMonthsAhead.setMonth(currentDate.getMonth() + 4);
-    
-    return MOCK_EARNINGS.filter(stock => {
-      const earningsDate = new Date(stock.nextEarnings);
-      // Show earnings from current date to 4 months ahead
-      return earningsDate >= currentDate && earningsDate <= fourMonthsAhead && isSameDay(earningsDate, date);
+    return earnings.filter(stock => {
+      const earningsDate = new Date(stock.earningsDate);
+      // Compare only local date parts
+      return (
+        earningsDate >= currentDate &&
+        earningsDate <= fourMonthsAhead &&
+        isSameLocalDay(earningsDate, date)
+      );
     });
   }
 
@@ -746,12 +778,15 @@ export default function CalendarPage() {
     const currentDate = new Date();
     const fourMonthsAhead = new Date();
     fourMonthsAhead.setMonth(currentDate.getMonth() + 4);
-    
-    return MOCK_EARNINGS.filter(stock => {
-      const earningsDate = new Date(stock.nextEarnings);
-      // Show earnings from current month to 4 months ahead
-      return earningsDate >= currentDate && earningsDate <= fourMonthsAhead && isSameMonth(earningsDate, month);
-    }).sort((a, b) => b.popularity - a.popularity);
+    return earnings.filter(stock => {
+      const earningsDate = new Date(stock.earningsDate);
+      return (
+        earningsDate >= currentDate &&
+        earningsDate <= fourMonthsAhead &&
+        earningsDate.getFullYear() === month.getFullYear() &&
+        earningsDate.getMonth() === month.getMonth()
+      );
+    });
   }
 
   // Helper: Find the week containing a specific stock
