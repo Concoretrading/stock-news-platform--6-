@@ -6,6 +6,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AIDataCollector from "@/components/ai-data-collector";
+import EarningsCalendarManager from "@/components/earnings-calendar-manager";
+import UpcomingEventsCalendar from "@/components/upcoming-events-calendar";
 import {
   Dialog,
   DialogTrigger,
@@ -35,15 +38,18 @@ const TABS = [
   { key: "earnings", label: "Earnings" },
   { key: "alerts", label: "Alerts" },
   { key: "personal", label: "Personal" },
+  { key: "upcoming", label: "Upcoming" },
+  { key: "ai-collector", label: "AI Collector" },
+  { key: "earnings-manager", label: "Earnings Manager" },
 ];
 
-// Comprehensive mock earnings data
+// Comprehensive mock earnings data (4 months ahead)
 const MOCK_EARNINGS = [
   {
     ticker: "AAPL",
     name: "Apple Inc.",
     logo: "/placeholder-logo.png",
-    nextEarnings: "2024-01-15T16:00:00Z",
+    nextEarnings: "2024-01-25T16:00:00Z",
     nextType: "After Close",
     popularity: 95,
     lastEarnings: {
@@ -55,10 +61,25 @@ const MOCK_EARNINGS = [
     conferenceCall: "https://example.com/conference-call",
   },
   {
+    ticker: "AAPL",
+    name: "Apple Inc.",
+    logo: "/placeholder-logo.png",
+    nextEarnings: "2024-04-25T16:00:00Z",
+    nextType: "After Close",
+    popularity: 95,
+    lastEarnings: {
+      date: "2024-01-25",
+      eps: 2.10,
+      revenue: 118.5,
+      surprise: "+0.15",
+    },
+    conferenceCall: "https://example.com/conference-call",
+  },
+  {
     ticker: "TSLA",
     name: "Tesla Inc.",
     logo: "/placeholder-logo.png",
-    nextEarnings: "2024-01-17T16:00:00Z",
+    nextEarnings: "2024-01-24T16:00:00Z",
     nextType: "After Close",
     popularity: 92,
     lastEarnings: {
@@ -70,10 +91,25 @@ const MOCK_EARNINGS = [
     conferenceCall: "https://example.com/conference-call",
   },
   {
+    ticker: "TSLA",
+    name: "Tesla Inc.",
+    logo: "/placeholder-logo.png",
+    nextEarnings: "2024-04-24T16:00:00Z",
+    nextType: "After Close",
+    popularity: 92,
+    lastEarnings: {
+      date: "2024-01-24",
+      eps: 0.73,
+      revenue: 25.6,
+      surprise: "+0.07",
+    },
+    conferenceCall: "https://example.com/conference-call",
+  },
+  {
     ticker: "MSFT",
     name: "Microsoft Corporation",
     logo: "/placeholder-logo.png",
-    nextEarnings: "2024-01-23T16:00:00Z",
+    nextEarnings: "2024-01-30T16:00:00Z",
     nextType: "After Close",
     popularity: 88,
     lastEarnings: {
@@ -85,10 +121,25 @@ const MOCK_EARNINGS = [
     conferenceCall: "https://example.com/conference-call",
   },
   {
+    ticker: "MSFT",
+    name: "Microsoft Corporation",
+    logo: "/placeholder-logo.png",
+    nextEarnings: "2024-04-30T16:00:00Z",
+    nextType: "After Close",
+    popularity: 88,
+    lastEarnings: {
+      date: "2024-01-30",
+      eps: 2.78,
+      revenue: 61.1,
+      surprise: "+0.12",
+    },
+    conferenceCall: "https://example.com/conference-call",
+  },
+  {
     ticker: "GOOGL",
     name: "Alphabet Inc.",
     logo: "/placeholder-logo.png",
-    nextEarnings: "2024-01-25T16:00:00Z",
+    nextEarnings: "2024-01-30T16:00:00Z",
     nextType: "After Close",
     popularity: 85,
     lastEarnings: {
@@ -100,10 +151,25 @@ const MOCK_EARNINGS = [
     conferenceCall: "https://example.com/conference-call",
   },
   {
+    ticker: "GOOGL",
+    name: "Alphabet Inc.",
+    logo: "/placeholder-logo.png",
+    nextEarnings: "2024-04-30T16:00:00Z",
+    nextType: "After Close",
+    popularity: 85,
+    lastEarnings: {
+      date: "2024-01-30",
+      eps: 1.60,
+      revenue: 85.3,
+      surprise: "+0.18",
+    },
+    conferenceCall: "https://example.com/conference-call",
+  },
+  {
     ticker: "AMZN",
     name: "Amazon.com Inc.",
     logo: "/placeholder-logo.png",
-    nextEarnings: "2024-01-30T16:00:00Z",
+    nextEarnings: "2024-02-01T16:00:00Z",
     nextType: "After Close",
     popularity: 82,
     lastEarnings: {
@@ -111,6 +177,21 @@ const MOCK_EARNINGS = [
       eps: 0.94,
       revenue: 143.1,
       surprise: "+0.18",
+    },
+    conferenceCall: "https://example.com/conference-call",
+  },
+  {
+    ticker: "AMZN",
+    name: "Amazon.com Inc.",
+    logo: "/placeholder-logo.png",
+    nextEarnings: "2024-05-01T16:00:00Z",
+    nextType: "After Close",
+    popularity: 82,
+    lastEarnings: {
+      date: "2024-02-01",
+      eps: 0.80,
+      revenue: 166.2,
+      surprise: "+0.25",
     },
     conferenceCall: "https://example.com/conference-call",
   },
@@ -611,11 +692,16 @@ export default function CalendarPage() {
     return format(weekStart, 'yyyy-MM-dd');
   }
 
-  // Helper: Get stocks for a specific week
+  // Helper: Get stocks for a specific week (showing 4 months ahead)
   function getStocksForWeek(weekStart: Date, weekEnd: Date) {
+    const currentDate = new Date();
+    const fourMonthsAhead = new Date();
+    fourMonthsAhead.setMonth(currentDate.getMonth() + 4);
+    
     return MOCK_EARNINGS.filter(stock => {
       const earningsDate = new Date(stock.nextEarnings);
-      return earningsDate >= weekStart && earningsDate <= weekEnd;
+      // Show earnings from current date to 4 months ahead
+      return earningsDate >= currentDate && earningsDate <= fourMonthsAhead && earningsDate >= weekStart && earningsDate <= weekEnd;
     });
   }
 
@@ -642,19 +728,29 @@ export default function CalendarPage() {
     );
   }
 
-  // Helper: Get stocks for a specific date
+  // Helper: Get stocks for a specific date (showing 4 months ahead)
   function getStocksForDate(date: Date) {
+    const currentDate = new Date();
+    const fourMonthsAhead = new Date();
+    fourMonthsAhead.setMonth(currentDate.getMonth() + 4);
+    
     return MOCK_EARNINGS.filter(stock => {
       const earningsDate = new Date(stock.nextEarnings);
-      return isSameDay(earningsDate, date);
+      // Show earnings from current date to 4 months ahead
+      return earningsDate >= currentDate && earningsDate <= fourMonthsAhead && isSameDay(earningsDate, date);
     });
   }
 
-  // Helper: Get stocks for a specific month
+  // Helper: Get stocks for a specific month (showing 4 months ahead)
   function getStocksForMonth(month: Date) {
+    const currentDate = new Date();
+    const fourMonthsAhead = new Date();
+    fourMonthsAhead.setMonth(currentDate.getMonth() + 4);
+    
     return MOCK_EARNINGS.filter(stock => {
       const earningsDate = new Date(stock.nextEarnings);
-      return isSameMonth(earningsDate, month);
+      // Show earnings from current month to 4 months ahead
+      return earningsDate >= currentDate && earningsDate <= fourMonthsAhead && isSameMonth(earningsDate, month);
     }).sort((a, b) => b.popularity - a.popularity);
   }
 
@@ -1348,6 +1444,12 @@ export default function CalendarPage() {
             {isAdmin ? (
               tab === "personal" ? (
                 renderPersonalView()
+              ) : tab === "upcoming" ? (
+                <UpcomingEventsCalendar />
+              ) : tab === "ai-collector" ? (
+                <AIDataCollector />
+              ) : tab === "earnings-manager" ? (
+                <EarningsCalendarManager />
               ) : (tab === "earnings" || tab === "events") ? (
                 zoomedWeek ? (
                   renderWeekView(zoomedWeek.start, zoomedWeek.end)
