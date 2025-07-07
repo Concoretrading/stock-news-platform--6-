@@ -471,7 +471,7 @@ export default function HomePage() {
             </div>
             {/* Example column (right) */}
             <div className="flex flex-col items-end w-full">
-              <h3 className="text-3xl font-bold text-white text-center w-full mb-4">Example</h3>
+              <h3 className="text-3xl font-bold text-white text-center w-full mb-4">Visual</h3>
               <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
                 <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
                   <span className="font-semibold text-white text-xl flex-1">Q1 Earnings Release</span>
