@@ -11,7 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Calendar, RefreshCw, Plus, CheckCircle, AlertCircle, Database } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
-import { getIdToken } from '@/lib/firebase-services';
 
 interface EarningsData {
   id: string;
@@ -39,7 +38,7 @@ interface UpdateStats {
 }
 
 export default function EarningsCalendarManager() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [earnings, setEarnings] = useState<EarningsData[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -64,14 +63,18 @@ export default function EarningsCalendarManager() {
   const fetchEarnings = async () => {
     try {
       setIsLoading(true);
-      const token = await getIdToken();
+      if (!firebaseUser) {
+        setError('You must be logged in to fetch earnings.');
+        setIsLoading(false);
+        return;
+      }
+      const token = await firebaseUser.getIdToken();
       const response = await fetch('/api/earnings-calendar', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-
       if (response.ok) {
         const data = await response.json();
         setEarnings(data.earnings || []);
@@ -89,13 +92,12 @@ export default function EarningsCalendarManager() {
       setIsUpdating(true);
       setError(null);
       setSuccess(null);
-
-      if (!user) {
+      if (!firebaseUser) {
         setError('You must be logged in to update earnings.');
         setIsUpdating(false);
         return;
       }
-      const token = await getIdToken();
+      const token = await firebaseUser.getIdToken();
       const response = await fetch('/api/earnings-calendar', {
         method: 'POST',
         headers: {
@@ -106,7 +108,6 @@ export default function EarningsCalendarManager() {
           action: 'fetch_and_update'
         })
       });
-
       if (response.ok) {
         const data = await response.json();
         setUpdateStats(data.stats);
@@ -131,11 +132,11 @@ export default function EarningsCalendarManager() {
         setError('Stock ticker and earnings date are required');
         return;
       }
-      if (!user) {
+      if (!firebaseUser) {
         setError('You must be logged in to add earnings.');
         return;
       }
-      const token = await getIdToken();
+      const token = await firebaseUser.getIdToken();
       const response = await fetch('/api/earnings-calendar', {
         method: 'POST',
         headers: {
@@ -147,7 +148,6 @@ export default function EarningsCalendarManager() {
           data: newEarnings
         })
       });
-
       if (response.ok) {
         const data = await response.json();
         setSuccess(data.message);
