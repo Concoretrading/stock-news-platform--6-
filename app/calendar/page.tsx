@@ -163,11 +163,27 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState("events");
   const [zoomedMonth, setZoomedMonth] = useState<Date | null>(null);
+  const [zoomedWeek, setZoomedWeek] = useState<{ start: Date; end: Date } | null>(null);
+  const [hoveredWeek, setHoveredWeek] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
   // Only show the real calendar to the admin
   const isAdmin = user?.email === "handrigannick@gmail.com";
+
+  // Helper: Get week key for a date
+  function getWeekKey(date: Date) {
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+    return format(weekStart, 'yyyy-MM-dd');
+  }
+
+  // Helper: Get stocks for a specific week
+  function getStocksForWeek(weekStart: Date, weekEnd: Date) {
+    return MOCK_EARNINGS.filter(stock => {
+      const earningsDate = new Date(stock.nextEarnings);
+      return earningsDate >= weekStart && earningsDate <= weekEnd;
+    });
+  }
 
   // Helper: Render the grid of months
   function renderMonthGrid() {
@@ -213,6 +229,101 @@ export default function CalendarPage() {
     return { start: weekStart, end: endOfWeek(earningsDate, { weekStartsOn: 1 }) };
   }
 
+  // Helper: Render the detailed week view
+  function renderWeekView(weekStart: Date, weekEnd: Date) {
+    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+    const weekStocks = getStocksForWeek(weekStart, weekEnd);
+
+    return (
+      <div>
+        <div className="flex items-center mb-6">
+          <button className="text-blue-400 hover:underline mr-4" onClick={() => setZoomedWeek(null)}>
+            ← Back to Month
+          </button>
+          <div className="text-2xl font-bold text-blue-200">
+            Week of {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-5 gap-4">
+          {weekDays.slice(0, 5).map((day, index) => {
+            const dayStocks = getStocksForDate(day);
+            const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][index];
+            
+            return (
+              <div key={index} className="bg-blue-950/60 rounded-xl border border-blue-700/30 p-4">
+                <div className="text-center mb-4">
+                  <div className="text-blue-300 font-bold text-lg">{dayName}</div>
+                  <div className="text-blue-400 text-sm">{format(day, "MMM d")}</div>
+                </div>
+                
+                {dayStocks.length > 0 ? (
+                  <div className="space-y-3">
+                    {dayStocks.map((stock) => (
+                      <Dialog key={stock.ticker} open={modalOpen && selectedStock?.ticker === stock.ticker} onOpenChange={setModalOpen}>
+                        <DialogTrigger asChild>
+                          <button
+                            className="w-full bg-blue-800/60 hover:bg-blue-700/80 rounded-lg p-3 transition flex flex-col items-center"
+                            onClick={() => setSelectedStock(stock)}
+                          >
+                            <img src={stock.logo} alt={stock.ticker} className="w-12 h-12 rounded mb-2" />
+                            <div className="text-white font-bold text-lg">{stock.ticker}</div>
+                            <div className="text-blue-300 text-xs">{stock.name}</div>
+                            <div className="text-green-400 text-xs font-medium mt-1">
+                              {stock.nextType}
+                            </div>
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <img src={stock.logo} alt={stock.ticker} className="w-8 h-8 rounded" />
+                              {stock.name} ({stock.ticker})
+                            </DialogTitle>
+                            <DialogDescription>
+                              <div className="mt-2 text-blue-700 font-medium">
+                                Next Earnings: {stock.nextType} <br />
+                                {new Date(stock.nextEarnings).toLocaleString()}
+                              </div>
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="mt-4">
+                            <div className="font-semibold mb-1">Last Earnings</div>
+                            <div className="text-sm text-muted-foreground">
+                              Date: {stock.lastEarnings.date}<br />
+                              EPS: <span className="font-mono">{stock.lastEarnings.eps}</span> <br />
+                              Revenue: <span className="font-mono">${stock.lastEarnings.revenue}M</span> <br />
+                              Surprise: <span className="font-mono">{stock.lastEarnings.surprise}</span>
+                            </div>
+                          </div>
+                          <DialogFooter className="mt-6">
+                            <a
+                              href={stock.conferenceCall}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold transition"
+                            >
+                              Listen to Conference Call
+                            </a>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="bg-blue-950/60 rounded-lg p-4 text-blue-300 flex flex-col items-center">
+                    <span className="text-2xl mb-2">📅</span>
+                    <span className="text-sm">No Earnings</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   // Helper: Render the full calendar view for a month
   function renderMonthCalendar(month: Date) {
     const monthStart = startOfMonth(month);
@@ -243,23 +354,30 @@ export default function CalendarPage() {
             ))}
           </div>
 
-                     {/* Calendar Days */}
-           <div className="grid grid-cols-7 gap-2">
-             {days.map((day, index) => {
-               const isCurrentMonth = isSameMonth(day, month);
-               const stocksForDay = getStocksForDate(day);
-               const weekStart = startOfWeek(day, { weekStartsOn: 1 });
-               
-               return (
-                 <div
-                   key={index}
-                   data-week-start={format(weekStart, 'yyyy-MM-dd')}
-                   className={`min-h-[120px] p-2 rounded-lg border transition ${
-                     isCurrentMonth 
-                       ? "bg-blue-900/40 border-blue-600/30" 
-                       : "bg-blue-950/20 border-blue-800/20"
-                   }`}
-                 >
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7 gap-2">
+            {days.map((day, index) => {
+              const isCurrentMonth = isSameMonth(day, month);
+              const stocksForDay = getStocksForDate(day);
+              const weekStart = startOfWeek(day, { weekStartsOn: 1 });
+              const weekKey = getWeekKey(day);
+              const isHovered = hoveredWeek === weekKey;
+              
+              return (
+                <div
+                  key={index}
+                  data-week-start={format(weekStart, 'yyyy-MM-dd')}
+                  className={`min-h-[120px] p-2 rounded-lg border transition cursor-pointer ${
+                    isCurrentMonth 
+                      ? isHovered 
+                        ? "bg-blue-800/60 border-blue-500/50 ring-2 ring-blue-400/30" 
+                        : "bg-blue-900/40 border-blue-600/30"
+                      : "bg-blue-950/20 border-blue-800/20"
+                  }`}
+                  onMouseEnter={() => setHoveredWeek(weekKey)}
+                  onMouseLeave={() => setHoveredWeek(null)}
+                  onClick={() => setZoomedWeek({ start: weekStart, end: endOfWeek(day, { weekStartsOn: 1 }) })}
+                >
                   <div className={`text-sm font-medium mb-2 ${
                     isCurrentMonth ? "text-blue-200" : "text-blue-500"
                   }`}>
@@ -273,7 +391,10 @@ export default function CalendarPage() {
                           <DialogTrigger asChild>
                             <button
                               className="w-full bg-blue-700/60 hover:bg-blue-600/80 rounded px-2 py-1 text-xs text-white font-medium transition flex items-center gap-1"
-                              onClick={() => setSelectedStock(stock)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedStock(stock);
+                              }}
                             >
                               <span className="w-2 h-2 bg-green-400 rounded-full"></span>
                               {stock.ticker}
@@ -332,16 +453,7 @@ export default function CalendarPage() {
                 className="bg-blue-800/60 hover:bg-blue-700/80 rounded-lg p-3 transition flex flex-col items-center"
                 onClick={() => {
                   const weekRange = findWeekForStock(stock);
-                  // Scroll to the week containing this stock
-                  const weekElement = document.querySelector(`[data-week-start="${format(weekRange.start, 'yyyy-MM-dd')}"]`);
-                  if (weekElement) {
-                    weekElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // Highlight the week briefly
-                    weekElement.classList.add('ring-2', 'ring-blue-400');
-                    setTimeout(() => {
-                      weekElement.classList.remove('ring-2', 'ring-blue-400');
-                    }, 2000);
-                  }
+                  setZoomedWeek(weekRange);
                 }}
               >
                 <div className="text-white font-bold text-lg">{stock.ticker}</div>
@@ -380,7 +492,9 @@ export default function CalendarPage() {
           <CardContent className="p-6">
             {isAdmin ? (
               tab === "earnings" ? (
-                zoomedMonth ? (
+                zoomedWeek ? (
+                  renderWeekView(zoomedWeek.start, zoomedWeek.end)
+                ) : zoomedMonth ? (
                   renderMonthCalendar(zoomedMonth)
                 ) : (
                   renderMonthGrid()
