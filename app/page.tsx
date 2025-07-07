@@ -8,9 +8,8 @@ import { StockSelector } from "@/components/stock-selector"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar, RefreshCw } from "lucide-react"
+import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { useStockPrices } from "@/hooks/useStockPrices"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist, getIdToken } from "@/lib/firebase-services"
@@ -21,10 +20,6 @@ interface Stock {
   id?: string
   symbol: string
   name: string
-  price: number
-  change: number
-  changePercent: number
-  isLastClose?: boolean
 }
 
 interface FirebaseStock {
@@ -32,19 +27,6 @@ interface FirebaseStock {
   ticker: string
   companyName: string
   createdAt: any
-}
-
-// Helper to check if US market is open (Eastern Time)
-function isMarketOpenNow() {
-  const now = new Date()
-  const utcHour = now.getUTCHours()
-  const utcMinute = now.getUTCMinutes()
-  const estHour = utcHour - 4 < 0 ? utcHour + 20 : utcHour - 4
-  const day = now.getUTCDay()
-  if (day === 0 || day === 6) return false
-  if (estHour < 9 || (estHour === 9 && utcMinute < 30)) return false
-  if (estHour > 16 || (estHour === 16 && utcMinute > 0)) return false
-  return true
 }
 
 export default function HomePage() {
@@ -60,21 +42,9 @@ export default function HomePage() {
   const { toast } = useToast()
 
   // Add state for mobile carousel page
-  const [mobilePage, setMobilePage] = useState(0);
-  const stocksPerMobilePage = 5;
-  const totalMobilePages = Math.ceil(watchlist.length / stocksPerMobilePage);
-
-  // Get tickers for price fetching
-  const tickers = useMemo(() => watchlist.map(stock => stock.symbol), [watchlist])
-  const { 
-    prices: stockPrices, 
-    loading: pricesLoading, 
-    error: pricesError, 
-    refresh: refreshPrices
-  } = useStockPrices(tickers, {
-    enabled: !!user && watchlist.length > 0,
-    interval: 300000 // 5 minutes
-  })
+  const [mobilePage, setMobilePage] = useState(0)
+  const stocksPerMobilePage = 5
+  const totalMobilePages = Math.ceil(watchlist.length / stocksPerMobilePage)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -108,7 +78,7 @@ export default function HomePage() {
           { symbol: "AMZN", name: "Amazon.com Inc." },
           { symbol: "NFLX", name: "Netflix Inc." },
           { symbol: "MSTR", name: "MicroStrategy Inc." },
-        ];
+        ]
         for (const stock of defaultStocks) {
           await addStockToWatchlist(stock.symbol, stock.name)
         }
@@ -117,21 +87,13 @@ export default function HomePage() {
         setWatchlist(updatedStocks.map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
-          name: stock.companyName,
-          price: 0, // Will be updated with live prices
-          change: 0,
-          changePercent: 0,
-          isLastClose: false
+          name: stock.companyName
         })))
       } else {
         setWatchlist(userStocks.slice(0, 10).map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
-          name: stock.companyName,
-          price: 0, // Will be updated with live prices
-          change: 0,
-          changePercent: 0,
-          isLastClose: false
+          name: stock.companyName
         })))
       }
     } catch (error) {
@@ -146,36 +108,17 @@ export default function HomePage() {
     }
   }
 
-  // Merge stock prices with watchlist
-  const watchlistWithLivePrices = watchlist.map(stock => {
-    const stockPrice = stockPrices[stock.symbol]
-    if (stockPrice !== null && stockPrice !== undefined) {
-      return {
-        ...stock,
-        price: stockPrice,
-        change: 0, // We don't have change data in this hook
-        changePercent: 0, // We don't have change percent data in this hook
-        isLastClose: !isMarketOpenNow() // Assume last close when market is closed
-      }
-    }
-    return stock
-  })
-
   const stocksPerPage = 8
-  const totalPages = Math.ceil(watchlistWithLivePrices.length / stocksPerPage)
+  const totalPages = Math.ceil(watchlist.length / stocksPerPage)
   const startIndex = currentPage * stocksPerPage
-  const visibleStocks = watchlistWithLivePrices.slice(startIndex, startIndex + stocksPerPage)
+  const visibleStocks = watchlist.slice(startIndex, startIndex + stocksPerPage)
 
   const handleUpdateWatchlist = async (newStocks: any[]) => {
     try {
-      // Clear existing stocks and add new ones
+      // Update watchlist with new stocks
       setWatchlist(newStocks.map((stock) => ({
         symbol: stock.ticker,
-        name: stock.name,
-        price: Math.random() * 500 + 50,
-        change: (Math.random() - 0.5) * 20,
-        changePercent: (Math.random() - 0.5) * 5,
-        isLastClose: false
+        name: stock.name
       })))
       setCurrentPage(0)
       
@@ -202,343 +145,89 @@ export default function HomePage() {
 
   const handleRefresh = async () => {
     setRefreshKey(prev => prev + 1)
-    if (refreshPrices) {
-      await refreshPrices()
-    }
-  }
-
-  // Global drag-and-drop handlers
-  const handleGlobalDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setGlobalDragActive(true)
-  }
-  const handleGlobalDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setGlobalDragActive(false)
-  }
-  const handleGlobalDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    setGlobalDragActive(false)
-    const files = e.dataTransfer.files
-    if (files && files[0] && files[0].type.startsWith("image/")) {
-      const file = files[0]
-      setDroppedFile(file)
-      try {
-        const idToken = await getIdToken()
-        if (!idToken) {
-          console.error("No ID token found. User may not be authenticated.")
-          toast({
-            title: "Not Authenticated",
-            description: "You must be logged in to analyze screenshots. Please log in and try again.",
-            variant: "destructive",
-          })
-          setDroppedFile(null)
-          return
-        }
-        // console.log("Frontend ID Token:", idToken)
-        const formData = new FormData()
-        formData.append("image", file)
-        const response = await fetchWithAuth("/api/analyze-screenshot", {
-          method: "POST",
-          body: formData,
-        })
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-        const result = await response.json()
-        if (result.error) {
-          throw new Error(result.error)
-        }
-        setDroppedFile(null)
-        handleScreenshotCatalystAdded()
-      } catch (error) {
-        console.error("Screenshot analysis failed:", error)
-        toast({
-          title: "Analysis Failed",
-          description: error instanceof Error ? error.message : "Unable to analyze the screenshot. Please try again.",
-          variant: "destructive",
-        })
-        setDroppedFile(null)
-      }
-    }
-  }
-
-  const handleScreenshotCatalystAdded = () => {
-    setRefreshKey((k) => k + 1)
-  }
-
-  // Show loading state while checking authentication
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  // Don't render anything if not authenticated (will redirect)
-  if (!user) {
-    return null
   }
 
   return (
-    <div
-      className="min-h-screen bg-background relative"
-      onDragOver={handleGlobalDragOver}
-      onDragLeave={handleGlobalDragLeave}
-      onDrop={handleGlobalDrop}
-    >
-      {globalDragActive && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-blue-900/80 pointer-events-none">
-          <div className="text-2xl font-bold text-blue-200 mb-4">Drop your screenshot to organize</div>
-        </div>
-      )}
-      <AppHeader />
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Watchlist Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-                <CardTitle>Your Watchlist</CardTitle>
-                <Badge variant="secondary">{watchlist.length} stocks</Badge>
-                <span className="hidden md:inline">
-                  {!isMarketOpenNow() && (
-                    <Badge variant="outline" className="text-xs text-yellow-700 border-yellow-400 bg-yellow-100">Market Closed</Badge>
-                  )}
-                </span>
-              </div>
-              {/* Desktop: Refresh and Manage buttons */}
-              <div className="hidden md:flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={pricesLoading}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  {pricesLoading ? "Refreshing..." : "Refresh"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)}>
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage
-                </Button>
-              </div>
-              {/* Mobile: Manage and Refresh buttons under header */}
-              <div className="md:hidden w-full mt-2 mb-2 flex justify-center gap-2">
-                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={pricesLoading} className="px-6">
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  {pricesLoading ? "Refreshing..." : "Refresh"}
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)} className="px-6">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Manage
-                </Button>
-              </div>
+    <div className="container mx-auto px-4 py-8">
+      {/* Watchlist Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              <CardTitle>Your Watchlist</CardTitle>
+              <Badge variant="secondary">{watchlist.length} stocks</Badge>
             </div>
-          </CardHeader>
-          <CardContent>
-            {pricesError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-600">
-                  Error loading live prices: {pricesError}
-                </p>
-              </div>
-            )}
-            {/* Mobile: Swipeable carousel, 5 stocks per view, with page indicator and dots */}
-            <div className="block md:hidden">
-              <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
-                <div className="flex min-w-full transition-transform duration-300" style={{ transform: `translateX(-${mobilePage * 100}vw)` }}>
-                  {Array.from({ length: totalMobilePages }).map((_, pageIdx) => (
-                    <div key={pageIdx} className="min-w-[100vw] max-w-[100vw] flex-shrink-0">
-                      <div className="flex flex-col space-y-4">
-                        {watchlistWithLivePrices.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
-                          <StockCard 
-                            key={stock.symbol} 
-                            stock={{
-                              symbol: stock.symbol,
-                              name: stock.name
-                            }}
-                          />
-                        ))}
-                      </div>
+            {/* Desktop: Manage button */}
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)}>
+                <Settings className="h-4 w-4 mr-2" />
+                Manage
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Mobile: Swipeable carousel */}
+          <div className="block md:hidden">
+            <div className="overflow-x-auto scrollbar-hide -mx-2 px-2">
+              <div className="flex min-w-full transition-transform duration-300" style={{ transform: `translateX(-${mobilePage * 100}vw)` }}>
+                {Array.from({ length: totalMobilePages }).map((_, pageIdx) => (
+                  <div key={pageIdx} className="min-w-[100vw] max-w-[100vw] flex-shrink-0">
+                    <div className="flex flex-col space-y-4">
+                      {watchlist.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
+                        <StockCard 
+                          key={stock.symbol} 
+                          stock={{
+                            symbol: stock.symbol,
+                            name: stock.name
+                          }}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-              {/* Page indicator and dots */}
-              <div className="flex flex-col items-center mt-2">
-                <span className="text-xs text-muted-foreground mb-1">{mobilePage + 1}/{totalMobilePages}</span>
-                <div className="flex space-x-2">
-                  {Array.from({ length: totalMobilePages }).map((_, idx) => (
-                    <span key={idx} className={`w-2 h-2 rounded-full ${mobilePage === idx ? 'bg-blue-600' : 'bg-gray-300'}`}></span>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Desktop: grid as before, remove Refresh button from controls */}
-            <div className="hidden md:block">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {visibleStocks.map((stock) => (
-                  <StockCard 
-                    key={stock.symbol} 
-                    stock={{
-                      symbol: stock.symbol,
-                      name: stock.name
-                    }}
-                  />
+                  </div>
                 ))}
               </div>
             </div>
-            {pricesLoading && (
-              <div className="mt-4 text-center text-sm text-muted-foreground">
-                {isMarketOpenNow() ? 'Updating live prices...' : 'Loading last close prices...'}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Info Section: How to use the dashboard */}
-        <Card className="my-8 border-2 border-gradient-to-r from-blue-500 to-purple-500 bg-gradient-to-br from-slate-900/50 to-blue-900/30 shadow-lg">
-          <CardHeader className="pb-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <CardTitle className="text-2xl bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Professional Trading Workflow
-              </CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Create Watch List */}
-              <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center">
-                <div className="flex flex-col items-center mb-4">
-                  <div className="w-10 h-10 bg-blue-900/50 rounded-full flex items-center justify-center group-hover:bg-blue-800/70 transition-colors mb-2">
-                    <span className="text-blue-300 font-bold text-lg">1</span>
-                  </div>
-                  <h3 className="font-semibold text-lg text-slate-200">Create Your Watch List</h3>
-                </div>
-                <p className="text-slate-300 leading-relaxed">
-                  Build a personalized watch list of your favorite stocks. Add, remove, and organize stocks to track their performance and stay focused on your investment strategy.
-                </p>
-                <List className="h-6 w-6 mt-3 text-blue-400" />
-              </div>
-
-              {/* Upload Screenshots Anywhere */}
-              <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-green-700/30 hover:border-green-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center">
-                <div className="flex flex-col items-center mb-4">
-                  <div className="w-10 h-10 bg-green-900/50 rounded-full flex items-center justify-center group-hover:bg-green-800/70 transition-colors mb-2">
-                    <span className="text-green-300 font-bold text-lg">2</span>
-                  </div>
-                  <h3 className="font-semibold text-lg text-slate-200">Upload Screenshots Anywhere</h3>
-                </div>
-                <p className="text-slate-300 leading-relaxed">
-                  Simply drag and drop your trading screenshots anywhere on the dashboard for instant AI analysis. No need to navigate to specific upload areas—drop your images and let our platform do the rest!
-                </p>
-                <Shuffle className="h-6 w-6 mt-3 text-green-400" />
-              </div>
-
-              {/* Automatic Filing */}
-              <div className="group relative p-6 bg-slate-800/50 rounded-xl border border-purple-700/30 hover:border-purple-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 flex flex-col items-center text-center">
-                <div className="flex flex-col items-center mb-4">
-                  <div className="w-10 h-10 bg-purple-900/50 rounded-full flex items-center justify-center group-hover:bg-purple-800/70 transition-colors mb-2">
-                    <span className="text-purple-300 font-bold text-lg">3</span>
-                  </div>
-                  <h3 className="font-semibold text-lg text-slate-200">Automatic Stock History</h3>
-                </div>
-                <p className="text-slate-300 leading-relaxed">
-                  All analyzed screenshots are automatically filed within your stock history. Each stock maintains a complete record of your analysis, making it easy to track patterns and insights over time.
-                </p>
-                <Calendar className="h-6 w-6 mt-3 text-purple-400" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Centered workflow section */}
-        <div className="flex justify-center w-full">
-          <div className="w-full max-w-6xl mx-auto">
-            {/* Header row moved below number 2 box and centered */}
-          </div>
-        </div>
-        <div className="flex justify-center w-full mt-12 mb-2">
-          <div className="bg-[#181f2a] border border-red-500 rounded-2xl shadow-lg px-8 py-6 flex flex-col items-center justify-center max-w-xl w-full">
-            <div className="flex flex-col items-center justify-center">
-              <span className="inline-flex items-center justify-center w-12 h-12 bg-red-500 text-white font-bold text-2xl rounded-full mb-2">4</span>
-              <span className="text-4xl font-bold text-white text-center">Set Smart Price Alerts</span>
-            </div>
-          </div>
-        </div>
-        {/* 3-row grid for items and bullets */}
-        <div className="flex justify-center w-full">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 w-full">
-            {/* Features column (left) */}
-            <div className="flex flex-col items-start w-full">
-              <h3 className="text-3xl font-bold text-white text-center w-full mb-4">Features</h3>
-              <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
-                <div className="flex items-start gap-3 py-2">
-                  <span className="text-2xl">🧠</span>
-                  <span><span className="font-semibold">Automatic Catalyst Detection:</span> Instantly identifies the three most relevant news catalysts from the past that are closest to the current price for every stock in your watchlist.</span>
-                </div>
-                <div className="flex items-start gap-3 py-2">
-                  <span className="text-2xl">🎚️</span>
-                  <span><span className="font-semibold">Effortless Alert Control:</span> Easily turn alerts on or off for each catalyst level with a slider—giving you full control over which price levels matter most to you.</span>
-                </div>
-                <div className="flex items-start gap-3 py-2">
-                  <span className="text-2xl">📲</span>
-                  <span><span className="font-semibold">Multi-Channel Notifications:</span> Get notified your way: receive instant alerts via browser notifications, email, or directly to your phone—never miss a key price revisit.</span>
-                </div>
-                <div className="flex items-start gap-3 py-2">
-                  <span className="text-2xl">⚙️</span>
-                  <span><span className="font-semibold">Customizable Catalyst Relevance:</span> Fine-tune your alerts by choosing which types of news events are most important to you, and set how close the price needs to get before you're notified.</span>
-                </div>
-              </div>
-            </div>
-            {/* Example column (right) */}
-            <div className="flex flex-col items-end w-full">
-              <h3 className="text-3xl font-bold text-white text-center w-full mb-4">Visual</h3>
-              <div className="flex flex-col h-full justify-between min-h-[210px] w-full bg-slate-800/50 rounded-xl border border-blue-700/30 hover:border-blue-600/50 transition-all duration-300 hover:shadow-md hover:bg-slate-800/70 p-6">
-                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                  <span className="font-semibold text-white text-xl flex-1">Q1 Earnings Release</span>
-                  <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
-                </div>
-                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                  <span className="font-semibold text-white text-xl flex-1">New Model Launch</span>
-                  <Switch checked={false} onCheckedChange={() => {}} className="ml-4 scale-125" />
-                </div>
-                <div className="flex items-center border-b border-blue-700/30 py-4" style={{minHeight: '48px'}}>
-                  <span className="font-semibold text-white text-xl flex-1">Gigafactory Expansion</span>
-                  <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
-                </div>
-                <div className="flex items-center py-4" style={{minHeight: '48px'}}>
-                  <span className="font-semibold text-white text-xl flex-1">Catalyst Customization</span>
-                  <Switch checked={true} onCheckedChange={() => {}} className="ml-4 scale-125" />
-                </div>
+            {/* Page indicator and dots */}
+            <div className="flex flex-col items-center mt-2">
+              <span className="text-xs text-muted-foreground mb-1">{mobilePage + 1}/{totalMobilePages}</span>
+              <div className="flex space-x-2">
+                {Array.from({ length: totalMobilePages }).map((_, idx) => (
+                  <span key={idx} className={`w-2 h-2 rounded-full ${mobilePage === idx ? 'bg-blue-600' : 'bg-gray-300'}`}></span>
+                ))}
               </div>
             </div>
           </div>
-        </div>
-        {/* Tip centered below both columns */}
-        <div className="flex justify-center w-full mt-6">
-          <div className="p-4 rounded-md bg-blue-50 border border-blue-200 text-blue-900 text-base w-full max-w-md text-center">
-            <strong>Tip:</strong> To manage your alerts, <span className="font-semibold">click on a stock</span> and go to the <span className="font-semibold">Alerts</span> tab.
-          </div>
-        </div>
 
-        {/* Stock Selector Modal - Only show when showStockSelector is true */}
-        {showStockSelector && (
-          <StockSelector
-            currentStocks={watchlist.map((stock) => ({ ticker: stock.symbol, name: stock.name }))}
-            onUpdate={handleUpdateWatchlist}
-            onClose={() => setShowStockSelector(false)}
-          />
-        )}
-        
-        {/* Floating Screenshot Button */}
-        <ScreenshotButton onCatalystAdded={handleScreenshotCatalystAdded} />
-      </main>
+          {/* Desktop: grid view */}
+          <div className="hidden md:block">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {visibleStocks.map((stock) => (
+                <StockCard 
+                  key={stock.symbol} 
+                  stock={{
+                    symbol: stock.symbol,
+                    name: stock.name
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stock Selector Modal */}
+      {showStockSelector && (
+        <StockSelector
+          currentStocks={watchlist}
+          onUpdate={handleUpdateWatchlist}
+          onClose={() => setShowStockSelector(false)}
+        />
+      )}
+
+      {/* Screenshot Button */}
+      <ScreenshotButton />
     </div>
   )
 }
