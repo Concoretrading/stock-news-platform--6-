@@ -598,6 +598,8 @@ export default function CalendarPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedWatchlist, setSelectedWatchlist] = useState<string>("tech-giants");
   const [selectedPersonalStock, setSelectedPersonalStock] = useState<any>(null);
+  const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
+  const [showStockSelector, setShowStockSelector] = useState(false);
 
   // Only show the real calendar to the admin
   const isAdmin = user?.email === "handrigannick@gmail.com";
@@ -707,118 +709,170 @@ export default function CalendarPage() {
     return '📅';
   }
 
-+  // Helper: Render the personal watchlist view
-+  function renderPersonalView() {
-+    const currentWatchlist = PERSONAL_WATCHLISTS.find(w => w.id === selectedWatchlist);
-+    
-+    return (
-+      <div className="flex gap-6 h-[600px]">
-+        {/* Side Tabs */}
-+        <div className="w-48 space-y-2">
-+          {PERSONAL_WATCHLISTS.map((watchlist) => (
-+            <button
-+              key={watchlist.id}
-+              className={`w-full text-left p-3 rounded-lg transition ${
-+                selectedWatchlist === watchlist.id
-+                  ? "bg-purple-600/80 text-white"
-+                  : "bg-gray-800/60 text-gray-300 hover:bg-gray-700/60"
-+              }`}
-+              onClick={() => {
-+                setSelectedWatchlist(watchlist.id);
-+                setSelectedPersonalStock(null); // Clear selected stock when changing watchlist
-+              }}
-+            >
-+              <div className="font-semibold text-sm">{watchlist.name}</div>
-+              <div className="text-xs opacity-75">{watchlist.stocks.length} stocks</div>
-+            </button>
-+          ))}
-+        </div>
-+
-+        {/* Main Content */}
-+        <div className="flex-1 flex gap-6">
-+          {/* Stock List */}
-+          <div className="flex-1 bg-gray-900/60 rounded-xl border border-gray-600/30 p-4">
-+            <h3 className="text-lg font-bold text-gray-200 mb-4">{currentWatchlist?.name}</h3>
-+            <div className="space-y-2">
-+              {currentWatchlist?.stocks.map((stock) => (
-+                <button
-+                  key={stock.ticker}
-+                  className={`w-full p-3 rounded-lg transition text-left ${
-+                    selectedPersonalStock?.ticker === stock.ticker
-+                      ? "bg-purple-600/80 text-white"
-+                      : "bg-gray-800/60 text-gray-300 hover:bg-gray-700/60"
-+                  }`}
-+                  onClick={() => setSelectedPersonalStock(stock)}
-+                >
-+                  <div className="flex items-center justify-between">
-+                    <div>
-+                      <div className="font-bold text-lg">{stock.ticker}</div>
-+                      <div className="text-sm opacity-75">{stock.name}</div>
-+                    </div>
-+                    <div className="text-right">
-+                      <div className="font-bold text-lg">${stock.price}</div>
-+                      <div className={`text-sm ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-+                        {stock.change >= 0 ? '+' : ''}{stock.change} ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent}%)
-+                      </div>
-+                    </div>
-+                  </div>
-+                </button>
-+              ))}
-+            </div>
-+          </div>
-+
-+          {/* Stock Details */}
-+          <div className="w-80 bg-gray-900/60 rounded-xl border border-gray-600/30 p-4">
-+            {selectedPersonalStock ? (
-+              <div>
-+                <h3 className="text-lg font-bold text-gray-200 mb-4">Stock Details</h3>
-+                <div className="space-y-4">
-+                  <div>
-+                    <div className="text-2xl font-bold text-gray-200">{selectedPersonalStock.ticker}</div>
-+                    <div className="text-gray-400">{selectedPersonalStock.name}</div>
-+                  </div>
-+                  
-+                  <div className="bg-gray-800/60 rounded-lg p-3">
-+                    <div className="text-3xl font-bold text-gray-200 mb-1">${selectedPersonalStock.price}</div>
-+                    <div className={`text-lg font-semibold ${selectedPersonalStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-+                      {selectedPersonalStock.change >= 0 ? '+' : ''}{selectedPersonalStock.change} ({selectedPersonalStock.changePercent >= 0 ? '+' : ''}{selectedPersonalStock.changePercent}%)
-+                    </div>
-+                  </div>
-+
-+                  <div className="grid grid-cols-2 gap-3">
-+                    <div className="bg-gray-800/60 rounded-lg p-3">
-+                      <div className="text-xs text-gray-400">Volume</div>
-+                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.volume}</div>
-+                    </div>
-+                    <div className="bg-gray-800/60 rounded-lg p-3">
-+                      <div className="text-xs text-gray-400">Market Cap</div>
-+                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.marketCap}</div>
-+                    </div>
-+                    <div className="bg-gray-800/60 rounded-lg p-3">
-+                      <div className="text-xs text-gray-400">P/E Ratio</div>
-+                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.pe}</div>
-+                    </div>
-+                    <div className="bg-gray-800/60 rounded-lg p-3">
-+                      <div className="text-xs text-gray-400">Sector</div>
-+                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.sector}</div>
-+                    </div>
-+                  </div>
-+                </div>
-+              </div>
-+            ) : (
-+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
-+                <div className="text-4xl mb-4">📈</div>
-+                <div className="text-center">
-+                  <div className="font-semibold mb-2">Select a Stock</div>
-+                  <div className="text-sm">Click on any stock to view detailed information</div>
-+                </div>
-+              </div>
-+            )}
-+          </div>
-+        </div>
-+      </div>
-+    );
-+  }
+  // Helper: Get user's watchlist stocks (this would come from your actual watchlist)
+  function getUserWatchlist() {
+    // For now, using mock data - replace with actual watchlist fetch
+    return [
+      { ticker: "AAPL", name: "Apple Inc.", price: 185.64, change: +2.34, changePercent: +1.28, volume: "45.2M", marketCap: "2.9T", pe: 28.5, sector: "Technology" },
+      { ticker: "TSLA", name: "Tesla Inc.", price: 237.49, change: +8.91, changePercent: +3.90, volume: "78.9M", marketCap: "754B", pe: 72.3, sector: "Automotive" },
+      { ticker: "NVDA", name: "NVIDIA Corporation", price: 485.09, change: +12.67, changePercent: +2.68, volume: "42.3M", marketCap: "1.2T", pe: 65.8, sector: "Technology" },
+      { ticker: "MSFT", name: "Microsoft Corporation", price: 378.85, change: +4.12, changePercent: +1.10, volume: "22.1M", marketCap: "2.8T", pe: 32.1, sector: "Technology" },
+      { ticker: "GOOGL", name: "Alphabet Inc.", price: 142.56, change: -1.23, changePercent: -0.85, volume: "18.7M", marketCap: "1.8T", pe: 25.3, sector: "Technology" },
+      { ticker: "AMZN", name: "Amazon.com Inc.", price: 145.24, change: +3.45, changePercent: +2.43, volume: "35.8M", marketCap: "1.5T", pe: 45.2, sector: "Technology" },
+      { ticker: "META", name: "Meta Platforms Inc.", price: 334.92, change: +5.67, changePercent: +1.72, volume: "15.2M", marketCap: "852B", pe: 28.9, sector: "Technology" },
+      { ticker: "NFLX", name: "Netflix Inc.", price: 445.67, change: +12.34, changePercent: +2.85, volume: "8.9M", marketCap: "198B", pe: 32.1, sector: "Entertainment" }
+    ];
+  }
+
+  // Helper: Get selected stocks data
+  function getSelectedStocksData() {
+    const watchlist = getUserWatchlist();
+    return watchlist.filter(stock => selectedStocks.includes(stock.ticker));
+  }
+
+  // Helper: Toggle stock selection
+  function toggleStockSelection(ticker: string) {
+    if (selectedStocks.includes(ticker)) {
+      setSelectedStocks(selectedStocks.filter(s => s !== ticker));
+    } else if (selectedStocks.length < 3) {
+      setSelectedStocks([...selectedStocks, ticker]);
+    }
+  }
+
+  // Helper: Render the personal watchlist view
+  function renderPersonalView() {
+    const userWatchlist = getUserWatchlist();
+    const selectedStocksData = getSelectedStocksData();
+    
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-200">Personal AI Monitoring</h2>
+            <p className="text-gray-400">Select up to 3 stocks from your watchlist for AI-powered event tracking</p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-gray-400">Selected: {selectedStocks.length}/3</div>
+            <div className="text-xs text-gray-500">AI will monitor earnings calls and announcements</div>
+          </div>
+        </div>
+
+        {/* Stock Selection */}
+        <div className="bg-gray-900/60 rounded-xl border border-gray-600/30 p-6">
+          <h3 className="text-lg font-bold text-gray-200 mb-4">Select Your Top 3 Stocks</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {userWatchlist.map((stock) => (
+              <button
+                key={stock.ticker}
+                className={`p-4 rounded-lg transition text-left ${
+                  selectedStocks.includes(stock.ticker)
+                    ? "bg-purple-600/80 text-white ring-2 ring-purple-400"
+                    : selectedStocks.length >= 3
+                    ? "bg-gray-800/40 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-800/60 text-gray-300 hover:bg-gray-700/60"
+                }`}
+                onClick={() => toggleStockSelection(stock.ticker)}
+                disabled={selectedStocks.length >= 3 && !selectedStocks.includes(stock.ticker)}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-bold text-lg">{stock.ticker}</div>
+                  {selectedStocks.includes(stock.ticker) && (
+                    <div className="text-purple-200">✓</div>
+                  )}
+                </div>
+                <div className="text-sm opacity-75 mb-2">{stock.name}</div>
+                <div className="text-lg font-bold">${stock.price}</div>
+                <div className={`text-sm ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {stock.change >= 0 ? '+' : ''}{stock.change} ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent}%)
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Selected Stocks Display */}
+        {selectedStocksData.length > 0 && (
+          <div className="bg-gray-900/60 rounded-xl border border-gray-600/30 p-6">
+            <h3 className="text-lg font-bold text-gray-200 mb-4">Your AI-Monitored Stocks</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {selectedStocksData.map((stock) => (
+                <div
+                  key={stock.ticker}
+                  className={`p-4 rounded-lg transition cursor-pointer ${
+                    selectedPersonalStock?.ticker === stock.ticker
+                      ? "bg-purple-600/80 text-white"
+                      : "bg-gray-800/60 text-gray-300 hover:bg-gray-700/60"
+                  }`}
+                  onClick={() => setSelectedPersonalStock(stock)}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="font-bold text-xl">{stock.ticker}</div>
+                    <div className="text-sm">AI Monitoring ✓</div>
+                  </div>
+                  <div className="text-sm opacity-75 mb-3">{stock.name}</div>
+                  <div className="text-2xl font-bold mb-1">${stock.price}</div>
+                  <div className={`text-sm font-semibold ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {stock.change >= 0 ? '+' : ''}{stock.change} ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent}%)
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Stock Details Panel */}
+        {selectedPersonalStock && (
+          <div className="bg-gray-900/60 rounded-xl border border-gray-600/30 p-6">
+            <h3 className="text-lg font-bold text-gray-200 mb-4">Stock Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <div className="text-3xl font-bold text-gray-200 mb-1">{selectedPersonalStock.ticker}</div>
+                <div className="text-gray-400 mb-4">{selectedPersonalStock.name}</div>
+                
+                <div className="bg-gray-800/60 rounded-lg p-4 mb-4">
+                  <div className="text-4xl font-bold text-gray-200 mb-2">${selectedPersonalStock.price}</div>
+                  <div className={`text-xl font-semibold ${selectedPersonalStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    {selectedPersonalStock.change >= 0 ? '+' : ''}{selectedPersonalStock.change} ({selectedPersonalStock.changePercent >= 0 ? '+' : ''}{selectedPersonalStock.changePercent}%)
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-gray-800/60 rounded-lg p-3">
+                  <div className="text-xs text-gray-400">Volume</div>
+                  <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.volume}</div>
+                </div>
+                <div className="bg-gray-800/60 rounded-lg p-3">
+                  <div className="text-xs text-gray-400">Market Cap</div>
+                  <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.marketCap}</div>
+                </div>
+                <div className="bg-gray-800/60 rounded-lg p-3">
+                  <div className="text-xs text-gray-400">P/E Ratio</div>
+                  <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.pe}</div>
+                </div>
+                <div className="bg-gray-800/60 rounded-lg p-3">
+                  <div className="text-xs text-gray-400">Sector</div>
+                  <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.sector}</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* AI Monitoring Status */}
+            <div className="mt-6 p-4 bg-purple-900/20 border border-purple-600/30 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="text-purple-400">🤖</div>
+                <div className="font-semibold text-purple-200">AI Monitoring Active</div>
+              </div>
+              <div className="text-sm text-purple-300">
+                This stock is being monitored for earnings calls, product announcements, and key developments.
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // Helper: Render the detailed week view
   function renderWeekView(weekStart: Date, weekEnd: Date) {
