@@ -1,59 +1,190 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@/lib/firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
-import { earningsFetcher } from '@/lib/earnings-data-fetcher';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 
 const db = getFirestore();
-const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
+const ALPHA_VANTAGE_API_KEY = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 // GET: Fetch earnings calendar data
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      console.error('401 Unauthorized: Missing or invalid Authorization header:', authHeader);
-      return NextResponse.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const token = authHeader.split('Bearer ')[1];
-    let decodedToken;
     try {
-      decodedToken = await getAuth().verifyIdToken(token);
+      await getAuth().verifyIdToken(token);
     } catch (err) {
-      console.error('401 Unauthorized: Invalid or expired token:', err);
-      return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
-    const userId = decodedToken.uid;
-    console.log('Decoded token for GET:', decodedToken.email, decodedToken.uid);
 
+    // Get query parameters
     const { searchParams } = new URL(request.url);
-    const stockTicker = searchParams.get('stockTicker');
-    const startDate = searchParams.get('startDate');
+    const startDate = searchParams.get('startDate') || new Date().toISOString().split('T')[0];
     const endDate = searchParams.get('endDate');
+    const stockTicker = searchParams.get('stockTicker');
 
-    let query = db.collection('earnings_calendar');
-
-    if (stockTicker) {
-      query = query.where('stockTicker', '==', stockTicker.toUpperCase()) as any;
+    if (!ALPHA_VANTAGE_API_KEY) {
+      throw new Error('Alpha Vantage API key not configured');
     }
 
-    if (startDate && endDate) {
-      query = query.where('earningsDate', '>=', startDate)
-                   .where('earningsDate', '<=', endDate) as any;
+    // Fetch from Alpha Vantage
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=${ALPHA_VANTAGE_API_KEY}`,
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Alpha Vantage API error: ${response.status}`);
     }
 
-    const snapshot = await query.orderBy('earningsDate', 'asc').get();
-    const earnings = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    // Check if we got JSON error response
+    const contentType = response.headers.get('content-type');
+    if (contentType?.includes('application/json')) {
+      const jsonData = await response.json();
+      if (jsonData['Error Message']) {
+        throw new Error(jsonData['Error Message']);
+      }
+      if (jsonData['Note']) {
+        console.warn('Alpha Vantage API limit warning:', jsonData['Note']);
+      }
+    }
 
-    return NextResponse.json({ earnings });
+    // Alpha Vantage returns CSV
+    const csvText = await response.text();
+    const earnings = parseAlphaVantageCSV(csvText);
+
+    // Filter by date range and stock if provided
+    const filteredEarnings = earnings.filter(earning => {
+      const earningDate = new Date(earning.reportDate);
+      const startDateObj = new Date(startDate);
+      const endDateObj = endDate ? new Date(endDate) : null;
+      
+      const meetsStartDate = earningDate >= startDateObj;
+      const meetsEndDate = !endDateObj || earningDate <= endDateObj;
+      const meetsStockCriteria = !stockTicker || earning.symbol.toUpperCase() === stockTicker.toUpperCase();
+      
+      return meetsStartDate && meetsEndDate && meetsStockCriteria;
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: filteredEarnings
+    });
+
   } catch (error) {
     console.error('Error fetching earnings calendar:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ 
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch earnings data'
+    }, { status: 500 });
   }
+}
+
+function parseCSVLine(line: string): string[] {
+  const values: string[] = [];
+  let currentValue = '';
+  let insideQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (insideQuotes && line[i + 1] === '"') {
+        // Handle escaped quotes
+        currentValue += '"';
+        i++;
+      } else {
+        // Toggle quotes mode
+        insideQuotes = !insideQuotes;
+      }
+    } else if (char === ',' && !insideQuotes) {
+      // End of value
+      values.push(currentValue.trim());
+      currentValue = '';
+    } else {
+      currentValue += char;
+    }
+  }
+  
+  // Add the last value
+  values.push(currentValue.trim());
+  return values;
+}
+
+function parseAlphaVantageCSV(csv: string) {
+  const lines = csv.split('\n');
+  if (lines.length < 2) return [];
+
+  const headers = parseCSVLine(lines[0]);
+  const earnings = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    
+    const values = parseCSVLine(lines[i]);
+    if (values.length !== headers.length) continue;
+
+    const earning = {
+      symbol: '',
+      name: '',
+      reportDate: '',
+      fiscalDateEnding: '',
+      estimate: '',
+      currency: 'USD',
+      earningsType: 'During Market Hours',
+      lastEarnings: '',
+      conferenceCallTime: '',
+      conferenceCallUrl: ''
+    };
+    
+    headers.forEach((header, index) => {
+      const value = values[index];
+      switch (header.toLowerCase()) {
+        case 'symbol':
+          earning.symbol = value.toUpperCase();
+          break;
+        case 'name':
+          earning.name = value;
+          break;
+        case 'reportdate':
+          earning.reportDate = value;
+          break;
+        case 'fiscaldateending':
+          earning.fiscalDateEnding = value;
+          break;
+        case 'estimate':
+          earning.estimate = value || 'N/A';
+          break;
+        case 'currency':
+          earning.currency = value || 'USD';
+          break;
+        case 'time':
+          earning.earningsType = value.toLowerCase() === 'bmo' 
+            ? 'Before Market Open'
+            : value.toLowerCase() === 'amc'
+            ? 'After Market Close'
+            : 'During Market Hours';
+          break;
+        case 'surprise':
+          earning.lastEarnings = value || '';
+          break;
+      }
+    });
+
+    // Only add if we have the minimum required data
+    if (earning.symbol && earning.reportDate) {
+      earnings.push(earning);
+    }
+  }
+
+  return earnings;
 }
 
 // POST: Update earnings calendar (admin only)
