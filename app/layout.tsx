@@ -1,11 +1,18 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
+import React from 'react'
+import { Metadata } from 'next'
 import { ThemeProvider } from "@/components/theme-provider"
-import ClientLayout from "./ClientLayout"
+import { Toaster } from "@/components/ui/sonner"
+import ScreenshotButton from "@/components/ScreenshotButton"
+import "./globals.css"
 
-const inter = Inter({ subsets: ["latin"] })
+// Version display component
+function VersionDisplay() {
+  return (
+    <div className="fixed bottom-2 left-2 text-xs text-muted-foreground/50">
+      Build: {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev'}
+    </div>
+  )
+}
 
 export const metadata: Metadata = {
   title: "ConcoreNews - Professional Stock News Platform",
@@ -19,16 +26,17 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <ClientLayout>
-            {children}
-          </ClientLayout>
+          {children}
+          <Toaster />
+          <ScreenshotButton />
+          <VersionDisplay />
         </ThemeProvider>
       </body>
     </html>
