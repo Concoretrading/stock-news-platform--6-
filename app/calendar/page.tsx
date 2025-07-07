@@ -70,7 +70,7 @@ export default function CalendarPage() {
   // Helper: Render the grid of months
   function renderMonthGrid() {
     const now = new Date();
-    const months = Array.from({ length: 6 }, (_, i) => startOfMonth(addMonths(now, i - 3)));
+    const months = Array.from({ length: 7 }, (_, i) => startOfMonth(addMonths(now, i)));
     return (
       <div className="grid grid-cols-3 gap-6">
         {months.map((month, idx) => (
