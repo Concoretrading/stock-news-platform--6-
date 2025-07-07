@@ -103,19 +103,15 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
   const events: any[] = [];
   let confidenceScore = 0.5;
 
-  // Enhanced keyword detection for UPCOMING events
-  const lowerContent = content.toLowerCase();
-  
   // FUTURE EARNINGS DATES - Look for specific dates mentioned
   const earningsPatterns = [
     /(?:earnings|quarterly results|financial results).*?(?:on|date|scheduled for|will be|announced for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi,
     /(?:q[1-4]|quarter)\s+\d{4}\s+(?:earnings|results).*?(?:on|date|scheduled for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi,
     /(?:conference call|earnings call).*?(?:on|date|scheduled for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi
   ];
-
-  earningsPatterns.forEach(pattern => {
-    let match;
-    while ((match = pattern.exec(content)) !== null) {
+  earningsPatterns.forEach((pattern) => {
+    const matches = Array.from(content.matchAll(pattern));
+    matches.forEach((match) => {
       const dateStr = match[1];
       const eventDate = parseDate(dateStr);
       if (eventDate && eventDate > new Date()) {
@@ -126,7 +122,7 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
           date: eventDate.toISOString().split('T')[0],
           time: '16:30:00',
           confidence: 0.90,
-          source: 'date_extraction'
+          source: 'date_extraction',
         });
         confidenceScore = Math.max(confidenceScore, 0.90);
       }
@@ -139,9 +135,8 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
     /(?:new|upcoming).*?(?:product|service|feature).*?(?:on|date|scheduled for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi,
     /(?:available|coming).*?(?:on|date|starting)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi
   ];
-
   launchPatterns.forEach(pattern => {
-    const matches = [...content.matchAll(pattern)];
+    const matches = Array.from(content.matchAll(pattern));
     matches.forEach(match => {
       const dateStr = match[1];
       const eventDate = parseDate(dateStr);
@@ -166,9 +161,8 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
     /(?:wwdc|ces|gdc|e3|comdex).*?(\d{4}).*?(?:on|date|scheduled for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi,
     /(?:annual meeting|shareholder meeting).*?(?:on|date|scheduled for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi
   ];
-
   eventPatterns.forEach(pattern => {
-    const matches = [...content.matchAll(pattern)];
+    const matches = Array.from(content.matchAll(pattern));
     matches.forEach(match => {
       const dateStr = match[1] || match[2];
       const eventDate = parseDate(dateStr);
@@ -192,9 +186,8 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
     /(?:sec filing|10-k|10-q|8-k).*?(?:due|filing date|deadline).*?([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi,
     /(?:annual report|quarterly report).*?(?:due|filing date).*?([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi
   ];
-
   filingPatterns.forEach(pattern => {
-    const matches = [...content.matchAll(pattern)];
+    const matches = Array.from(content.matchAll(pattern));
     matches.forEach(match => {
       const dateStr = match[1];
       const eventDate = parseDate(dateStr);
@@ -218,9 +211,8 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
     /(?:analyst day|analyst meeting).*?(?:on|date|scheduled for)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi,
     /(?:price target|rating|upgrade|downgrade).*?(?:announced|expected).*?(?:on|date)\s+([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/gi
   ];
-
   analystPatterns.forEach(pattern => {
-    const matches = [...content.matchAll(pattern)];
+    const matches = Array.from(content.matchAll(pattern));
     matches.forEach(match => {
       const dateStr = match[1];
       const eventDate = parseDate(dateStr);
