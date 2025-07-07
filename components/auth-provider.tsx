@@ -2,15 +2,18 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthChange, getCurrentUser } from '@/lib/firebase-services';
+import { User as FirebaseUser } from "firebase/auth";
 
 interface User {
   uid: string;
   email: string | null;
   displayName?: string | null;
+  firebaseUser?: FirebaseUser | null;
 }
 
 interface AuthContextType {
   user: User | null;
+  firebaseUser: FirebaseUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -19,22 +22,25 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthChange((firebaseUser: any) => {
-      if (firebaseUser) {
+    const unsubscribe = onAuthChange((fbUser: any) => {
+      if (fbUser) {
         setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
+          uid: fbUser.uid,
+          email: fbUser.email,
+          displayName: fbUser.displayName,
+          firebaseUser: fbUser,
         });
+        setFirebaseUser(fbUser);
       } else {
         setUser(null);
+        setFirebaseUser(null);
       }
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
@@ -48,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut }}>
+    <AuthContext.Provider value={{ user, firebaseUser, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
