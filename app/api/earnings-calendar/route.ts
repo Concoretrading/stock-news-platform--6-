@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@/lib/firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
 import { earningsFetcher } from '@/lib/earnings-data-fetcher';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
 
 const db = getFirestore();
+const ALPHA_VANTAGE_API_KEY = process.env.ALPHA_VANTAGE_API_KEY;
 
 // GET: Fetch earnings calendar data
 export async function GET(request: NextRequest) {
@@ -97,14 +99,14 @@ export async function POST(request: NextRequest) {
 
 async function fetchAndUpdateEarnings() {
   try {
-    // Fetch earnings data from Alpaca API
-    const earningsData = await fetchEarningsFromAlpaca();
+    // Fetch earnings data from Alpha Vantage
+    const earnings = await fetchEarningsFromAlphaVantage();
     
     let updated = 0;
     let added = 0;
     let errors = 0;
 
-    for (const earning of earningsData) {
+    for (const earning of earnings) {
       try {
         // Check if earnings already exists
         const existingSnap = await db.collection('earnings_calendar')
@@ -118,7 +120,7 @@ async function fetchAndUpdateEarnings() {
             ...earning,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            source: 'alpaca_api'
+            source: 'alpha_vantage'
           });
           added++;
         } else {
@@ -127,7 +129,7 @@ async function fetchAndUpdateEarnings() {
           await db.collection('earnings_calendar').doc(docId).update({
             ...earning,
             updatedAt: new Date().toISOString(),
-            source: 'alpaca_api'
+            source: 'alpha_vantage'
           });
           updated++;
         }
@@ -139,10 +141,10 @@ async function fetchAndUpdateEarnings() {
 
     return NextResponse.json({
       message: 'Earnings calendar updated successfully',
-      stats: { added, updated, errors, total: earningsData.length }
+      stats: { added, updated, errors, total: earnings.length }
     });
   } catch (error) {
-    console.error('Error fetching earnings from Alpaca:', error);
+    console.error('Error fetching earnings from Alpha Vantage:', error);
     return NextResponse.json({ error: 'Failed to fetch earnings data' }, { status: 500 });
   }
 }
@@ -181,127 +183,51 @@ async function addManualEarnings(data: any) {
   }
 }
 
-async function fetchEarningsFromAlpaca() {
+async function fetchEarningsFromAlphaVantage() {
   try {
-    // Only fetch earnings data from Alpaca API
-    const realEarningsData = await earningsFetcher.fetchFromAlpaca(undefined, 4);
-    console.log('DEBUG: Alpaca API returned', realEarningsData.length, 'earnings:', realEarningsData.slice(0, 5)); // Log first 5 for brevity
-    if (realEarningsData.length > 0) {
-      return realEarningsData;
-    }
+    // Get earnings for next 2 months
+    const response = await fetch(
+      `https://www.alphavantage.co/query?function=EARNINGS_CALENDAR&horizon=3month&apikey=${ALPHA_VANTAGE_API_KEY}`
+    )
     
-    // Fallback to mock data if no real data available
-    console.log('No real earnings data available, using mock data');
-    const mockEarningsData = [
-      {
-        stockTicker: 'AAPL',
-        companyName: 'Apple Inc.',
-        earningsDate: '2024-01-25T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 2.10,
-        estimatedRevenue: 118.5,
-        previousEPS: 1.46,
-        previousRevenue: 89.5,
-        conferenceCallUrl: 'https://investor.apple.com/earnings-call/',
-        notes: 'Q1 2024 earnings call'
-      },
-      {
-        stockTicker: 'TSLA',
-        companyName: 'Tesla Inc.',
-        earningsDate: '2024-01-24T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 0.73,
-        estimatedRevenue: 25.6,
-        previousEPS: 0.66,
-        previousRevenue: 23.4,
-        conferenceCallUrl: 'https://ir.tesla.com/earnings-call/',
-        notes: 'Q4 2023 earnings call'
-      },
-      {
-        stockTicker: 'MSFT',
-        companyName: 'Microsoft Corporation',
-        earningsDate: '2024-01-30T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 2.78,
-        estimatedRevenue: 61.1,
-        previousEPS: 2.99,
-        previousRevenue: 56.5,
-        conferenceCallUrl: 'https://investor.microsoft.com/earnings-call/',
-        notes: 'Q2 2024 earnings call'
-      },
-      {
-        stockTicker: 'GOOGL',
-        companyName: 'Alphabet Inc.',
-        earningsDate: '2024-01-30T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 1.60,
-        estimatedRevenue: 85.3,
-        previousEPS: 1.55,
-        previousRevenue: 76.7,
-        conferenceCallUrl: 'https://investor.google.com/earnings-call/',
-        notes: 'Q4 2023 earnings call'
-      },
-      {
-        stockTicker: 'AMZN',
-        companyName: 'Amazon.com Inc.',
-        earningsDate: '2024-02-01T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 0.80,
-        estimatedRevenue: 166.2,
-        previousEPS: 0.94,
-        previousRevenue: 143.1,
-        conferenceCallUrl: 'https://ir.amazon.com/earnings-call/',
-        notes: 'Q4 2023 earnings call'
-      },
-      {
-        stockTicker: 'NVDA',
-        companyName: 'NVIDIA Corporation',
-        earningsDate: '2024-02-21T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 4.59,
-        estimatedRevenue: 20.4,
-        previousEPS: 4.02,
-        previousRevenue: 18.1,
-        conferenceCallUrl: 'https://investor.nvidia.com/earnings-call/',
-        notes: 'Q4 2023 earnings call'
-      },
-      {
-        stockTicker: 'META',
-        companyName: 'Meta Platforms Inc.',
-        earningsDate: '2024-02-01T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 4.82,
-        estimatedRevenue: 39.2,
-        previousEPS: 4.39,
-        previousRevenue: 34.1,
-        conferenceCallUrl: 'https://investor.fb.com/earnings-call/',
-        notes: 'Q4 2023 earnings call'
-      },
-      {
-        stockTicker: 'NFLX',
-        companyName: 'Netflix Inc.',
-        earningsDate: '2024-01-23T16:00:00Z',
-        earningsType: 'After Close',
-        isConfirmed: true,
-        estimatedEPS: 2.15,
-        estimatedRevenue: 8.7,
-        previousEPS: 3.73,
-        previousRevenue: 8.5,
-        conferenceCallUrl: 'https://ir.netflix.com/earnings-call/',
-        notes: 'Q4 2023 earnings call'
-      }
-    ];
+    if (!response.ok) {
+      throw new Error(`Alpha Vantage API error: ${response.status}`);
+    }
 
-    return mockEarningsData;
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error fetching from Alpaca API:', error);
+    console.error('Error fetching from Alpha Vantage:', error);
+    throw error;
+  }
+}
+
+async function storeEarningsInFirebase(earnings: any[]) {
+  try {
+    const batch = db.batch();
+    
+    // Create a collection for earnings data
+    const earningsRef = db.collection('earnings_calendar');
+    
+    // Clear existing earnings data
+    const existingDocs = await earningsRef.get();
+    existingDocs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    // Store new earnings data
+    earnings.forEach(earning => {
+      const docRef = earningsRef.doc();
+      batch.set(docRef, {
+        ...earning,
+        timestamp: new Date(),
+      });
+    });
+    
+    await batch.commit();
+    return true;
+  } catch (error) {
+    console.error('Error storing in Firebase:', error);
     throw error;
   }
 } 
