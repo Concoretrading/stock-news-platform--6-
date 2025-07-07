@@ -253,7 +253,7 @@ export function StockAlertSettings({ ticker, stockName }: StockAlertSettingsProp
 
         {/* Stock-Specific Examples */}
         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h4 className="font-medium text-black mb-2">Example for {ticker}:</h4>
+          <h4 className="font-medium text-black mb-2">Visual for {ticker}:</h4>
           <div className="text-sm text-gray-700 space-y-1">
             <p>
               • News events moving {ticker} by {settings.defaultMinimumMovement}+ points will create alerts
