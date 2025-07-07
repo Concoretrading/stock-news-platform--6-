@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Calendar, RefreshCw, Plus, CheckCircle, AlertCircle, Database } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
+import { getIdToken } from '@/lib/firebase-services';
 
 interface EarningsData {
   id: string;
@@ -63,7 +64,7 @@ export default function EarningsCalendarManager() {
   const fetchEarnings = async () => {
     try {
       setIsLoading(true);
-      const token = await user?.getIdToken();
+      const token = await getIdToken();
       const response = await fetch('/api/earnings-calendar', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -89,7 +90,12 @@ export default function EarningsCalendarManager() {
       setError(null);
       setSuccess(null);
 
-      const token = await user?.getIdToken();
+      if (!user) {
+        setError('You must be logged in to update earnings.');
+        setIsUpdating(false);
+        return;
+      }
+      const token = await getIdToken();
       const response = await fetch('/api/earnings-calendar', {
         method: 'POST',
         headers: {
@@ -125,8 +131,11 @@ export default function EarningsCalendarManager() {
         setError('Stock ticker and earnings date are required');
         return;
       }
-
-      const token = await user?.getIdToken();
+      if (!user) {
+        setError('You must be logged in to add earnings.');
+        return;
+      }
+      const token = await getIdToken();
       const response = await fetch('/api/earnings-calendar', {
         method: 'POST',
         headers: {
@@ -316,7 +325,7 @@ export default function EarningsCalendarManager() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="earningsType">Earnings Type</Label>
+                    <Label>Earnings Type</Label>
                     <Select 
                       value={newEarnings.earningsType} 
                       onValueChange={(value) => setNewEarnings(prev => ({ ...prev, earningsType: value }))}
