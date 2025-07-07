@@ -10,12 +10,20 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('401 Unauthorized: Missing or invalid Authorization header:', authHeader);
+      return NextResponse.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, { status: 401 });
     }
 
     const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await getAuth().verifyIdToken(token);
+    let decodedToken;
+    try {
+      decodedToken = await getAuth().verifyIdToken(token);
+    } catch (err) {
+      console.error('401 Unauthorized: Invalid or expired token:', err);
+      return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+    }
     const userId = decodedToken.uid;
+    console.log('Decoded token for GET:', decodedToken.email, decodedToken.uid);
 
     const { searchParams } = new URL(request.url);
     const stockTicker = searchParams.get('stockTicker');
@@ -51,15 +59,24 @@ export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.error('401 Unauthorized: Missing or invalid Authorization header:', authHeader);
+      return NextResponse.json({ error: 'Unauthorized: Missing or invalid Authorization header' }, { status: 401 });
     }
 
     const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await getAuth().verifyIdToken(token);
+    let decodedToken;
+    try {
+      decodedToken = await getAuth().verifyIdToken(token);
+    } catch (err) {
+      console.error('401 Unauthorized: Invalid or expired token:', err);
+      return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+    }
     const userId = decodedToken.uid;
+    console.log('Decoded token for POST:', decodedToken.email, decodedToken.uid);
 
     // Only allow admin access
     if (decodedToken.email !== 'handrigannick@gmail.com') {
+      console.error('403 Forbidden: User is not admin:', decodedToken.email);
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
