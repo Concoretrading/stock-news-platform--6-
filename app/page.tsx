@@ -352,7 +352,13 @@ export default function HomePage() {
                     <div key={pageIdx} className="min-w-[100vw] max-w-[100vw] flex-shrink-0">
                       <div className="flex flex-col space-y-4">
                         {watchlistWithLivePrices.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
-                          <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                          <StockCard 
+                            key={stock.symbol} 
+                            stock={{
+                              symbol: stock.symbol,
+                              name: stock.name
+                            }}
+                          />
                         ))}
                       </div>
                     </div>
@@ -374,7 +380,13 @@ export default function HomePage() {
             <div className="hidden md:block">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {visibleStocks.map((stock) => (
-                  <StockCard key={stock.symbol} stock={stock} isLastClose={stock.isLastClose} marketOpen={isMarketOpenNow()} />
+                  <StockCard 
+                    key={stock.symbol} 
+                    stock={{
+                      symbol: stock.symbol,
+                      name: stock.name
+                    }}
+                  />
                 ))}
               </div>
             </div>
