@@ -139,6 +139,7 @@ export default function CalendarPage() {
 
   return (
     <div className="container mx-auto py-8">
+      <div className="mb-4 text-center text-xs text-blue-400">Debug: Current user email: {user?.email || 'Not logged in'}</div>
       <h1 className="text-3xl font-bold mb-6 text-center">Calendar</h1>
       <div className="flex gap-8">
         {/* Side Tabs */}

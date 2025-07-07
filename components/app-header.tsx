@@ -1,7 +1,7 @@
 "use client"
 
 import { ThemeToggle } from "@/components/theme-toggle"
-import { TrendingUp, LogOut, User } from "lucide-react"
+import { TrendingUp, LogOut, User, Calendar as CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -35,6 +35,16 @@ export function AppHeader() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
+            <Link href="/calendar" passHref legacyBehavior>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-blue-500 hover:bg-blue-900/20 hover:text-blue-400 focus-visible:ring-blue-500"
+                aria-label="Calendar"
+              >
+                <CalendarIcon className="h-[1.5rem] w-[1.5rem]" />
+              </Button>
+            </Link>
             <ThemeToggle />
             <Button
               variant="outline"
