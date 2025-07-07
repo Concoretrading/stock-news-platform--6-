@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { Calendar } from "@/components/ui/calendar";
+import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -709,9 +710,19 @@ export default function CalendarPage() {
     return '📅';
   }
 
-  // Helper: Get user's watchlist stocks (this would come from your actual watchlist)
-  function getUserWatchlist() {
-    // For now, using mock data - replace with actual watchlist fetch
+  // Helper: Get user's watchlist stocks from Firebase
+  async function getUserWatchlist() {
+    try {
+      const response = await fetchWithAuth('/api/stocks');
+      if (response.ok) {
+        const data = await response.json();
+        return data.stocks || [];
+      }
+    } catch (error) {
+      console.error('Error fetching user watchlist:', error);
+    }
+    
+    // Fallback to mock data
     return [
       { ticker: "AAPL", name: "Apple Inc.", price: 185.64, change: +2.34, changePercent: +1.28, volume: "45.2M", marketCap: "2.9T", pe: 28.5, sector: "Technology" },
       { ticker: "TSLA", name: "Tesla Inc.", price: 237.49, change: +8.91, changePercent: +3.90, volume: "78.9M", marketCap: "754B", pe: 72.3, sector: "Automotive" },
@@ -725,9 +736,9 @@ export default function CalendarPage() {
   }
 
   // Helper: Get selected stocks data
-  function getSelectedStocksData() {
-    const watchlist = getUserWatchlist();
-    return watchlist.filter(stock => selectedStocks.includes(stock.ticker));
+  async function getSelectedStocksData() {
+    const watchlist = await getUserWatchlist();
+    return watchlist.filter((stock: any) => selectedStocks.includes(stock.ticker));
   }
 
   // Helper: Toggle stock selection
@@ -740,9 +751,9 @@ export default function CalendarPage() {
   }
 
   // Helper: Render the personal watchlist view
-  function renderPersonalView() {
-    const userWatchlist = getUserWatchlist();
-    const selectedStocksData = getSelectedStocksData();
+  async function renderPersonalView() {
+    const userWatchlist = await getUserWatchlist();
+    const selectedStocksData = await getSelectedStocksData();
     
     return (
       <div className="space-y-6">
@@ -761,8 +772,8 @@ export default function CalendarPage() {
         {/* Stock Selection */}
         <div className="bg-gray-900/60 rounded-xl border border-gray-600/30 p-6">
           <h3 className="text-lg font-bold text-gray-200 mb-4">Select Your Top 3 Stocks</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {userWatchlist.map((stock) => (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {userWatchlist.map((stock: any) => (
               <button
                 key={stock.ticker}
                 className={`p-4 rounded-lg transition text-left ${
@@ -796,7 +807,7 @@ export default function CalendarPage() {
           <div className="bg-gray-900/60 rounded-xl border border-gray-600/30 p-6">
             <h3 className="text-lg font-bold text-gray-200 mb-4">Your AI-Monitored Stocks</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {selectedStocksData.map((stock) => (
+              {selectedStocksData.map((stock: any) => (
                 <div
                   key={stock.ticker}
                   className={`p-4 rounded-lg transition cursor-pointer ${
