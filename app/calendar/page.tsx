@@ -499,8 +499,6 @@ export default function CalendarPage() {
     });
   }
 
-
-
   // Helper: Render the grid of months
   function renderMonthGrid() {
     const now = new Date();
@@ -600,12 +598,34 @@ export default function CalendarPage() {
 
     return (
       <div>
-        <div className="flex items-center mb-6">
-          <button className="text-blue-400 hover:underline mr-4" onClick={() => setZoomedWeek(null)}>
+        <div className="flex items-center justify-between mb-6">
+          <button className="text-blue-400 hover:underline" onClick={() => setZoomedWeek(null)}>
             ← Back to Month
           </button>
-          <div className="text-2xl font-bold text-blue-200">
-            Week of {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+          <div className="flex items-center gap-4">
+            <button 
+              className="text-blue-400 hover:text-blue-300 text-xl font-bold transition"
+              onClick={() => {
+                const prevWeekStart = addDays(weekStart, -7);
+                const prevWeekEnd = addDays(weekEnd, -7);
+                setZoomedWeek({ start: prevWeekStart, end: prevWeekEnd });
+              }}
+            >
+              ‹
+            </button>
+            <div className="text-2xl font-bold text-blue-200">
+              Week of {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
+            </div>
+            <button 
+              className="text-blue-400 hover:text-blue-300 text-xl font-bold transition"
+              onClick={() => {
+                const nextWeekStart = addDays(weekStart, 7);
+                const nextWeekEnd = addDays(weekEnd, 7);
+                setZoomedWeek({ start: nextWeekStart, end: nextWeekEnd });
+              }}
+            >
+              ›
+            </button>
           </div>
         </div>
 
@@ -755,11 +775,25 @@ export default function CalendarPage() {
 
     return (
       <div>
-        <div className="flex items-center mb-6">
-          <button className="text-blue-400 hover:underline mr-4" onClick={() => setZoomedMonth(null)}>
+        <div className="flex items-center justify-between mb-6">
+          <button className="text-blue-400 hover:underline" onClick={() => setZoomedMonth(null)}>
             ← Back to Months
           </button>
-          <div className="text-2xl font-bold text-blue-200">{format(month, "MMMM yyyy")}</div>
+          <div className="flex items-center gap-4">
+            <button 
+              className="text-blue-400 hover:text-blue-300 text-2xl font-bold transition"
+              onClick={() => setZoomedMonth(addMonths(month, -1))}
+            >
+              ‹
+            </button>
+            <div className="text-2xl font-bold text-blue-200">{format(month, "MMMM yyyy")}</div>
+            <button 
+              className="text-blue-400 hover:text-blue-300 text-2xl font-bold transition"
+              onClick={() => setZoomedMonth(addMonths(month, 1))}
+            >
+              ›
+            </button>
+          </div>
         </div>
 
         {/* Calendar Grid */}
