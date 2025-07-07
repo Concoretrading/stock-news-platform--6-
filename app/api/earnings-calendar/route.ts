@@ -166,9 +166,9 @@ async function addManualEarnings(data: any) {
 
 async function fetchEarningsFromAlpaca() {
   try {
-    // Try to fetch real data from multiple sources
-    const realEarningsData = await earningsFetcher.fetchAllSources(undefined, 4);
-    
+    // Only fetch earnings data from Alpaca API
+    const realEarningsData = await earningsFetcher.fetchFromAlpaca(undefined, 4);
+    console.log('DEBUG: Alpaca API returned', realEarningsData.length, 'earnings:', realEarningsData.slice(0, 5)); // Log first 5 for brevity
     if (realEarningsData.length > 0) {
       return realEarningsData;
     }
