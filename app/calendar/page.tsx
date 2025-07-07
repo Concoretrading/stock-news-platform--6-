@@ -33,6 +33,7 @@ const TABS = [
   { key: "events", label: "Events" },
   { key: "earnings", label: "Earnings" },
   { key: "alerts", label: "Alerts" },
+  { key: "personal", label: "Personal" },
 ];
 
 // Comprehensive mock earnings data
@@ -473,6 +474,120 @@ const MOCK_EVENTS = [
   }
 ];
 
+// Personal watchlist data with 10 categories
+const PERSONAL_WATCHLISTS = [
+  {
+    id: "tech-giants",
+    name: "Tech Giants",
+    stocks: [
+      { ticker: "AAPL", name: "Apple Inc.", price: 185.64, change: +2.34, changePercent: +1.28, volume: "45.2M", marketCap: "2.9T", pe: 28.5, sector: "Technology" },
+      { ticker: "MSFT", name: "Microsoft Corporation", price: 378.85, change: +4.12, changePercent: +1.10, volume: "22.1M", marketCap: "2.8T", pe: 32.1, sector: "Technology" },
+      { ticker: "GOOGL", name: "Alphabet Inc.", price: 142.56, change: -1.23, changePercent: -0.85, volume: "18.7M", marketCap: "1.8T", pe: 25.3, sector: "Technology" },
+      { ticker: "AMZN", name: "Amazon.com Inc.", price: 145.24, change: +3.45, changePercent: +2.43, volume: "35.8M", marketCap: "1.5T", pe: 45.2, sector: "Technology" },
+      { ticker: "NVDA", name: "NVIDIA Corporation", price: 485.09, change: +12.67, changePercent: +2.68, volume: "42.3M", marketCap: "1.2T", pe: 65.8, sector: "Technology" }
+    ]
+  },
+  {
+    id: "ai-leaders",
+    name: "AI Leaders",
+    stocks: [
+      { ticker: "NVDA", name: "NVIDIA Corporation", price: 485.09, change: +12.67, changePercent: +2.68, volume: "42.3M", marketCap: "1.2T", pe: 65.8, sector: "Technology" },
+      { ticker: "TSLA", name: "Tesla Inc.", price: 237.49, change: +8.91, changePercent: +3.90, volume: "78.9M", marketCap: "754B", pe: 72.3, sector: "Automotive" },
+      { ticker: "META", name: "Meta Platforms Inc.", price: 334.92, change: +5.67, changePercent: +1.72, volume: "15.2M", marketCap: "852B", pe: 28.9, sector: "Technology" },
+      { ticker: "PLTR", name: "Palantir Technologies", price: 16.78, change: +0.45, changePercent: +2.75, volume: "45.6M", marketCap: "37B", pe: 145.2, sector: "Technology" },
+      { ticker: "AI", name: "C3.ai Inc.", price: 28.45, change: -1.23, changePercent: -4.15, volume: "12.3M", marketCap: "3.2B", pe: -45.8, sector: "Technology" }
+    ]
+  },
+  {
+    id: "ev-revolution",
+    name: "EV Revolution",
+    stocks: [
+      { ticker: "TSLA", name: "Tesla Inc.", price: 237.49, change: +8.91, changePercent: +3.90, volume: "78.9M", marketCap: "754B", pe: 72.3, sector: "Automotive" },
+      { ticker: "RIVN", name: "Rivian Automotive", price: 18.92, change: +0.67, changePercent: +3.67, volume: "23.4M", marketCap: "18B", pe: -12.5, sector: "Automotive" },
+      { ticker: "LCID", name: "Lucid Group Inc.", price: 4.56, change: -0.12, changePercent: -2.56, volume: "18.7M", marketCap: "10.5B", pe: -8.9, sector: "Automotive" },
+      { ticker: "NIO", name: "NIO Inc.", price: 7.89, change: +0.34, changePercent: +4.50, volume: "45.2M", marketCap: "12.8B", pe: -15.2, sector: "Automotive" },
+      { ticker: "XPEV", name: "XPeng Inc.", price: 12.34, change: +0.56, changePercent: +4.76, volume: "28.9M", marketCap: "11.2B", pe: -22.1, sector: "Automotive" }
+    ]
+  },
+  {
+    id: "biotech-breakthroughs",
+    name: "Biotech Breakthroughs",
+    stocks: [
+      { ticker: "MRNA", name: "Moderna Inc.", price: 89.45, change: +2.34, changePercent: +2.68, volume: "12.8M", marketCap: "34B", pe: 15.2, sector: "Healthcare" },
+      { ticker: "BNTX", name: "BioNTech SE", price: 95.67, change: -1.23, changePercent: -1.27, volume: "8.9M", marketCap: "22B", pe: 8.9, sector: "Healthcare" },
+      { ticker: "CRSP", name: "CRISPR Therapeutics", price: 45.23, change: +1.45, changePercent: +3.31, volume: "5.6M", marketCap: "3.6B", pe: -12.8, sector: "Healthcare" },
+      { ticker: "EDIT", name: "Editas Medicine", price: 12.78, change: -0.34, changePercent: -2.59, volume: "3.2M", marketCap: "1.1B", pe: -8.5, sector: "Healthcare" },
+      { ticker: "BEAM", name: "Beam Therapeutics", price: 28.91, change: +0.89, changePercent: +3.18, volume: "2.1M", marketCap: "1.8B", pe: -15.3, sector: "Healthcare" }
+    ]
+  },
+  {
+    id: "crypto-correlated",
+    name: "Crypto Correlated",
+    stocks: [
+      { ticker: "COIN", name: "Coinbase Global", price: 156.78, change: +8.45, changePercent: +5.70, volume: "15.6M", marketCap: "38B", pe: 45.2, sector: "Financial" },
+      { ticker: "MSTR", name: "MicroStrategy Inc.", price: 445.67, change: +23.45, changePercent: +5.55, volume: "2.8M", marketCap: "7.4B", pe: 89.5, sector: "Technology" },
+      { ticker: "RIOT", name: "Riot Platforms", price: 12.34, change: +0.67, changePercent: +5.74, volume: "18.9M", marketCap: "3.2B", pe: 156.8, sector: "Technology" },
+      { ticker: "MARA", name: "Marathon Digital", price: 18.92, change: +1.23, changePercent: +6.95, volume: "25.4M", marketCap: "4.8B", pe: 234.1, sector: "Technology" },
+      { ticker: "SQ", name: "Block Inc.", price: 67.89, change: +2.34, changePercent: +3.57, volume: "12.3M", marketCap: "42B", pe: 78.9, sector: "Technology" }
+    ]
+  },
+  {
+    id: "renewable-energy",
+    name: "Renewable Energy",
+    stocks: [
+      { ticker: "ENPH", name: "Enphase Energy", price: 89.45, change: +3.45, changePercent: +4.01, volume: "8.9M", marketCap: "12B", pe: 34.5, sector: "Energy" },
+      { ticker: "SEDG", name: "SolarEdge Technologies", price: 67.23, change: +2.12, changePercent: +3.25, volume: "5.6M", marketCap: "3.8B", pe: 28.9, sector: "Energy" },
+      { ticker: "RUN", name: "Sunrun Inc.", price: 23.45, change: +0.89, changePercent: +3.94, volume: "12.3M", marketCap: "5.2B", pe: -15.6, sector: "Energy" },
+      { ticker: "NEE", name: "NextEra Energy", price: 67.89, change: +1.23, changePercent: +1.85, volume: "8.7M", marketCap: "135B", pe: 18.9, sector: "Energy" },
+      { ticker: "PLUG", name: "Plug Power Inc.", price: 4.56, change: +0.23, changePercent: +5.31, volume: "45.8M", marketCap: "2.8B", pe: -12.3, sector: "Energy" }
+    ]
+  },
+  {
+    id: "defense-contractors",
+    name: "Defense Contractors",
+    stocks: [
+      { ticker: "LMT", name: "Lockheed Martin", price: 445.67, change: +5.67, changePercent: +1.29, volume: "2.1M", marketCap: "112B", pe: 16.8, sector: "Aerospace" },
+      { ticker: "RTX", name: "Raytheon Technologies", price: 89.45, change: +1.23, changePercent: +1.39, volume: "6.8M", marketCap: "127B", pe: 18.9, sector: "Aerospace" },
+      { ticker: "BA", name: "Boeing Co.", price: 234.56, change: +4.56, changePercent: +1.98, volume: "8.9M", marketCap: "142B", pe: -45.2, sector: "Aerospace" },
+      { ticker: "GD", name: "General Dynamics", price: 267.89, change: +3.45, changePercent: +1.30, volume: "1.8M", marketCap: "76B", pe: 22.1, sector: "Aerospace" },
+      { ticker: "NOC", name: "Northrop Grumman", price: 445.23, change: +6.78, changePercent: +1.55, volume: "1.2M", marketCap: "68B", pe: 15.6, sector: "Aerospace" }
+    ]
+  },
+  {
+    id: "gaming-entertainment",
+    name: "Gaming & Entertainment",
+    stocks: [
+      { ticker: "NFLX", name: "Netflix Inc.", price: 445.67, change: +12.34, changePercent: +2.85, volume: "8.9M", marketCap: "198B", pe: 32.1, sector: "Entertainment" },
+      { ticker: "DIS", name: "Walt Disney Co.", price: 89.45, change: +2.34, changePercent: +2.69, volume: "12.3M", marketCap: "164B", pe: 45.2, sector: "Entertainment" },
+      { ticker: "ATVI", name: "Activision Blizzard", price: 95.67, change: +1.23, changePercent: +1.30, volume: "8.7M", marketCap: "74B", pe: 28.9, sector: "Entertainment" },
+      { ticker: "EA", name: "Electronic Arts", price: 134.56, change: +3.45, changePercent: +2.63, volume: "4.2M", marketCap: "37B", pe: 34.5, sector: "Entertainment" },
+      { ticker: "TTWO", name: "Take-Two Interactive", price: 145.23, change: +4.56, changePercent: +3.24, volume: "3.8M", marketCap: "24B", pe: 45.8, sector: "Entertainment" }
+    ]
+  },
+  {
+    id: "fintech-disruptors",
+    name: "Fintech Disruptors",
+    stocks: [
+      { ticker: "SQ", name: "Block Inc.", price: 67.89, change: +2.34, changePercent: +3.57, volume: "12.3M", marketCap: "42B", pe: 78.9, sector: "Technology" },
+      { ticker: "PYPL", name: "PayPal Holdings", price: 67.23, change: +1.45, changePercent: +2.20, volume: "15.6M", marketCap: "76B", pe: 18.9, sector: "Technology" },
+      { ticker: "ADYEN", name: "Adyen N.V.", price: 1234.56, change: +45.67, changePercent: +3.84, volume: "1.2M", marketCap: "38B", pe: 45.2, sector: "Technology" },
+      { ticker: "STRIPE", name: "Stripe Inc.", price: 89.45, change: +3.45, changePercent: +4.01, volume: "N/A", marketCap: "95B", pe: "N/A", sector: "Technology" },
+      { ticker: "ROKU", name: "Roku Inc.", price: 67.89, change: +2.34, changePercent: +3.57, volume: "8.9M", marketCap: "9.8B", pe: -12.3, sector: "Technology" }
+    ]
+  },
+  {
+    id: "space-exploration",
+    name: "Space Exploration",
+    stocks: [
+      { ticker: "SPCE", name: "Virgin Galactic", price: 2.34, change: +0.12, changePercent: +5.41, volume: "45.6M", marketCap: "1.2B", pe: -8.9, sector: "Aerospace" },
+      { ticker: "RKLB", name: "Rocket Lab USA", price: 4.56, change: +0.23, changePercent: +5.31, volume: "12.3M", marketCap: "2.1B", pe: -15.6, sector: "Aerospace" },
+      { ticker: "ASTS", name: "AST SpaceMobile", price: 3.45, change: +0.18, changePercent: +5.50, volume: "8.7M", marketCap: "0.8B", pe: -12.3, sector: "Aerospace" },
+      { ticker: "VORB", name: "Virgin Orbit", price: 0.89, change: +0.05, changePercent: +5.95, volume: "23.4M", marketCap: "0.3B", pe: -5.6, sector: "Aerospace" },
+      { ticker: "MAXR", name: "Maxar Technologies", price: 23.45, change: +1.23, changePercent: +5.53, volume: "2.8M", marketCap: "1.5B", pe: 45.2, sector: "Aerospace" }
+    ]
+  }
+];
+
 export default function CalendarPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState("events");
@@ -481,6 +596,8 @@ export default function CalendarPage() {
   const [hoveredWeek, setHoveredWeek] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedWatchlist, setSelectedWatchlist] = useState<string>("tech-giants");
+  const [selectedPersonalStock, setSelectedPersonalStock] = useState<any>(null);
 
   // Only show the real calendar to the admin
   const isAdmin = user?.email === "handrigannick@gmail.com";
@@ -589,6 +706,119 @@ export default function CalendarPage() {
     if (event.category === 'Trading Event') return '⚡';
     return '📅';
   }
+
++  // Helper: Render the personal watchlist view
++  function renderPersonalView() {
++    const currentWatchlist = PERSONAL_WATCHLISTS.find(w => w.id === selectedWatchlist);
++    
++    return (
++      <div className="flex gap-6 h-[600px]">
++        {/* Side Tabs */}
++        <div className="w-48 space-y-2">
++          {PERSONAL_WATCHLISTS.map((watchlist) => (
++            <button
++              key={watchlist.id}
++              className={`w-full text-left p-3 rounded-lg transition ${
++                selectedWatchlist === watchlist.id
++                  ? "bg-purple-600/80 text-white"
++                  : "bg-gray-800/60 text-gray-300 hover:bg-gray-700/60"
++              }`}
++              onClick={() => {
++                setSelectedWatchlist(watchlist.id);
++                setSelectedPersonalStock(null); // Clear selected stock when changing watchlist
++              }}
++            >
++              <div className="font-semibold text-sm">{watchlist.name}</div>
++              <div className="text-xs opacity-75">{watchlist.stocks.length} stocks</div>
++            </button>
++          ))}
++        </div>
++
++        {/* Main Content */}
++        <div className="flex-1 flex gap-6">
++          {/* Stock List */}
++          <div className="flex-1 bg-gray-900/60 rounded-xl border border-gray-600/30 p-4">
++            <h3 className="text-lg font-bold text-gray-200 mb-4">{currentWatchlist?.name}</h3>
++            <div className="space-y-2">
++              {currentWatchlist?.stocks.map((stock) => (
++                <button
++                  key={stock.ticker}
++                  className={`w-full p-3 rounded-lg transition text-left ${
++                    selectedPersonalStock?.ticker === stock.ticker
++                      ? "bg-purple-600/80 text-white"
++                      : "bg-gray-800/60 text-gray-300 hover:bg-gray-700/60"
++                  }`}
++                  onClick={() => setSelectedPersonalStock(stock)}
++                >
++                  <div className="flex items-center justify-between">
++                    <div>
++                      <div className="font-bold text-lg">{stock.ticker}</div>
++                      <div className="text-sm opacity-75">{stock.name}</div>
++                    </div>
++                    <div className="text-right">
++                      <div className="font-bold text-lg">${stock.price}</div>
++                      <div className={`text-sm ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
++                        {stock.change >= 0 ? '+' : ''}{stock.change} ({stock.changePercent >= 0 ? '+' : ''}{stock.changePercent}%)
++                      </div>
++                    </div>
++                  </div>
++                </button>
++              ))}
++            </div>
++          </div>
++
++          {/* Stock Details */}
++          <div className="w-80 bg-gray-900/60 rounded-xl border border-gray-600/30 p-4">
++            {selectedPersonalStock ? (
++              <div>
++                <h3 className="text-lg font-bold text-gray-200 mb-4">Stock Details</h3>
++                <div className="space-y-4">
++                  <div>
++                    <div className="text-2xl font-bold text-gray-200">{selectedPersonalStock.ticker}</div>
++                    <div className="text-gray-400">{selectedPersonalStock.name}</div>
++                  </div>
++                  
++                  <div className="bg-gray-800/60 rounded-lg p-3">
++                    <div className="text-3xl font-bold text-gray-200 mb-1">${selectedPersonalStock.price}</div>
++                    <div className={`text-lg font-semibold ${selectedPersonalStock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
++                      {selectedPersonalStock.change >= 0 ? '+' : ''}{selectedPersonalStock.change} ({selectedPersonalStock.changePercent >= 0 ? '+' : ''}{selectedPersonalStock.changePercent}%)
++                    </div>
++                  </div>
++
++                  <div className="grid grid-cols-2 gap-3">
++                    <div className="bg-gray-800/60 rounded-lg p-3">
++                      <div className="text-xs text-gray-400">Volume</div>
++                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.volume}</div>
++                    </div>
++                    <div className="bg-gray-800/60 rounded-lg p-3">
++                      <div className="text-xs text-gray-400">Market Cap</div>
++                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.marketCap}</div>
++                    </div>
++                    <div className="bg-gray-800/60 rounded-lg p-3">
++                      <div className="text-xs text-gray-400">P/E Ratio</div>
++                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.pe}</div>
++                    </div>
++                    <div className="bg-gray-800/60 rounded-lg p-3">
++                      <div className="text-xs text-gray-400">Sector</div>
++                      <div className="text-sm font-semibold text-gray-200">{selectedPersonalStock.sector}</div>
++                    </div>
++                  </div>
++                </div>
++              </div>
++            ) : (
++              <div className="flex flex-col items-center justify-center h-full text-gray-400">
++                <div className="text-4xl mb-4">📈</div>
++                <div className="text-center">
++                  <div className="font-semibold mb-2">Select a Stock</div>
++                  <div className="text-sm">Click on any stock to view detailed information</div>
++                </div>
++              </div>
++            )}
++          </div>
++        </div>
++      </div>
++    );
++  }
 
   // Helper: Render the detailed week view
   function renderWeekView(weekStart: Date, weekEnd: Date) {
@@ -1051,7 +1281,9 @@ export default function CalendarPage() {
         <Card className="flex-1">
           <CardContent className="p-6">
             {isAdmin ? (
-              (tab === "earnings" || tab === "events") ? (
+              tab === "personal" ? (
+                renderPersonalView()
+              ) : (tab === "earnings" || tab === "events") ? (
                 zoomedWeek ? (
                   renderWeekView(zoomedWeek.start, zoomedWeek.end)
                 ) : zoomedMonth ? (
