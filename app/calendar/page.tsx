@@ -636,10 +636,18 @@ export default function CalendarPage() {
             const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][index];
             
             return (
-              <div key={index} className="bg-blue-950/60 rounded-xl border border-blue-700/30 p-4">
+              <div key={index} className={`rounded-xl border p-4 ${
+                tab === "events" 
+                  ? "bg-gray-900/60 border-gray-600/30" 
+                  : "bg-blue-950/60 border-blue-700/30"
+              }`}>
                 <div className="text-center mb-4">
-                  <div className="text-blue-300 font-bold text-lg">{dayName}</div>
-                  <div className="text-blue-400 text-sm">{format(day, "MMM d")}</div>
+                  <div className={`font-bold text-lg ${
+                    tab === "events" ? "text-gray-300" : "text-blue-300"
+                  }`}>{dayName}</div>
+                  <div className={`text-sm ${
+                    tab === "events" ? "text-gray-400" : "text-blue-400"
+                  }`}>{format(day, "MMM d")}</div>
                 </div>
                 
                 {tab === "earnings" && dayStocks.length > 0 ? (
@@ -745,7 +753,11 @@ export default function CalendarPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-blue-950/60 rounded-lg p-4 text-blue-300 flex flex-col items-center">
+                  <div className={`rounded-lg p-4 flex flex-col items-center ${
+                    tab === "events" 
+                      ? "bg-gray-950/60 text-gray-300" 
+                      : "bg-blue-950/60 text-blue-300"
+                  }`}>
                     <span className="text-2xl mb-2">
                       {tab === "earnings" ? "📅" : "📊"}
                     </span>
@@ -797,11 +809,17 @@ export default function CalendarPage() {
         </div>
 
         {/* Calendar Grid */}
-        <div className="bg-blue-950/60 rounded-xl border border-blue-700/30 p-6 mb-8">
+        <div className={`rounded-xl border p-6 mb-8 ${
+          tab === "events" 
+            ? "bg-gray-900/60 border-gray-600/30" 
+            : "bg-blue-950/60 border-blue-700/30"
+        }`}>
           {/* Day Headers */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => (
-              <div key={day} className="text-center text-blue-300 font-semibold text-sm py-2">
+              <div key={day} className={`text-center font-semibold text-sm py-2 ${
+                tab === "events" ? "text-gray-300" : "text-blue-300"
+              }`}>
                 {day}
               </div>
             ))}
@@ -824,16 +842,24 @@ export default function CalendarPage() {
                   className={`min-h-[120px] p-2 rounded-lg border transition cursor-pointer ${
                     isCurrentMonth 
                       ? isHovered 
-                        ? "bg-blue-800/60 border-blue-500/50 ring-2 ring-blue-400/30" 
-                        : "bg-blue-900/40 border-blue-600/30"
-                      : "bg-blue-950/20 border-blue-800/20"
+                        ? tab === "events"
+                          ? "bg-gray-800/60 border-gray-500/50 ring-2 ring-blue-400/30"
+                          : "bg-blue-800/60 border-blue-500/50 ring-2 ring-blue-400/30"
+                        : tab === "events"
+                          ? "bg-gray-800/40 border-gray-600/30"
+                          : "bg-blue-900/40 border-blue-600/30"
+                      : tab === "events"
+                        ? "bg-gray-950/20 border-gray-800/20"
+                        : "bg-blue-950/20 border-blue-800/20"
                   }`}
                   onMouseEnter={() => setHoveredWeek(weekKey)}
                   onMouseLeave={() => setHoveredWeek(null)}
                   onClick={() => setZoomedWeek({ start: weekStart, end: endOfWeek(day, { weekStartsOn: 1 }) })}
                 >
                   <div className={`text-sm font-medium mb-2 ${
-                    isCurrentMonth ? "text-blue-200" : "text-blue-500"
+                    isCurrentMonth 
+                      ? tab === "events" ? "text-gray-200" : "text-blue-200"
+                      : tab === "events" ? "text-gray-500" : "text-blue-500"
                   }`}>
                     {format(day, "d")}
                   </div>
@@ -946,8 +972,14 @@ export default function CalendarPage() {
         </div>
 
         {/* Popular Items List */}
-        <div className="bg-blue-950/60 rounded-xl border border-blue-700/30 p-6">
-          <h3 className="text-lg font-bold text-blue-200 mb-4">
+        <div className={`rounded-xl border p-6 ${
+          tab === "events" 
+            ? "bg-gray-900/60 border-gray-600/30" 
+            : "bg-blue-950/60 border-blue-700/30"
+        }`}>
+          <h3 className={`text-lg font-bold mb-4 ${
+            tab === "events" ? "text-gray-200" : "text-blue-200"
+          }`}>
             {tab === "earnings" ? "Popular Tickers This Month" : "Key Events This Month"}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
