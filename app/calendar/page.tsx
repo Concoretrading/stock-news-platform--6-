@@ -159,6 +159,320 @@ const MOCK_EARNINGS = [
   },
 ];
 
+// Comprehensive economic events data
+const MOCK_EVENTS = [
+  // Market Holidays
+  {
+    id: "new-years-2024",
+    title: "New Year's Day",
+    type: "market-holiday",
+    date: "2024-01-01T00:00:00Z",
+    description: "Market Closed",
+    impact: "high",
+    category: "Holiday"
+  },
+  {
+    id: "mlk-day-2024",
+    title: "Martin Luther King Jr. Day",
+    type: "market-holiday",
+    date: "2024-01-15T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "presidents-day-2024",
+    title: "Presidents' Day",
+    type: "market-holiday",
+    date: "2024-02-19T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "good-friday-2024",
+    title: "Good Friday",
+    type: "market-holiday",
+    date: "2024-03-29T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "memorial-day-2024",
+    title: "Memorial Day",
+    type: "market-holiday",
+    date: "2024-05-27T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "independence-day-2024",
+    title: "Independence Day",
+    type: "market-holiday",
+    date: "2024-07-04T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "labor-day-2024",
+    title: "Labor Day",
+    type: "market-holiday",
+    date: "2024-09-02T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "thanksgiving-2024",
+    title: "Thanksgiving Day",
+    type: "market-holiday",
+    date: "2024-11-28T00:00:00Z",
+    description: "Market Closed",
+    impact: "medium",
+    category: "Holiday"
+  },
+  {
+    id: "christmas-2024",
+    title: "Christmas Day",
+    type: "market-holiday",
+    date: "2024-12-25T00:00:00Z",
+    description: "Market Closed",
+    impact: "high",
+    category: "Holiday"
+  },
+  
+  // Quad Witching
+  {
+    id: "quad-witching-mar-2024",
+    title: "Quad Witching",
+    type: "trading-event",
+    date: "2024-03-15T16:00:00Z",
+    description: "Stock options, stock futures, index options, and index futures all expire",
+    impact: "high",
+    category: "Trading Event"
+  },
+  {
+    id: "quad-witching-jun-2024",
+    title: "Quad Witching",
+    type: "trading-event",
+    date: "2024-06-21T16:00:00Z",
+    description: "Stock options, stock futures, index options, and index futures all expire",
+    impact: "high",
+    category: "Trading Event"
+  },
+  {
+    id: "quad-witching-sep-2024",
+    title: "Quad Witching",
+    type: "trading-event",
+    date: "2024-09-20T16:00:00Z",
+    description: "Stock options, stock futures, index options, and index futures all expire",
+    impact: "high",
+    category: "Trading Event"
+  },
+  {
+    id: "quad-witching-dec-2024",
+    title: "Quad Witching",
+    type: "trading-event",
+    date: "2024-12-20T16:00:00Z",
+    description: "Stock options, stock futures, index options, and index futures all expire",
+    impact: "high",
+    category: "Trading Event"
+  },
+  
+  // Triple Witching
+  {
+    id: "triple-witching-jan-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-01-19T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-feb-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-02-16T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-apr-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-04-19T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-may-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-05-17T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-jul-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-07-19T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-aug-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-08-16T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-oct-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-10-18T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "triple-witching-nov-2024",
+    title: "Triple Witching",
+    type: "trading-event",
+    date: "2024-11-15T16:00:00Z",
+    description: "Stock options, index options, and index futures expire",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  
+  // Month-End Rebalancing
+  {
+    id: "month-end-jan-2024",
+    title: "Month-End Rebalancing",
+    type: "trading-event",
+    date: "2024-01-31T16:00:00Z",
+    description: "Portfolio rebalancing and window dressing",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "month-end-feb-2024",
+    title: "Month-End Rebalancing",
+    type: "trading-event",
+    date: "2024-02-29T16:00:00Z",
+    description: "Portfolio rebalancing and window dressing",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  {
+    id: "month-end-mar-2024",
+    title: "Month-End Rebalancing",
+    type: "trading-event",
+    date: "2024-03-29T16:00:00Z",
+    description: "Portfolio rebalancing and window dressing",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  
+  // Quarter-End Rebalancing
+  {
+    id: "quarter-end-mar-2024",
+    title: "Quarter-End Rebalancing",
+    type: "trading-event",
+    date: "2024-03-29T16:00:00Z",
+    description: "Major portfolio rebalancing and institutional flows",
+    impact: "high",
+    category: "Trading Event"
+  },
+  {
+    id: "quarter-end-jun-2024",
+    title: "Quarter-End Rebalancing",
+    type: "trading-event",
+    date: "2024-06-28T16:00:00Z",
+    description: "Major portfolio rebalancing and institutional flows",
+    impact: "high",
+    category: "Trading Event"
+  },
+  {
+    id: "quarter-end-sep-2024",
+    title: "Quarter-End Rebalancing",
+    type: "trading-event",
+    date: "2024-09-30T16:00:00Z",
+    description: "Major portfolio rebalancing and institutional flows",
+    impact: "high",
+    category: "Trading Event"
+  },
+  {
+    id: "quarter-end-dec-2024",
+    title: "Quarter-End Rebalancing",
+    type: "trading-event",
+    date: "2024-12-31T16:00:00Z",
+    description: "Major portfolio rebalancing and institutional flows",
+    impact: "high",
+    category: "Trading Event"
+  },
+  
+  // Tax-Related Days
+  {
+    id: "tax-loss-harvesting-2024",
+    title: "Tax Loss Harvesting",
+    type: "trading-event",
+    date: "2024-12-27T16:00:00Z",
+    description: "Last trading day for tax loss harvesting",
+    impact: "medium",
+    category: "Trading Event"
+  },
+  
+  // Economic Data
+  {
+    id: "cpi-jan-2024",
+    title: "CPI Report",
+    type: "economic-data",
+    date: "2024-01-11T08:30:00Z",
+    description: "Consumer Price Index - Inflation data",
+    impact: "high",
+    category: "Economic Data"
+  },
+  {
+    id: "fomc-jan-2024",
+    title: "FOMC Meeting",
+    type: "economic-data",
+    date: "2024-01-31T14:00:00Z",
+    description: "Federal Reserve interest rate decision",
+    impact: "high",
+    category: "Economic Data"
+  },
+  {
+    id: "jobs-report-feb-2024",
+    title: "Jobs Report",
+    type: "economic-data",
+    date: "2024-02-02T08:30:00Z",
+    description: "Non-farm payrolls and unemployment data",
+    impact: "high",
+    category: "Economic Data"
+  },
+  {
+    id: "gdp-q4-2023",
+    title: "GDP Report",
+    type: "economic-data",
+    date: "2024-01-25T08:30:00Z",
+    description: "Q4 2023 GDP growth rate",
+    impact: "high",
+    category: "Economic Data"
+  }
+];
+
 export default function CalendarPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState("events");
@@ -185,10 +499,14 @@ export default function CalendarPage() {
     });
   }
 
+
+
   // Helper: Render the grid of months
   function renderMonthGrid() {
     const now = new Date();
     const months = Array.from({ length: 7 }, (_, i) => startOfMonth(addMonths(now, i)));
+    const label = tab === "earnings" ? "EARNINGS" : tab === "events" ? "EVENTS" : "ALERTS";
+    
     return (
       <div className="grid grid-cols-3 gap-6">
         {months.map((month, idx) => (
@@ -198,7 +516,7 @@ export default function CalendarPage() {
             onClick={() => setZoomedMonth(month)}
           >
             <div className="text-blue-300 font-bold text-lg mb-2">{format(month, "MMMM yyyy")}</div>
-            <div className="text-xs text-blue-400 mb-2 tracking-widest">EARNINGS</div>
+            <div className="text-xs text-blue-400 mb-2 tracking-widest">{label}</div>
             <span className="text-blue-200">Click to zoom in</span>
           </button>
         ))}
@@ -229,10 +547,56 @@ export default function CalendarPage() {
     return { start: weekStart, end: endOfWeek(earningsDate, { weekStartsOn: 1 }) };
   }
 
+  // Helper: Get events for a specific date
+  function getEventsForDate(date: Date) {
+    return MOCK_EVENTS.filter(event => {
+      const eventDate = new Date(event.date);
+      return isSameDay(eventDate, date);
+    });
+  }
+
+  // Helper: Get events for a specific month
+  function getEventsForMonth(month: Date) {
+    return MOCK_EVENTS.filter(event => {
+      const eventDate = new Date(event.date);
+      return isSameMonth(eventDate, month);
+    }).sort((a, b) => {
+      // Sort by impact (high first), then by date
+      if (a.impact === 'high' && b.impact !== 'high') return -1;
+      if (b.impact === 'high' && a.impact !== 'high') return 1;
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+  }
+
+  // Helper: Get events for a specific week
+  function getEventsForWeek(weekStart: Date, weekEnd: Date) {
+    return MOCK_EVENTS.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate >= weekStart && eventDate <= weekEnd;
+    });
+  }
+
+  // Helper: Get event color based on type and impact
+  function getEventColor(event: any) {
+    if (event.type === 'market-holiday') return 'bg-red-600/80';
+    if (event.type === 'economic-data') return 'bg-yellow-600/80';
+    if (event.impact === 'high') return 'bg-orange-600/80';
+    return 'bg-blue-600/80';
+  }
+
+  // Helper: Get event icon based on type
+  function getEventIcon(event: any) {
+    if (event.type === 'market-holiday') return '🏛️';
+    if (event.type === 'economic-data') return '📊';
+    if (event.category === 'Trading Event') return '⚡';
+    return '📅';
+  }
+
   // Helper: Render the detailed week view
   function renderWeekView(weekStart: Date, weekEnd: Date) {
     const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
     const weekStocks = getStocksForWeek(weekStart, weekEnd);
+    const weekEvents = getEventsForWeek(weekStart, weekEnd);
 
     return (
       <div>
@@ -248,6 +612,7 @@ export default function CalendarPage() {
         <div className="grid grid-cols-5 gap-4">
           {weekDays.slice(0, 5).map((day, index) => {
             const dayStocks = getStocksForDate(day);
+            const dayEvents = getEventsForDate(day);
             const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"][index];
             
             return (
@@ -257,7 +622,7 @@ export default function CalendarPage() {
                   <div className="text-blue-400 text-sm">{format(day, "MMM d")}</div>
                 </div>
                 
-                {dayStocks.length > 0 ? (
+                {tab === "earnings" && dayStocks.length > 0 ? (
                   <div className="space-y-3">
                     {dayStocks.map((stock) => (
                       <Dialog key={stock.ticker} open={modalOpen && selectedStock?.ticker === stock.ticker} onOpenChange={setModalOpen}>
@@ -310,10 +675,63 @@ export default function CalendarPage() {
                       </Dialog>
                     ))}
                   </div>
+                ) : tab === "events" && dayEvents.length > 0 ? (
+                  <div className="space-y-3">
+                    {dayEvents.map((event) => (
+                      <Dialog key={event.id} open={modalOpen && selectedStock?.id === event.id} onOpenChange={setModalOpen}>
+                        <DialogTrigger asChild>
+                          <button
+                            className={`w-full ${getEventColor(event)} hover:opacity-80 rounded-lg p-3 transition flex flex-col items-center`}
+                            onClick={() => setSelectedStock(event)}
+                          >
+                            <div className="text-3xl mb-2">{getEventIcon(event)}</div>
+                            <div className="text-white font-bold text-sm text-center">{event.title}</div>
+                            <div className="text-blue-200 text-xs mt-1">
+                              {event.description}
+                            </div>
+                            <div className="text-yellow-400 text-xs font-medium capitalize mt-1">
+                              {event.impact} impact
+                            </div>
+                          </button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                              <span className="text-2xl">{getEventIcon(event)}</span>
+                              {event.title}
+                            </DialogTitle>
+                            <DialogDescription>
+                              <div className="mt-2 text-blue-700 font-medium">
+                                {event.description} <br />
+                                {new Date(event.date).toLocaleString()}
+                              </div>
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="mt-4">
+                            <div className="font-semibold mb-1">Event Details</div>
+                            <div className="text-sm text-muted-foreground">
+                              Category: {event.category}<br />
+                              Impact: <span className="font-mono capitalize">{event.impact}</span> <br />
+                              Type: <span className="font-mono capitalize">{event.type.replace('-', ' ')}</span>
+                            </div>
+                          </div>
+                          <DialogFooter className="mt-6">
+                            <div className="text-xs text-muted-foreground">
+                              Market impact may vary based on current conditions
+                            </div>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    ))}
+                  </div>
                 ) : (
                   <div className="bg-blue-950/60 rounded-lg p-4 text-blue-300 flex flex-col items-center">
-                    <span className="text-2xl mb-2">📅</span>
-                    <span className="text-sm">No Earnings</span>
+                    <span className="text-2xl mb-2">
+                      {tab === "earnings" ? "📅" : "📊"}
+                    </span>
+                    <span className="text-sm">
+                      {tab === "earnings" ? "No Earnings" : "No Events"}
+                    </span>
                   </div>
                 )}
               </div>
@@ -333,6 +751,7 @@ export default function CalendarPage() {
     
     const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
     const monthStocks = getStocksForMonth(month);
+    const monthEvents = getEventsForMonth(month);
 
     return (
       <div>
@@ -359,6 +778,7 @@ export default function CalendarPage() {
             {days.map((day, index) => {
               const isCurrentMonth = isSameMonth(day, month);
               const stocksForDay = getStocksForDate(day);
+              const eventsForDay = getEventsForDate(day);
               const weekStart = startOfWeek(day, { weekStartsOn: 1 });
               const weekKey = getWeekKey(day);
               const isHovered = hoveredWeek === weekKey;
@@ -384,7 +804,7 @@ export default function CalendarPage() {
                     {format(day, "d")}
                   </div>
                   
-                  {isCurrentMonth && stocksForDay.length > 0 && (
+                  {isCurrentMonth && tab === "earnings" && stocksForDay.length > 0 && (
                     <div className="space-y-1">
                       {stocksForDay.map((stock) => (
                         <Dialog key={stock.ticker} open={modalOpen && selectedStock?.ticker === stock.ticker} onOpenChange={setModalOpen}>
@@ -437,35 +857,109 @@ export default function CalendarPage() {
                       ))}
                     </div>
                   )}
+                  
+                  {isCurrentMonth && tab === "events" && eventsForDay.length > 0 && (
+                    <div className="space-y-1">
+                      {eventsForDay.map((event) => (
+                        <Dialog key={event.id} open={modalOpen && selectedStock?.id === event.id} onOpenChange={setModalOpen}>
+                          <DialogTrigger asChild>
+                            <button
+                              className={`w-full ${getEventColor(event)} hover:opacity-80 rounded px-2 py-1 text-xs text-white font-medium transition flex items-center gap-1`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedStock(event);
+                              }}
+                            >
+                              <span className="text-sm">{getEventIcon(event)}</span>
+                              {event.title}
+                            </button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle className="flex items-center gap-2">
+                                <span className="text-2xl">{getEventIcon(event)}</span>
+                                {event.title}
+                              </DialogTitle>
+                              <DialogDescription>
+                                <div className="mt-2 text-blue-700 font-medium">
+                                  {event.description} <br />
+                                  {new Date(event.date).toLocaleString()}
+                                </div>
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="mt-4">
+                              <div className="font-semibold mb-1">Event Details</div>
+                              <div className="text-sm text-muted-foreground">
+                                Category: {event.category}<br />
+                                Impact: <span className="font-mono capitalize">{event.impact}</span> <br />
+                                Type: <span className="font-mono capitalize">{event.type.replace('-', ' ')}</span>
+                              </div>
+                            </div>
+                            <DialogFooter className="mt-6">
+                              <div className="text-xs text-muted-foreground">
+                                Market impact may vary based on current conditions
+                              </div>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Popular Tickers List */}
+        {/* Popular Items List */}
         <div className="bg-blue-950/60 rounded-xl border border-blue-700/30 p-6">
-          <h3 className="text-lg font-bold text-blue-200 mb-4">Popular Tickers This Month</h3>
+          <h3 className="text-lg font-bold text-blue-200 mb-4">
+            {tab === "earnings" ? "Popular Tickers This Month" : "Key Events This Month"}
+          </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {monthStocks.map((stock) => (
-              <button
-                key={stock.ticker}
-                className="bg-blue-800/60 hover:bg-blue-700/80 rounded-lg p-3 transition flex flex-col items-center"
-                onClick={() => {
-                  const weekRange = findWeekForStock(stock);
-                  setZoomedWeek(weekRange);
-                }}
-              >
-                <div className="text-white font-bold text-lg">{stock.ticker}</div>
-                <div className="text-blue-300 text-xs">{stock.name}</div>
-                <div className="text-blue-400 text-xs mt-1">
-                  {format(new Date(stock.nextEarnings), "MMM d")}
-                </div>
-                <div className="text-green-400 text-xs font-medium">
-                  {stock.popularity}% popular
-                </div>
-              </button>
-            ))}
+            {tab === "earnings" ? (
+              monthStocks.map((stock) => (
+                <button
+                  key={stock.ticker}
+                  className="bg-blue-800/60 hover:bg-blue-700/80 rounded-lg p-3 transition flex flex-col items-center"
+                  onClick={() => {
+                    const weekRange = findWeekForStock(stock);
+                    setZoomedWeek(weekRange);
+                  }}
+                >
+                  <div className="text-white font-bold text-lg">{stock.ticker}</div>
+                  <div className="text-blue-300 text-xs">{stock.name}</div>
+                  <div className="text-blue-400 text-xs mt-1">
+                    {format(new Date(stock.nextEarnings), "MMM d")}
+                  </div>
+                  <div className="text-green-400 text-xs font-medium">
+                    {stock.popularity}% popular
+                  </div>
+                </button>
+              ))
+            ) : (
+              monthEvents.map((event) => (
+                <button
+                  key={event.id}
+                  className={`${getEventColor(event)} hover:opacity-80 rounded-lg p-3 transition flex flex-col items-center`}
+                  onClick={() => {
+                    const eventDate = new Date(event.date);
+                    const weekStart = startOfWeek(eventDate, { weekStartsOn: 1 });
+                    const weekEnd = endOfWeek(eventDate, { weekStartsOn: 1 });
+                    setZoomedWeek({ start: weekStart, end: weekEnd });
+                  }}
+                >
+                  <div className="text-2xl mb-1">{getEventIcon(event)}</div>
+                  <div className="text-white font-bold text-sm text-center">{event.title}</div>
+                  <div className="text-blue-200 text-xs mt-1">
+                    {format(new Date(event.date), "MMM d")}
+                  </div>
+                  <div className="text-yellow-400 text-xs font-medium capitalize">
+                    {event.impact} impact
+                  </div>
+                </button>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -491,7 +985,7 @@ export default function CalendarPage() {
         <Card className="flex-1">
           <CardContent className="p-6">
             {isAdmin ? (
-              tab === "earnings" ? (
+              (tab === "earnings" || tab === "events") ? (
                 zoomedWeek ? (
                   renderWeekView(zoomedWeek.start, zoomedWeek.end)
                 ) : zoomedMonth ? (
