@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { TrendingUp, Settings, Camera, Calendar, PlusCircle, BarChart3, ChevronLeft, ChevronRight } from "lucide-react"
+import { TrendingUp, Settings, Camera, Calendar, PlusCircle, BarChart3, ChevronLeft, ChevronRight, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist } from "@/lib/firebase-services"
@@ -37,6 +37,7 @@ export default function HomePage() {
   const [showStockSelector, setShowStockSelector] = useState(false)
   const [showScreenshotAnalyzer, setShowScreenshotAnalyzer] = useState(false)
   const [showManualNewsForm, setShowManualNewsForm] = useState(false)
+  const [showPastInstructions, setShowPastInstructions] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -159,122 +160,6 @@ export default function HomePage() {
       <AppHeader />
       
       <div className="container mx-auto px-4 py-8">
-        {/* Getting Started - Workflow Guidance */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Getting Started with ConcoreNews</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Screenshot Analysis */}
-            <Card className="border-blue-200 hover:border-blue-400 transition-colors cursor-pointer">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Camera className="h-5 w-5 text-blue-600" />
-                  Screenshot Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-3">
-                  Upload trading screenshots for instant AI analysis to extract stock tickers and news.
-                </p>
-                <Dialog open={showScreenshotAnalyzer} onOpenChange={setShowScreenshotAnalyzer}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Try Screenshot Analysis
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>Screenshot Analysis</DialogTitle>
-                    </DialogHeader>
-                    <ScreenshotAnalyzer 
-                      onCatalystAdded={(tickers) => {
-                        toast({
-                          title: "Catalyst Added",
-                          description: `Added catalysts for: ${tickers.join(', ')}`,
-                        })
-                        setShowScreenshotAnalyzer(false)
-                      }}
-                    />
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-
-            {/* Manual Catalyst Entry */}
-            <Card className="border-green-200 hover:border-green-400 transition-colors cursor-pointer">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <PlusCircle className="h-5 w-5 text-green-600" />
-                  Add News Catalyst
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-3">
-                  Manually add news catalysts with headlines, dates, prices, and notes for your stocks.
-                </p>
-                <Dialog open={showManualNewsForm} onOpenChange={setShowManualNewsForm}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="w-full">
-                      Add Catalyst
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Add News Catalyst</DialogTitle>
-                    </DialogHeader>
-                    {watchlist.length > 0 ? (
-                      <StockManualNewsForm 
-                        ticker={watchlist[0].symbol}
-                      />
-                    ) : (
-                      <div className="p-4 text-center text-gray-500">
-                        Please add stocks to your watchlist first
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-
-            {/* Calendar View */}
-            <Link href="/calendar">
-              <Card className="border-purple-200 hover:border-purple-400 transition-colors cursor-pointer">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Calendar className="h-5 w-5 text-purple-600" />
-                    Calendar & Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600 mb-3">
-                    View earnings calendar, upcoming events, and important dates for your stocks.
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Open Calendar
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Stock Analysis */}
-            <Card className="border-orange-200 hover:border-orange-400 transition-colors cursor-pointer">
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <BarChart3 className="h-5 w-5 text-orange-600" />
-                  Stock Analysis
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-gray-600 mb-3">
-                  Click on any stock below to view detailed analysis, news history, and catalysts.
-                </p>
-                <Button variant="outline" size="sm" className="w-full" onClick={handleScrollToStocks}>
-                  Analyze Stocks
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
         {/* Enhanced Watchlist Section */}
         <Card id="stocks-section" className="mb-8">
           <CardHeader>
@@ -360,7 +245,7 @@ export default function HomePage() {
         {/* Three Aspects of Time Section */}
         <div className="mb-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
               We as traders need to master all three aspects of time.
             </h2>
             <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
@@ -374,10 +259,39 @@ export default function HomePage() {
                   The Past
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center space-y-4">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Our platform allows you to drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history as long as it's a stock in your watch list.
+                  Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history as long as it's a stock in your watch list.
                 </p>
+                <Dialog open={showPastInstructions} onOpenChange={setShowPastInstructions}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Try It
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-amber-700">📸 Drop Screenshot Instructions</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                        <h3 className="font-semibold text-amber-800 mb-2">How to use screenshot dropping:</h3>
+                        <ol className="list-decimal list-inside space-y-2 text-amber-700">
+                          <li>Take a screenshot of news about any stock in your watchlist</li>
+                          <li>Drag and drop the image <strong>anywhere</strong> on this website</li>
+                          <li>Our AI will automatically extract the news and create a catalyst</li>
+                          <li>The catalyst will be stored in your stock's history</li>
+                        </ol>
+                      </div>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-blue-800 text-sm">
+                          💡 <strong>Pro tip:</strong> You can drop screenshots anywhere on the platform - the entire website acts as a drop zone!
+                        </p>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </CardContent>
             </Card>
 
@@ -388,10 +302,13 @@ export default function HomePage() {
                   The Present
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center space-y-4">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   We are building some incredibly powerful tools that will be available to the Concore family very soon.
                 </p>
+                <div className="w-full py-3 px-4 bg-green-50 border border-green-200 rounded-lg">
+                  <span className="text-green-700 font-medium">Coming Soon</span>
+                </div>
               </CardContent>
             </Card>
 
@@ -402,10 +319,16 @@ export default function HomePage() {
                   The Future
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center">
+              <CardContent className="text-center space-y-4">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   We have built a multi-functional calendar to keep us completely prepared for any future upcoming events.
                 </p>
+                <Link href="/calendar">
+                  <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50">
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Open Calendar
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>
