@@ -11,7 +11,7 @@ interface StockCardProps {
 export function StockCard({ ticker, name, onClick }: StockCardProps) {
   return (
     <Card 
-      className="hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 hover:border-blue-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 h-40"
+      className="hover:shadow-xl transition-all duration-300 cursor-pointer group border-2 hover:border-blue-300 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 h-40 relative"
       onClick={onClick}
     >
       <CardContent className="p-6 h-full flex flex-col justify-center">
@@ -23,6 +23,13 @@ export function StockCard({ ticker, name, onClick }: StockCardProps) {
           <p className="text-base text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
             {name}
           </p>
+        </div>
+        
+        {/* Subtle indicator for history navigation */}
+        <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="text-xs text-blue-600 font-medium bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-full">
+            View History →
+          </div>
         </div>
       </CardContent>
     </Card>

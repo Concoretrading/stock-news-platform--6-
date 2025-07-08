@@ -2,22 +2,22 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AppHeader } from "@/components/app-header"
-import { StockCard } from "@/components/stock-card"
-import { EnlargedStockView } from "@/components/enlarged-stock-view"
-import { CatalystStatsDashboard } from "@/components/catalyst-stats-dashboard"
-import { StockSelector } from "@/components/stock-selector"
-import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
-import { StockManualNewsForm } from "@/components/stock-manual-news-form"
-import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { TrendingUp, Settings, Camera, Calendar, PlusCircle, BarChart3, ChevronLeft, ChevronRight, Upload } from "lucide-react"
+import { TrendingUp, Upload, Calendar, Settings, ChevronLeft, ChevronRight } from "lucide-react"
+import { AppHeader } from "@/components/app-header"
+import { StockCard } from "@/components/stock-card"
+import { StockSelector } from "@/components/stock-selector"
+import { CatalystStatsDashboard } from "@/components/catalyst-stats-dashboard"
+import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
+import { StockManualNewsForm } from "@/components/stock-manual-news-form"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist } from "@/lib/firebase-services"
-import Link from "next/link"
+
 
 interface Stock {
   id?: string
@@ -33,18 +33,16 @@ interface FirebaseStock {
 }
 
 export default function HomePage() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
   const [watchlist, setWatchlist] = useState<Stock[]>([])
+  const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [showStockSelector, setShowStockSelector] = useState(false)
-  const [showScreenshotAnalyzer, setShowScreenshotAnalyzer] = useState(false)
-  const [showManualNewsForm, setShowManualNewsForm] = useState(false)
   const [showPastInstructions, setShowPastInstructions] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
-  const [isLoadingStocks, setIsLoadingStocks] = useState(true)
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [enlargedStock, setEnlargedStock] = useState<Stock | null>(null)
+  const maxStocks = 20
+  const stocksPerPage = 4
+  const { user } = useAuth()
   const { toast } = useToast()
+  const router = useRouter()
 
   // Carousel settings - show 8 stocks, total of 10 (so 2 pages)
   const stocksPerPage = 8
@@ -158,11 +156,7 @@ export default function HomePage() {
   }
 
   const handleStockClick = (stock: Stock) => {
-    setEnlargedStock(stock)
-  }
-
-  const handleCloseEnlargedView = () => {
-    setEnlargedStock(null)
+    router.push(`/stocks/${stock.symbol}#history`)
   }
 
   return (
@@ -352,15 +346,6 @@ export default function HomePage() {
             currentStocks={watchlist.map(stock => ({ ticker: stock.symbol, name: stock.name }))}
             onUpdate={(stocks) => handleUpdateWatchlist(stocks.map(stock => ({ symbol: stock.ticker, name: stock.name })))}
             onClose={() => setShowStockSelector(false)}
-          />
-        )}
-
-        {/* Enlarged Stock View */}
-        {enlargedStock && (
-          <EnlargedStockView
-            ticker={enlargedStock.symbol}
-            name={enlargedStock.name}
-            onClose={handleCloseEnlargedView}
           />
         )}
       </div>

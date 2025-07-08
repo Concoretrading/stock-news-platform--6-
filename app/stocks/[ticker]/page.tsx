@@ -32,6 +32,24 @@ export default function StockPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [refreshKey, setRefreshKey] = useState(0)
+  const [activeTab, setActiveTab] = useState("history")
+
+  useEffect(() => {
+    // Check for URL fragment to determine active tab
+    if (typeof window !== 'undefined') {
+      const fragment = window.location.hash.replace('#', '')
+      if (fragment && ['history', 'search', 'add-news', 'alerts'].includes(fragment)) {
+        setActiveTab(fragment)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    // Update URL fragment when tab changes
+    if (typeof window !== 'undefined' && activeTab) {
+      window.history.replaceState(null, '', `#${activeTab}`)
+    }
+  }, [activeTab])
 
   useEffect(() => {
     // Mock stock data - in real app, fetch from API
@@ -152,7 +170,7 @@ export default function StockPage() {
         </Card>
 
         {/* Tabs */}
-        <Tabs defaultValue="history" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="history" className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />

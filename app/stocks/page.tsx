@@ -42,7 +42,7 @@ export default function StocksPage() {
   }
 
   const handleStockClick = (ticker: string) => {
-    router.push(`/stocks/${ticker}`)
+    router.push(`/stocks/${ticker}#history`)
   }
 
   return (
