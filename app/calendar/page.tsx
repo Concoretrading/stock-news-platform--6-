@@ -4,11 +4,26 @@ import { AdminCalendarUpload } from '@/components/admin-calendar-upload';
 import { EarningsCalendar } from '@/components/earnings-calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function CalendarPage() {
+  const router = useRouter();
+
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Calendar</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Calendar</h1>
+        <Button 
+          variant="outline" 
+          onClick={() => router.push('/')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Button>
+      </div>
       
       <div className="flex gap-6">
         {/* Vertical Tabs */}
