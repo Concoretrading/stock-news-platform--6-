@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAuth } from '@/lib/hooks/use-auth';
+import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
