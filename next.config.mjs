@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    serverComponentsExternalPackages: ['firebase-admin'],
-    serverActions: true
+    serverComponentsExternalPackages: ['firebase-admin']
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
