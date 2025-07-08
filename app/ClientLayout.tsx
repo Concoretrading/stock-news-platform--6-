@@ -1,7 +1,6 @@
 "use client";
 import { AuthProvider } from "@/components/auth-provider";
 import { Toaster } from "@/components/ui/toaster";
-import { PriceAlertNotifications } from "@/components/price-alert-notifications";
 import ScreenshotButton from "@/components/ScreenshotButton";
 import React, { useEffect } from "react";
 
@@ -20,7 +19,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     <AuthProvider>
       {children}
       <Toaster />
-      <PriceAlertNotifications />
       <ScreenshotButton />
     </AuthProvider>
   );
