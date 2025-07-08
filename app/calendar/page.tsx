@@ -25,19 +25,19 @@ export default function CalendarPage() {
         </Button>
       </div>
       
-      <div className="flex gap-6">
-        {/* Vertical Tabs */}
-        <Card className="h-fit">
-          <TabsList className="flex flex-col h-auto bg-muted/50 p-2 gap-2">
-            <TabsTrigger value="events" className="w-32 justify-start">Events</TabsTrigger>
-            <TabsTrigger value="earnings" className="w-32 justify-start">Earnings</TabsTrigger>
-            <TabsTrigger value="elite" className="w-32 justify-start">Elite</TabsTrigger>
-          </TabsList>
-        </Card>
+      <Tabs defaultValue="events" orientation="vertical" className="w-full">
+        <div className="flex gap-6">
+          {/* Vertical Tabs */}
+          <Card className="h-fit">
+            <TabsList className="flex flex-col h-auto bg-muted/50 p-2 gap-2">
+              <TabsTrigger value="events" className="w-32 justify-start">Events</TabsTrigger>
+              <TabsTrigger value="earnings" className="w-32 justify-start">Earnings</TabsTrigger>
+              <TabsTrigger value="elite" className="w-32 justify-start">Elite</TabsTrigger>
+            </TabsList>
+          </Card>
 
-        {/* Calendar Content */}
-        <Card className="flex-1 p-6">
-          <Tabs defaultValue="events" orientation="vertical" className="w-full">
+          {/* Calendar Content */}
+          <Card className="flex-1 p-6">
             <TabsContent value="events">
               <EarningsCalendar type="events" />
             </TabsContent>
@@ -50,9 +50,9 @@ export default function CalendarPage() {
             <TabsContent value="elite">
               <EarningsCalendar type="elite" />
             </TabsContent>
-          </Tabs>
-        </Card>
-      </div>
+          </Card>
+        </div>
+      </Tabs>
     </div>
   );
 } 
