@@ -38,15 +38,14 @@ export default function HomePage() {
   const [showStockSelector, setShowStockSelector] = useState(false)
   const [showPastInstructions, setShowPastInstructions] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
-  const maxStocks = 20
-  const stocksPerPage = 4
-  const { user } = useAuth()
+  const [refreshKey, setRefreshKey] = useState(0)
+  const { user, loading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
 
-  // Carousel settings - show 8 stocks, total of 10 (so 2 pages)
-  const stocksPerPage = 8
-  const maxStocks = 10
+  // Carousel settings - show 4 stocks per page, max 20 total
+  const stocksPerPage = 4
+  const maxStocks = 20
 
   // Redirect to login if not authenticated
   useEffect(() => {
