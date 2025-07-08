@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import ScreenshotButton from "@/components/ScreenshotButton"
+import { AuthProvider } from "@/components/auth-provider"
 import "./globals.css"
 
 // Version display component
@@ -33,10 +34,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
-          <ScreenshotButton />
-          <VersionDisplay />
+          <AuthProvider>
+            {children}
+            <Toaster />
+            <ScreenshotButton />
+            <VersionDisplay />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

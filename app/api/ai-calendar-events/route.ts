@@ -5,6 +5,9 @@ import { analyzeCalendarScreenshot } from "@/lib/services/calendar-service";
 
 export const runtime = 'nodejs';
 
+// Only the admin can upload/edit earnings calendar
+const ADMIN_UID = 'YOUR_USER_ID'; // Replace this with your actual Firebase user ID
+
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication
@@ -21,6 +24,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     const userId = decodedToken.uid;
+
+    // Check if user is admin
+    if (userId !== ADMIN_UID) {
+      return NextResponse.json({ error: "Not authorized to upload calendar events" }, { status: 403 });
+    }
 
     // Get the form data
     const formData = await request.formData();

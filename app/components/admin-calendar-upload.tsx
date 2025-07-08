@@ -5,16 +5,35 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-const ADMIN_UIDS = ['your-admin-uid']; // Replace with your admin UID
+// Only the admin can upload/edit earnings calendar
+const ADMIN_UID = 'YOUR_USER_ID'; // Replace this with your actual Firebase user ID
 
 export function AdminCalendarUpload() {
   const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [previewEvents, setPreviewEvents] = useState<any[]>([]);
 
-  // Only show for admin users
-  if (!user || !ADMIN_UIDS.includes(user.uid)) {
-    return null;
+  // Display user ID for setup
+  if (user) {
+    console.log('Your user ID:', user.uid);
+    // Show the ID on screen temporarily
+    return (
+      <Card className="p-4">
+        <h2 className="text-xl font-bold mb-4">Your User ID</h2>
+        <p className="mb-4 font-mono bg-gray-100 p-2 rounded">{user.uid}</p>
+        <p className="text-sm text-muted-foreground">Copy this ID and let me know when you have it, so I can update the files with your specific ID.</p>
+      </Card>
+    );
+  }
+
+  // Not logged in
+  if (!user) {
+    return (
+      <Card className="p-4">
+        <h2 className="text-xl font-bold mb-4">Please Log In</h2>
+        <p>You need to be logged in to access this feature.</p>
+      </Card>
+    );
   }
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
