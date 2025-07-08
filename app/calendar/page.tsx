@@ -1,7 +1,7 @@
 'use client';
 
-import { AdminCalendarUpload } from '@/components/admin-calendar-upload';
-import { EarningsCalendar } from '@/components/earnings-calendar';
+import { AdminCalendarUpload } from '@/app/components/admin-calendar-upload';
+import { EarningsCalendar } from '@/app/components/earnings-calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
