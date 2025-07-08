@@ -357,6 +357,60 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
+        {/* Three Aspects of Time Section */}
+        <div className="mb-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              We as traders need to master all three aspects of time.
+            </h2>
+            <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* The Past */}
+            <Card className="border-amber-200 hover:border-amber-400 transition-colors">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+                  The Past
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Our platform allows you to drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history as long as it's a stock in your watch list.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* The Present */}
+            <Card className="border-green-200 hover:border-green-400 transition-colors">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-300">
+                  The Present
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  We are building some incredibly powerful tools that will be available to the Concore family very soon.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* The Future */}
+            <Card className="border-purple-200 hover:border-purple-400 transition-colors">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                  The Future
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                  We have built a multi-functional calendar to keep us completely prepared for any future upcoming events.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Stock Selector Modal */}
         {showStockSelector && (
           <StockSelector
