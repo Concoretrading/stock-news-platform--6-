@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Camera, Loader2, TrendingUp, TrendingDown } from "lucide-react"
+import { Camera, Loader2, TrendingUp, TrendingDown, FileText } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from '@/lib/fetchWithAuth'
 
@@ -49,6 +49,8 @@ interface BulkFile {
 export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCatalystAdded }: ScreenshotAnalyzerProps) {
   const [files, setFiles] = useState<BulkFile[]>([])
   const [dragActive, setDragActive] = useState(false)
+  const [droppedText, setDroppedText] = useState<string>('')
+  const [processingText, setProcessingText] = useState(false)
   const { toast } = useToast()
   const lastAnalyzeTime = useRef(0)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -65,11 +67,20 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
     }
   }
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
 
+    // Check for text content first
+    const textData = e.dataTransfer.getData('text/plain')
+    if (textData && textData.length > 50) {
+      setDroppedText(textData)
+      await processNewsArticle(textData)
+      return
+    }
+
+    // Handle files (existing functionality)
     const droppedFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"))
     if (droppedFiles.length > 0) {
       handleFileSelect(droppedFiles)
@@ -212,6 +223,47 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
     }
   }
 
+  const processNewsArticle = async (articleText: string) => {
+    setProcessingText(true)
+    setError(null)
+    
+    try {
+      const response = await fetchWithAuth("/api/process-news-article", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ articleText }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || `HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      
+      toast({
+        title: "Article Processed",
+        description: `Found ${data.tickers?.length || 0} stock matches and created ${data.successCount || 0} catalyst entries.`,
+      })
+
+      if (data.successCount > 0 && typeof onCatalystAdded === 'function') {
+        onCatalystAdded(data.tickers || [])
+      }
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to process article")
+      toast({
+        title: "Processing Failed",
+        description: error instanceof Error ? error.message : "Failed to process news article",
+        variant: "destructive",
+      })
+    } finally {
+      setProcessingText(false)
+    }
+  }
+
   const getSentimentColor = (confidence: number): string => {
     if (confidence > 0.8) return "text-green-600"
     if (confidence > 0.6) return "text-yellow-600"
@@ -237,10 +289,12 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
 
   return (
     <Card className="w-full relative">
-      {files.some(f => f.status === 'analyzing') && (
+      {(files.some(f => f.status === 'analyzing') || processingText) && (
         <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-20 rounded-xl">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
-          <span className="text-lg font-semibold text-blue-700">Analyzing screenshots...</span>
+          <span className="text-lg font-semibold text-blue-700">
+            {processingText ? "Processing news article..." : "Analyzing screenshots..."}
+          </span>
         </div>
       )}
       <CardHeader>
@@ -253,11 +307,21 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
         {/* Professional Notice: Drag and drop anywhere */}
         <div className="border-2 border-blue-500 bg-blue-50 p-12 text-center rounded-xl flex flex-col items-center justify-center space-y-6">
           <Camera className="h-16 w-16 mx-auto text-blue-400" />
-          <h3 className="text-2xl font-bold mb-2">Drag & Drop Screenshots Anywhere</h3>
+          <h3 className="text-2xl font-bold mb-2">Drag & Drop Screenshots or News Articles</h3>
           <p className="text-gray-700 max-w-xl mx-auto mb-4">
-            You can now drag and drop your trading screenshots anywhere on the dashboard for instant AI analysis. No need to use a specific upload area—just drop your images and let our platform do the rest!
+            Drop your trading screenshots OR copy/paste news articles anywhere on the dashboard for instant AI analysis. Our AI will automatically extract stock tickers, headlines, and key information to create catalyst entries.
           </p>
-          <p className="text-gray-500 text-sm">Alternatively, you can still use the floating screenshot button at the bottom right to open the analyzer manually.</p>
+          <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              <span>Screenshots → Vision AI Analysis</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              <span>News Articles → Text AI Processing</span>
+            </div>
+          </div>
+          <p className="text-gray-500 text-sm">Or use the floating screenshot button at the bottom right to open the analyzer manually.</p>
         </div>
 
         {/* List of files to analyze */}
