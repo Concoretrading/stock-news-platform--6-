@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { AppHeader } from "@/components/app-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -70,7 +69,6 @@ export default function StockPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHeader />
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/4"></div>
@@ -92,9 +90,7 @@ export default function StockPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
-
-      <main className="container mx-auto px-4 py-8 space-y-6">
+      <div className="container mx-auto px-4 py-8">
         {/* Back Button */}
         <Link href="/">
           <Button variant="ghost" size="sm">
@@ -195,7 +191,7 @@ export default function StockPage() {
 
         {/* Floating Screenshot Button with Analyzer */}
         <ScreenshotButton onCatalystAdded={() => setRefreshKey(k => k + 1)} />
-      </main>
+      </div>
     </div>
   )
 }
