@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,22 +23,18 @@ interface MonitoringStock {
 }
 
 export default function AIDataCollector() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [monitoringStocks, setMonitoringStocks] = useState<MonitoringStock[]>([]);
   const [isCollecting, setIsCollecting] = useState(false);
   const [collectionResults, setCollectionResults] = useState<Record<string, DataCollectionResults>>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchMonitoringStocks();
-    }
-  }, [user]);
-
-  const fetchMonitoringStocks = async () => {
+  const fetchMonitoringStocks = useCallback(async () => {
+    if (!user) return;
+    
     try {
-      const token = await user?.getIdToken();
+      const token = await firebaseUser?.getIdToken();
       const response = await fetch('/api/ai-monitoring', {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -53,11 +49,17 @@ export default function AIDataCollector() {
     } catch (error) {
       console.error('Error fetching monitoring stocks:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchMonitoringStocks();
+    }
+  }, [user, fetchMonitoringStocks]);
 
   const collectDataForStock = async (stockTicker: string) => {
     try {
-      const token = await user?.getIdToken();
+      const token = await firebaseUser?.getIdToken();
       const response = await fetch('/api/ai-data-collector', {
         method: 'POST',
         headers: {

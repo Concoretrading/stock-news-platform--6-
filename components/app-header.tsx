@@ -1,17 +1,10 @@
 "use client"
 
 import { ThemeToggle } from "@/components/theme-toggle"
-import { TrendingUp, LogOut, User, Calendar as CalendarIcon } from "lucide-react"
+import { TrendingUp, LogOut, Calendar as CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import Link from "next/link"
+import Image from "next/image"
 
 export function AppHeader() {
   return (
@@ -20,10 +13,12 @@ export function AppHeader() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Link href="/">
-              <img
+              <Image
                 src="/images/concore-logo.png"
                 alt="ConcoreTrading"
-                className="h-16 w-16 rounded-full bg-white/10 p-2 cursor-pointer"
+                width={64}
+                height={64}
+                className="rounded-full bg-white/10 p-2 cursor-pointer"
               />
             </Link>
             <div>

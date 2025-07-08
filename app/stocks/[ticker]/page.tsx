@@ -189,7 +189,7 @@ export default function StockPage() {
           </TabsContent>
 
           <TabsContent value="alerts">
-            <StockAlertTab ticker={stockData.symbol} />
+            <StockAlertTab />
           </TabsContent>
         </Tabs>
 

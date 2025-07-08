@@ -1,18 +1,17 @@
 import { NextRequest } from "next/server"
-import { getRealTimePriceService } from "@/lib/real-time-prices"
+// TODO: Real-time price service has been removed - need to implement alternative
+// import { getRealTimePriceService } from "@/lib/real-time-prices"
 
 export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
-    const service = getRealTimePriceService()
-    const status = service.status
-    
+    // Real-time price service temporarily unavailable
     return Response.json({
       success: true,
       data: {
-        status,
-        message: "WebSocket service is running"
+        status: "disabled",
+        message: "WebSocket service is currently disabled"
       }
     })
   } catch (error) {
@@ -27,41 +26,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const { action, symbols } = await request.json()
-    const service = getRealTimePriceService()
     
-    switch (action) {
-      case 'subscribe':
-        if (symbols && Array.isArray(symbols)) {
-          await service.subscribeToSymbols(symbols)
-          return Response.json({
-            success: true,
-            message: `Subscribed to ${symbols.length} symbols`
-          })
-        }
-        break
-        
-      case 'unsubscribe':
-        if (symbols && Array.isArray(symbols)) {
-          service.unsubscribeFromSymbols(symbols)
-          return Response.json({
-            success: true,
-            message: `Unsubscribed from ${symbols.length} symbols`
-          })
-        }
-        break
-        
-      case 'status':
-        return Response.json({
-          success: true,
-          data: service.status
-        })
-        
-      default:
-        return Response.json({
-          success: false,
-          error: "Invalid action"
-        }, { status: 400 })
-    }
+    // Real-time price service temporarily unavailable
+    return Response.json({
+      success: false,
+      error: "WebSocket service is currently disabled"
+    }, { status: 503 })
   } catch (error) {
     console.error("WebSocket action error:", error)
     return Response.json({

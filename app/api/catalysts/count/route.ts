@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getFirestore } from 'firebase-admin/firestore'
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns'
-import { collection, query, where, getDocs } from 'firebase-admin/firestore'
 
 // Force dynamic rendering for this route
 export const dynamic = 'force-dynamic'
@@ -34,15 +33,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Query catalysts collection for the specified ticker and date range
-    const catalystsRef = collection(db, 'catalysts')
-    const q = query(
-      catalystsRef,
-      where('stockTickers', 'array-contains', ticker),
-      where('date', '>=', startDate.toISOString()),
-      where('date', '<=', endDate.toISOString())
-    )
-
-    const snapshot = await getDocs(q)
+    const snapshot = await db.collection('catalysts')
+      .where('stockTickers', 'array-contains', ticker)
+      .where('date', '>=', startDate.toISOString())
+      .where('date', '<=', endDate.toISOString())
+      .get()
     const count = snapshot.size
 
     return NextResponse.json({ count })

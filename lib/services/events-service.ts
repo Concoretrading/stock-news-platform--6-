@@ -1,9 +1,45 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Query, DocumentData } from 'firebase-admin/firestore';
 import { getQuarterFromDate, getCategoryFromEventType, getImpactFromConfidence } from '@/lib/utils';
 
 const db = getFirestore();
 
-export async function getUpcomingEvents(stockTicker: string | null, startDate: string, endDate: string) {
+interface BaseEvent {
+  id: string;
+  eventType: string;
+  eventDate: string;
+  title: string;
+  description: string;
+  stockTicker: string;
+  confidence: number;
+  source: string;
+  category: string;
+  impact: 'low' | 'medium' | 'high';
+  daysUntil: number;
+}
+
+interface EarningsEvent extends BaseEvent {
+  eventType: 'earnings';
+  companyName: string;
+  earningsType: 'BMO' | 'AMC';
+  isConfirmed: boolean;
+  estimatedEPS: number | null;
+  estimatedRevenue: number | null;
+  conferenceCallUrl: string | null;
+}
+
+interface AIEvent extends BaseEvent {
+  eventType: 'product_launch' | 'regulatory' | 'conference' | 'other';
+}
+
+interface CompanyEvent extends BaseEvent {
+  eventType: 'product_launch';
+}
+
+interface RegulatoryEvent extends BaseEvent {
+  eventType: 'regulatory';
+}
+
+export async function getUpcomingEvents(stockTicker: string | null, startDate: string, endDate: string): Promise<BaseEvent[]> {
   try {
     const [earnings, aiEvents, companyEvents, regulatoryEvents] = await Promise.all([
       getUpcomingEarnings(stockTicker, startDate, endDate),
@@ -21,14 +57,14 @@ export async function getUpcomingEvents(stockTicker: string | null, startDate: s
   }
 }
 
-async function getUpcomingEarnings(stockTicker: string | null, startDate: string, endDate: string) {
+async function getUpcomingEarnings(stockTicker: string | null, startDate: string, endDate: string): Promise<EarningsEvent[]> {
   try {
-    let query = db.collection('earnings_calendar')
+    let query: Query<DocumentData> = db.collection('earnings_calendar')
       .where('earningsDate', '>=', startDate)
       .where('earningsDate', '<=', endDate);
 
     if (stockTicker) {
-      query = query.where('stockTicker', '==', stockTicker.toUpperCase()) as any;
+      query = query.where('stockTicker', '==', stockTicker.toUpperCase());
     }
 
     const snapshot = await query.get();
@@ -60,14 +96,14 @@ async function getUpcomingEarnings(stockTicker: string | null, startDate: string
   }
 }
 
-async function getAIDetectedEvents(stockTicker: string | null, startDate: string, endDate: string) {
+async function getAIDetectedEvents(stockTicker: string | null, startDate: string, endDate: string): Promise<AIEvent[]> {
   try {
-    let query = db.collection('ai_detected_events')
+    let query: Query<DocumentData> = db.collection('ai_detected_events')
       .where('eventDate', '>=', startDate)
       .where('eventDate', '<=', endDate);
 
     if (stockTicker) {
-      query = query.where('stockTicker', '==', stockTicker.toUpperCase()) as any;
+      query = query.where('stockTicker', '==', stockTicker.toUpperCase());
     }
 
     const snapshot = await query.get();
@@ -83,7 +119,7 @@ async function getAIDetectedEvents(stockTicker: string | null, startDate: string
         confidence: data.confidenceScore,
         source: data.sourceType,
         category: getCategoryFromEventType(data.eventType),
-        impact: getImpactFromConfidence(data.confidenceScore),
+        impact: getImpactFromConfidence(data.confidenceScore) as 'low' | 'medium' | 'high',
         daysUntil: Math.ceil((new Date(data.eventDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
       };
     });
@@ -93,10 +129,11 @@ async function getAIDetectedEvents(stockTicker: string | null, startDate: string
   }
 }
 
-async function getCompanyEvents(stockTicker: string | null, startDate: string, endDate: string) {
+async function getCompanyEvents(stockTicker: string | null, startDate: string, endDate: string): Promise<CompanyEvent[]> {
   // Mock company events - in production, this would come from company calendars, press releases, etc.
-  const mockCompanyEvents = [
+  const mockCompanyEvents: CompanyEvent[] = [
     {
+      id: 'mock-apple-event',
       eventType: 'product_launch',
       eventDate: '2024-09-10T14:00:00Z',
       title: 'Apple iPhone 16 Launch Event',
@@ -116,10 +153,11 @@ async function getCompanyEvents(stockTicker: string | null, startDate: string, e
   return mockCompanyEvents;
 }
 
-async function getRegulatoryEvents(stockTicker: string | null, startDate: string, endDate: string) {
+async function getRegulatoryEvents(stockTicker: string | null, startDate: string, endDate: string): Promise<RegulatoryEvent[]> {
   // Mock regulatory events - in production, this would come from SEC filings, regulatory calendars, etc.
-  const mockRegulatoryEvents = [
+  const mockRegulatoryEvents: RegulatoryEvent[] = [
     {
+      id: 'mock-apple-hearing',
       eventType: 'regulatory',
       eventDate: '2024-08-15T10:00:00Z',
       title: 'AAPL Antitrust Hearing',

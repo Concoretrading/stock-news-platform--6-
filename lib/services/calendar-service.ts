@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Query, DocumentData } from 'firebase-admin/firestore';
 import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
 import { getStorage } from '@/lib/firebase-admin';
 
@@ -8,6 +8,22 @@ const vision = new ImageAnnotatorClient();
 const storage = getStorage();
 const bucket = storage.bucket();
 
+type CloudVisionVertex = protos.google.cloud.vision.v1.IVertex;
+
+interface IVertex {
+  x: number;
+  y: number;
+}
+
+interface IBoundingPoly {
+  vertices: IVertex[] | null;
+}
+
+interface ILogoAnnotation {
+  description: string;
+  boundingPoly?: IBoundingPoly;
+}
+
 interface CalendarEvent {
   stockTicker: string;
   companyName: string;
@@ -15,12 +31,26 @@ interface CalendarEvent {
   eventType: 'earnings';
   logoUrl?: string;
   source: 'screenshot';
+  earningsType?: 'BMO' | 'AMC';
+  estimatedEPS?: number;
+  actualEPS?: number;
+  estimatedRevenue?: number;
+  actualRevenue?: number;
+  conferenceCallUrl?: string;
+  lastEarningsDate?: Date;
+  lastEarningsEPS?: number;
+  lastEarningsRevenue?: number;
 }
 
 interface AnalysisResult {
   events: CalendarEvent[];
   extractedText: string;
   imageStoragePath: string;
+}
+
+interface DatePosition {
+  x: number;
+  y: number;
 }
 
 // Map of common company names to their stock tickers
@@ -48,6 +78,13 @@ const companyToTicker: Record<string, string> = {
   // Add more as needed
 };
 
+function convertToIVertex(vertex: CloudVisionVertex): IVertex {
+  return {
+    x: vertex.x || 0,
+    y: vertex.y || 0
+  };
+}
+
 export async function analyzeCalendarScreenshot(
   userId: string,
   imageBuffer: Buffer,
@@ -67,26 +104,34 @@ export async function analyzeCalendarScreenshot(
     const [logoResult] = await vision.logoDetection(imageBuffer);
     const logos = logoResult.logoAnnotations || [];
 
-    // Extract dates and companies
+    // Extract dates from the calendar grid
     const events: CalendarEvent[] = [];
-    const dateRegex = /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}/g;
-    const dates = detectedText.match(dateRegex) || [];
-
+    const monthRegex = /Dec\s+\d{1,2}/g; // Update this based on current month
+    const dates = detectedText.match(monthRegex) || [];
+    
     // Process each detected logo
     for (const logo of logos) {
       const companyName = logo.description || '';
       // Find the closest date to this logo in the text
-      // This would need to be enhanced based on the actual layout
-      const nearestDate = findNearestDate(dates, detectedText, logo.boundingPoly?.vertices);
+      const vertices = (logo.boundingPoly?.vertices || []).map(convertToIVertex);
+      const nearestDate = findNearestDateInGrid(dates, detectedText, vertices);
       
       if (nearestDate) {
         const eventDate = parseDate(nearestDate);
+        
+        // Try to detect if it's Before Market Open or After Market Close
+        // For this calendar format, we'll need to look for timing indicators near the logo
+        const textAroundLogo = getTextAroundBoundingBox(detectedText, vertices, 150);
+        const earningsType = detectEarningsType(textAroundLogo);
+
         events.push({
-          stockTicker: companyToTicker[companyName] || companyName,
-          companyName,
+          stockTicker: getStockTickerFromLogo(companyName),
+          companyName: getFullCompanyName(companyName),
           eventDate,
           eventType: 'earnings',
-          source: 'screenshot'
+          source: 'screenshot',
+          earningsType,
+          logoUrl: await getLogoUrl(companyName)
         });
       }
     }
@@ -94,10 +139,22 @@ export async function analyzeCalendarScreenshot(
     // Store events in Firestore
     const batch = db.batch();
     for (const event of events) {
-      const eventRef = db.collection('users').doc(userId)
-        .collection('calendar_events').doc();
+      const eventRef = db.collection('earnings_calendar').doc();
       batch.set(eventRef, {
-        ...event,
+        stockTicker: event.stockTicker,
+        companyName: event.companyName,
+        earningsDate: event.eventDate,
+        earningsType: event.earningsType || 'BMO',
+        isConfirmed: true,
+        estimatedEPS: null,
+        actualEPS: null,
+        estimatedRevenue: null,
+        actualRevenue: null,
+        conferenceCallUrl: null,
+        lastEarningsDate: null,
+        lastEarningsEPS: null,
+        lastEarningsRevenue: null,
+        logoUrl: event.logoUrl,
         createdAt: new Date(),
         updatedAt: new Date()
       });
@@ -120,155 +177,187 @@ function parseDate(dateStr: string): Date {
   return new Date(`${dateStr} ${currentYear}`);
 }
 
-function findNearestDate(dates: string[], text: string, vertices: any): string | null {
-  if (!vertices || !dates.length) return null;
+// Updated to handle grid-based layout
+function findNearestDateInGrid(dates: string[], text: string, vertices: IVertex[]): string | null {
+  if (!vertices || vertices.length === 0) return null;
 
   // Calculate the center point of the logo
-  const logoX = vertices.reduce((sum: number, v: any) => sum + v.x, 0) / vertices.length;
-  const logoY = vertices.reduce((sum: number, v: any) => sum + v.y, 0) / vertices.length;
+  const centerX = vertices.reduce((sum, v) => sum + v.x, 0) / vertices.length;
+  const centerY = vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
 
-  // Find all date positions in the text
-  const datePositions = dates.map(date => {
+  // Find column and row headers
+  const columnHeaders = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+  const datePositions = new Map<string, DatePosition>();
+
+  // Map dates to their positions in the grid
+  dates.forEach(date => {
     const dateIndex = text.indexOf(date);
-    // Estimate the position based on character index
-    // This is a rough approximation - we'd need actual coordinates from the Vision API
-    const lineNumber = text.substring(0, dateIndex).split('\n').length;
-    const lineStart = text.substring(0, dateIndex).lastIndexOf('\n') + 1;
-    const xPos = dateIndex - lineStart;
-    return {
-      date,
-      x: xPos * 10, // Rough pixel estimation
-      y: lineNumber * 20 // Rough pixel estimation
-    };
+    if (dateIndex !== -1) {
+      // Find the nearest column header
+      let columnX = 0;
+      let minColumnDist = Infinity;
+      columnHeaders.forEach((header, index) => {
+        const headerIndex = text.indexOf(header);
+        if (headerIndex !== -1) {
+          const headerX = headerIndex * 10; // Rough estimation
+          const dist = Math.abs(dateIndex - headerIndex);
+          if (dist < minColumnDist) {
+            minColumnDist = dist;
+            columnX = headerX;
+          }
+        }
+      });
+
+      datePositions.set(date, {
+        x: columnX,
+        y: Math.floor(dateIndex / text.length * 1000) // Rough vertical position
+      });
+    }
   });
 
-  // Find the closest date by Euclidean distance
+  // Find the closest date by grid position
   let closestDate = null;
   let minDistance = Infinity;
 
-  for (const pos of datePositions) {
+  datePositions.forEach((pos, date) => {
     const distance = Math.sqrt(
-      Math.pow(pos.x - logoX, 2) + 
-      Math.pow(pos.y - logoY, 2)
+      Math.pow(pos.x - centerX, 2) + 
+      Math.pow(pos.y - centerY, 2)
     );
     if (distance < minDistance) {
       minDistance = distance;
-      closestDate = pos.date;
+      closestDate = date;
     }
-  }
+  });
 
   return closestDate;
 }
 
-// Add more helper functions as needed
+function detectEarningsType(text: string): 'BMO' | 'AMC' {
+  const lowerText = text.toLowerCase();
+  if (lowerText.includes('before market') || lowerText.includes('pre-market') || lowerText.includes('bmo')) {
+    return 'BMO';
+  }
+  if (lowerText.includes('after market') || lowerText.includes('post-market') || lowerText.includes('amc')) {
+    return 'AMC';
+  }
+  return 'BMO'; // Default to BMO if no clear indicator
+}
 
-export async function getCalendarEvents(userId: string, params: {
+function getTextAroundBoundingBox(fullText: string, vertices: IVertex[], charRadius: number = 150): string {
+  if (!vertices || vertices.length === 0) return '';
+
+  // Calculate the center point of the bounding box
+  const centerX = vertices.reduce((sum, v) => sum + v.x, 0) / vertices.length;
+  const centerY = vertices.reduce((sum, v) => sum + v.y, 0) / vertices.length;
+
+  // For simplicity, we'll just take a substring around the center point
+  // This is a rough approximation - in a real implementation, you'd want to
+  // consider the actual 2D layout of the text
+  const textCenter = Math.floor((fullText.length * centerY) / 1000);
+  const start = Math.max(0, textCenter - charRadius);
+  const end = Math.min(fullText.length, textCenter + charRadius);
+
+  return fullText.substring(start, end);
+}
+
+function getStockTickerFromLogo(logoName: string): string {
+  // First check our mapping
+  const ticker = companyToTicker[logoName];
+  if (ticker) return ticker;
+
+  // If not in our mapping, try some basic transformations
+  // Remove common words and spaces, take first word
+  const simplifiedName = logoName
+    .replace(/\binc\b|\bcorp\b|\bltd\b|\bplc\b/gi, '')
+    .trim()
+    .split(' ')[0]
+    .toUpperCase();
+
+  return simplifiedName;
+}
+
+function getFullCompanyName(logoName: string): string {
+  // Add common suffixes if missing
+  if (!/\b(inc|corp|ltd|plc)\b/i.test(logoName)) {
+    return `${logoName} Inc`;
+  }
+  return logoName;
+}
+
+async function getLogoUrl(companyName: string): Promise<string | undefined> {
+  try {
+    // First check if we already have this logo stored
+    const logoDoc = await db.collection('company_logos')
+      .where('companyName', '==', companyName)
+      .limit(1)
+      .get();
+
+    if (!logoDoc.empty) {
+      return logoDoc.docs[0].data().url;
+    }
+
+    // If not found, return undefined - logo fetching would be handled separately
+    return undefined;
+  } catch (error) {
+    console.error('Error fetching logo URL:', error);
+    return undefined;
+  }
+}
+
+interface CalendarEventParams {
   startDate?: string;
   endDate?: string;
   stockTicker?: string;
-}) {
-  const { startDate, endDate, stockTicker } = params;
-
-  // Get user's AI monitoring subscriptions
-  const subscriptionsSnap = await db.collection('ai_monitoring_subscriptions')
-    .where('userId', '==', userId)
-    .where('isActive', '==', true)
-    .get();
-
-  const monitoredStocks = subscriptionsSnap.docs.map(doc => doc.data().stockTicker);
-
-  if (monitoredStocks.length === 0) {
-    return [];
-  }
-
-  // Build query for AI detected events
-  let eventsQuery = db.collection('ai_detected_events')
-    .where('stockTicker', 'in', monitoredStocks);
-
-  if (startDate && endDate) {
-    eventsQuery = eventsQuery
-      .where('eventDate', '>=', startDate)
-      .where('eventDate', '<=', endDate);
-  }
-
-  if (stockTicker) {
-    eventsQuery = eventsQuery.where('stockTicker', '==', stockTicker.toUpperCase());
-  }
-
-  const eventsSnap = await eventsQuery
-    .orderBy('eventDate', 'asc')
-    .orderBy('eventTime', 'asc')
-    .get();
-
-  const events = eventsSnap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-
-  // Get user's calendar events (user-specific events)
-  let userEventsQuery = db.collection('user_calendar_events')
-    .where('userId', '==', userId);
-
-  if (startDate && endDate) {
-    userEventsQuery = userEventsQuery
-      .where('eventDate', '>=', startDate)
-      .where('eventDate', '<=', endDate);
-  }
-
-  if (stockTicker) {
-    userEventsQuery = userEventsQuery.where('stockTicker', '==', stockTicker.toUpperCase());
-  }
-
-  const userEventsSnap = await userEventsQuery
-    .orderBy('eventDate', 'asc')
-    .orderBy('eventTime', 'asc')
-    .get();
-
-  const userEvents = userEventsSnap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
-
-  return [...events, ...userEvents];
 }
 
-export async function updateCalendarEvent(userId: string, eventId: string, updates: {
+interface CalendarEventUpdate {
   isConfirmed?: boolean;
   userNotes?: string;
-}) {
-  if (!eventId) {
-    throw new Error('Event ID is required');
+}
+
+export async function getCalendarEvents(userId: string, params: CalendarEventParams) {
+  try {
+    let query: Query<DocumentData> = db.collection('earnings_calendar');
+
+    if (params.stockTicker) {
+      query = query.where('stockTicker', '==', params.stockTicker.toUpperCase());
+    }
+
+    if (params.startDate) {
+      query = query.where('earningsDate', '>=', new Date(params.startDate));
+    }
+
+    if (params.endDate) {
+      query = query.where('earningsDate', '<=', new Date(params.endDate));
+    }
+
+    const snapshot = await query.get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+  } catch (error) {
+    console.error('Error fetching calendar events:', error);
+    throw error;
   }
+}
 
-  const eventRef = db.collection('user_calendar_events').doc(eventId);
-  const eventDoc = await eventRef.get();
+export async function updateCalendarEvent(userId: string, eventId: string, updates: CalendarEventUpdate) {
+  try {
+    const eventRef = db.collection('earnings_calendar').doc(eventId);
+    await eventRef.update({
+      ...updates,
+      updatedAt: new Date()
+    });
 
-  if (!eventDoc.exists) {
-    throw new Error('Event not found');
+    const updatedDoc = await eventRef.get();
+    return {
+      id: updatedDoc.id,
+      ...updatedDoc.data()
+    };
+  } catch (error) {
+    console.error('Error updating calendar event:', error);
+    throw error;
   }
-
-  const eventData = eventDoc.data();
-  if (eventData?.userId !== userId) {
-    throw new Error('Unauthorized');
-  }
-
-  const updateData: any = {
-    updatedAt: new Date().toISOString()
-  };
-
-  if (typeof updates.isConfirmed === 'boolean') {
-    updateData.isConfirmed = updates.isConfirmed;
-  }
-
-  if (updates.userNotes !== undefined) {
-    updateData.userNotes = updates.userNotes;
-  }
-
-  await eventRef.update(updateData);
-
-  const updatedDoc = await eventRef.get();
-  return {
-    id: updatedDoc.id,
-    ...updatedDoc.data()
-  };
 } 

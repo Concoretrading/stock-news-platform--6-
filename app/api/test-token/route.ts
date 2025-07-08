@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
     const token = authHeader.split(' ')[1];
     const decoded = await verifyToken(token);
     return new Response(JSON.stringify({ decoded }), { status: 200 });
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err.message || String(err) }), { status: 401 });
+  } catch (err: Error | unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: errorMessage }), { status: 401 });
   }
 } 

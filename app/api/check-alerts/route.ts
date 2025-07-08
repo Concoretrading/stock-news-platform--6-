@@ -8,16 +8,10 @@ export const revalidate = 0;
 
 const db = getFirestore()
 
-// Helper to fetch current price for a ticker (reuse your price API logic)
+// NOTE: Live price functionality has been removed
 async function getCurrentPrice(ticker: string): Promise<number | null> {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock-prices?tickers=${ticker}`)
-    if (!res.ok) return null
-    const data = await res.json()
-    return data.prices?.[ticker]?.price ?? null
-  } catch {
-    return null
-  }
+  // Price fetching is disabled - live price functionality removed
+  return null
 }
 
 export async function GET(request: NextRequest) {

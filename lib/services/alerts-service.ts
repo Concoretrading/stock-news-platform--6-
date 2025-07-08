@@ -2,68 +2,48 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 const db = getFirestore();
 
-// Helper to fetch current price for a ticker
-async function getCurrentPrice(ticker: string): Promise<number | null> {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/stock-prices?tickers=${ticker}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.prices?.[ticker]?.price ?? null;
-  } catch {
-    return null;
-  }
+interface StockPrice {
+  price: number;
+  timestamp: string;
 }
 
-export async function checkAlerts(userId: string, ticker: string, currentPrice: number) {
-  // Get all active alerts for this user and ticker
-  const alertsSnap = await db.collection('alerts')
-    .where('userId', '==', userId)
-    .where('ticker', '==', ticker)
-    .where('isActive', '==', true)
-    .get();
+interface StockPriceResponse {
+  prices: Record<string, StockPrice>;
+}
 
-  const triggeredAlerts = [];
+interface Alert {
+  userId: string;
+  ticker: string;
+  type: 'price_above' | 'price_below';
+  targetPrice: number;
+  isActive: boolean;
+  createdAt: string;
+  triggeredAt?: string;
+  triggerPrice?: number;
+}
 
-  for (const doc of alertsSnap.docs) {
-    const alert = doc.data();
-    const alertId = doc.id;
+interface Notification {
+  userId: string;
+  type: 'alert_triggered';
+  ticker: string;
+  alertType: 'price_above' | 'price_below';
+  targetPrice: number;
+  triggerPrice: number;
+  createdAt: string;
+  isRead: boolean;
+}
 
-    // Check if alert conditions are met
-    let isTriggered = false;
-    if (alert.type === 'price_above' && currentPrice >= alert.targetPrice) {
-      isTriggered = true;
-    } else if (alert.type === 'price_below' && currentPrice <= alert.targetPrice) {
-      isTriggered = true;
-    }
+interface TriggeredAlert extends Alert {
+  alertId: string;
+  notificationId: string;
+  triggerPrice: number;
+}
 
-    if (isTriggered) {
-      // Update alert status
-      await db.collection('alerts').doc(alertId).update({
-        isActive: false,
-        triggeredAt: new Date().toISOString(),
-        triggerPrice: currentPrice
-      });
+// NOTE: Live price functionality has been removed
+// Alert checking functionality is disabled until alternative price source is implemented
 
-      // Add to notifications
-      const notificationRef = await db.collection('notifications').add({
-        userId,
-        type: 'alert_triggered',
-        ticker,
-        alertType: alert.type,
-        targetPrice: alert.targetPrice,
-        triggerPrice: currentPrice,
-        createdAt: new Date().toISOString(),
-        isRead: false
-      });
-
-      triggeredAlerts.push({
-        alertId,
-        notificationId: notificationRef.id,
-        ...alert,
-        triggerPrice: currentPrice
-      });
-    }
-  }
-
-  return triggeredAlerts;
+export async function checkAlerts(userId: string, ticker: string, currentPrice: number): Promise<TriggeredAlert[]> {
+  // Price-based alerts are currently disabled
+  console.log('Price alerts are currently disabled - live price functionality removed');
+  return [];
 } 

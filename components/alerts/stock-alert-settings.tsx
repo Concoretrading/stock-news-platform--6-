@@ -79,7 +79,7 @@ export function StockAlertSettings({ ticker, stockName }: StockAlertSettingsProp
     loadSettings()
   }, [ticker])
 
-  const handleSettingChange = (key: keyof StockAlertSettings, value: any) => {
+  const handleSettingChange = <T extends keyof StockAlertSettings>(key: T, value: StockAlertSettings[T]) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
     setHasChanges(true)
   }

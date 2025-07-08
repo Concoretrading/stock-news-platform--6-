@@ -7,7 +7,8 @@
   "regions": ["iad1"],
   "functions": {
     "app/api/**/*.ts": {
-      "maxDuration": 30
+      "maxDuration": 60,
+      "memory": 1024
     }
   },
   "headers": [
@@ -28,5 +29,15 @@
         }
       ]
     }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_BUILD_TIME": "${new Date().getTime()}"
+    }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "fresh-start": true
+    }
+  }
 } 

@@ -1,5 +1,6 @@
 'use client';
 
+import { User } from 'firebase/auth';
 import { useState, useEffect } from 'react';
 import { signIn, signUp, signOutUser, getCurrentUser, onAuthChange } from '@/lib/firebase-services';
 import { Button } from '@/components/ui/button';
@@ -10,13 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function FirebaseAuth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     // Listen for auth state changes
-    const unsubscribe = onAuthChange((user: any) => {
+    const unsubscribe = onAuthChange((user: User | null) => {
       setUser(user);
     });
 

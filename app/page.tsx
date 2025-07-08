@@ -1,20 +1,16 @@
 "use client"
 
-import { useState, useRef, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AppHeader } from "@/components/app-header"
 import { StockCard } from "@/components/stock-card"
 import { StockSelector } from "@/components/stock-selector"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Settings, ChevronLeft, ChevronRight, ArrowDown, Camera, List, Shuffle, Calendar } from "lucide-react"
+import { TrendingUp, Settings } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import ScreenshotButton from "@/components/ScreenshotButton"
 import { useAuth } from "@/components/auth-provider"
-import { getUserStocks, addStockToWatchlist, getIdToken } from "@/lib/firebase-services"
-import { fetchWithAuth } from "@/lib/fetchWithAuth"
-import { Switch } from '@/components/ui/switch'
+import { getUserStocks, addStockToWatchlist } from "@/lib/firebase-services"
 
 interface Stock {
   id?: string
@@ -26,7 +22,7 @@ interface FirebaseStock {
   id: string
   ticker: string
   companyName: string
-  createdAt: any
+  createdAt: string
 }
 
 export default function HomePage() {
@@ -35,8 +31,6 @@ export default function HomePage() {
   const [watchlist, setWatchlist] = useState<Stock[]>([])
   const [showStockSelector, setShowStockSelector] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
-  const [globalDragActive, setGlobalDragActive] = useState(false)
-  const [droppedFile, setDroppedFile] = useState<File | null>(null)
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
   const { toast } = useToast()
@@ -63,7 +57,7 @@ export default function HomePage() {
   const loadUserWatchlist = async () => {
     try {
       setIsLoadingStocks(true)
-      const userStocks = await getUserStocks() as FirebaseStock[]
+      const userStocks = await getUserStocks() as unknown as FirebaseStock[]
       
       if (userStocks.length === 0) {
         // If no stocks, add the standard set of 10
@@ -83,7 +77,7 @@ export default function HomePage() {
           await addStockToWatchlist(stock.symbol, stock.name)
         }
         // Reload after adding defaults
-        const updatedStocks = await getUserStocks() as FirebaseStock[]
+        const updatedStocks = await getUserStocks() as unknown as FirebaseStock[]
         setWatchlist(updatedStocks.map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
@@ -113,11 +107,11 @@ export default function HomePage() {
   const startIndex = currentPage * stocksPerPage
   const visibleStocks = watchlist.slice(startIndex, startIndex + stocksPerPage)
 
-  const handleUpdateWatchlist = async (newStocks: any[]) => {
+  const handleUpdateWatchlist = async (newStocks: Stock[]) => {
     try {
       // Update watchlist with new stocks
       setWatchlist(newStocks.map((stock) => ({
-        symbol: stock.ticker,
+        symbol: stock.symbol,
         name: stock.name
       })))
       setCurrentPage(0)
@@ -178,10 +172,8 @@ export default function HomePage() {
                       {watchlist.slice(pageIdx * stocksPerMobilePage, (pageIdx + 1) * stocksPerMobilePage).map((stock) => (
                         <StockCard 
                           key={stock.symbol} 
-                          stock={{
-                            symbol: stock.symbol,
-                            name: stock.name
-                          }}
+                          ticker={stock.symbol}
+                          name={stock.name}
                         />
                       ))}
                     </div>
@@ -206,10 +198,8 @@ export default function HomePage() {
               {visibleStocks.map((stock) => (
                 <StockCard 
                   key={stock.symbol} 
-                  stock={{
-                    symbol: stock.symbol,
-                    name: stock.name
-                  }}
+                  ticker={stock.symbol}
+                  name={stock.name}
                 />
               ))}
             </div>
@@ -220,14 +210,11 @@ export default function HomePage() {
       {/* Stock Selector Modal */}
       {showStockSelector && (
         <StockSelector
-          currentStocks={watchlist}
-          onUpdate={handleUpdateWatchlist}
+          currentStocks={watchlist.map(stock => ({ ticker: stock.symbol, name: stock.name }))}
+          onUpdate={(stocks) => handleUpdateWatchlist(stocks.map(stock => ({ symbol: stock.ticker, name: stock.name })))}
           onClose={() => setShowStockSelector(false)}
         />
       )}
-
-      {/* Screenshot Button */}
-      <ScreenshotButton />
     </div>
   )
 }

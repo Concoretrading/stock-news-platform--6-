@@ -4,27 +4,31 @@ import React, { useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Upload, Camera, Clipboard, Loader2, TrendingUp, TrendingDown, CheckCircle, AlertCircle } from "lucide-react"
+import { Camera, Loader2, TrendingUp, TrendingDown } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from '@/lib/fetchWithAuth'
 
+interface TickerMatch {
+  ticker: string;
+  company: string;
+  confidence: number;
+}
+
+interface NewsEntryResult {
+  ticker: string;
+  success: boolean;
+  id?: string;
+  error?: string;
+}
+
 interface AnalysisResult {
-  extractedText: string
-  matches: Array<{
-    ticker: string
-    company: string
-    confidence: number
-  }>
-  headline: string
-  date: string
-  price: number | null
-  source: string
-  newsEntryResults: Array<{
-    ticker: string
-    success: boolean
-    id?: string
-    error?: string
-  }>
+  extractedText: string;
+  matches: TickerMatch[];
+  headline: string;
+  date: string;
+  price: number | null;
+  source: string;
+  newsEntryResults: NewsEntryResult[];
 }
 
 interface ScreenshotAnalyzerProps {
@@ -34,6 +38,7 @@ interface ScreenshotAnalyzerProps {
 }
 
 type FileStatus = 'pending' | 'analyzing' | 'success' | 'error';
+
 interface BulkFile {
   file: File;
   status: FileStatus;
@@ -140,8 +145,8 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
       setFiles(prev => prev.map((f, idx) => idx === i ? { ...f, status: 'analyzing' } : f))
       try {
         const data = await handleScreenshotAnalysis(file)
-        const tickerCount = data?.newsEntryResults?.filter((r: any) => r.success).length || 0
-        const tickers = data?.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || []
+        const tickerCount = data?.newsEntryResults?.filter(r => r.success).length || 0
+        const tickers = data?.newsEntryResults?.filter(r => r.success).map(r => r.ticker) || []
         allAddedTickers = [...allAddedTickers, ...tickers]
         toast({
           title: `Screenshot processed (${file.name})`,
@@ -166,7 +171,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
     }
   }
 
-  const handleScreenshotAnalysis = async (file: File) => {
+  const handleScreenshotAnalysis = async (file: File): Promise<AnalysisResult> => {
     setIsAnalyzing(true)
     setError(null)
     setResults(null)
@@ -174,14 +179,6 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
     try {
       const formData = new FormData()
       formData.append("image", file)
-
-      // console.log("Starting screenshot analysis:", {
-      //   fileName: file.name,
-      //   fileSize: file.size,
-      //   fileType: file.type,
-      //   currentTime: new Date().toISOString(),
-      //   userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-      // })
 
       const response = await fetchWithAuth("/api/analyze-screenshot", {
         method: "POST",
@@ -193,56 +190,35 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
         throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
-      const data = await response.json()
-      // console.log("Screenshot analysis response:", {
-      //   success: data.success,
-      //   matches: data.matches?.length || 0,
-      //   newsEntryResults: data.newsEntryResults?.length || 0,
-      //   dateUsed: data.dateUsed,
-      //   imageUrl: data.imageUrl
-      // })
-
+      const data = await response.json() as AnalysisResult
       setResults(data)
-      
-      // Log detailed results for debugging
-      if (data.newsEntryResults) {
-        data.newsEntryResults.forEach((result: any, index: number) => {
-          // console.log(`Entry ${index + 1}:`, {
-          //   ticker: result.ticker,
-          //   success: result.success,
-          //   id: result.id,
-          //   error: result.error
-          // })
-        })
-      }
       
       toast({
         title: "Screenshot Analyzed",
-        description: `Found ${data.matches?.length || 0} ticker matches and created ${data.newsEntryResults?.filter((r: any) => r.success).length || 0} entries.`,
+        description: `Found ${data.matches?.length || 0} ticker matches and created ${data.newsEntryResults?.filter(r => r.success).length || 0} entries.`,
       })
       
-      return data; // Return the data for use in analyzeAll
+      return data;
     } catch (error) {
-      // console.error("Screenshot analysis error:", error)
       setError(error instanceof Error ? error.message : "Failed to analyze screenshot")
       toast({
         title: "Analysis Failed",
         description: error instanceof Error ? error.message : "Failed to analyze screenshot",
         variant: "destructive",
       })
-      throw error; // Re-throw for analyzeAll to catch
+      throw error;
     } finally {
       setIsAnalyzing(false)
     }
   }
 
-  const getSentimentColor = (confidence: number) => {
+  const getSentimentColor = (confidence: number): string => {
     if (confidence > 0.8) return "text-green-600"
     if (confidence > 0.6) return "text-yellow-600"
     return "text-red-600"
   }
 
-  const getSentimentIcon = (confidence: number) => {
+  const getSentimentIcon = (confidence: number): JSX.Element => {
     if (confidence > 0.8) return <TrendingUp className="h-8 w-8 text-green-600" />
     if (confidence > 0.6) return <TrendingDown className="h-8 w-8 text-yellow-600" />
     return <TrendingDown className="h-8 w-8 text-red-600" />
@@ -337,7 +313,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
             {files.filter(f => f.status === 'success').map((f, idx) => (
               <div key={idx} className="mb-8 p-6 bg-background rounded-lg border">
                 <h4 className="font-medium mb-4 text-lg flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+                  {/* <CheckCircle className="h-5 w-5 mr-2 text-green-600" /> */}
                   {f.file.name}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
