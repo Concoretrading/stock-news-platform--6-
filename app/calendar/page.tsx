@@ -74,16 +74,25 @@ export default function CalendarPage() {
 
             <TabsContent value="elite">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="h-5 w-5" />
-                  Elite Events
+                <CardTitle className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg">
+                    <Star className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-2xl font-light tracking-wide text-gradient bg-gradient-to-r from-amber-600 to-amber-800 bg-clip-text text-transparent">
+                    Elite
+                  </span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-center p-8 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
-                  <Star className="h-16 w-16 mx-auto mb-4 text-purple-600" />
-                  <h3 className="text-xl font-semibold text-purple-800 mb-4">Coming Soon</h3>
-                  <p className="text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                <div className="text-center p-12 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-xl border border-amber-200 shadow-lg">
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full blur-lg opacity-20"></div>
+                    <div className="relative p-4 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full w-20 h-20 mx-auto flex items-center justify-center">
+                      <Star className="h-10 w-10 text-white" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-light text-amber-800 mb-6 tracking-wide">Coming Soon</h3>
+                  <p className="text-gray-700 leading-relaxed max-w-3xl mx-auto text-lg font-light">
                     This section here will be an absolute game changer for everyone in the family allowing you to draw from the past the future and give you the most for the present on 3 stocks of your choice. Coming soon
                   </p>
                 </div>

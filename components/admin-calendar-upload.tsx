@@ -5,26 +5,15 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
-// Only the admin can upload/edit earnings calendar
-const ADMIN_UID = 'YOUR_USER_ID'; // Replace this with your actual Firebase user ID
+// Allow any authenticated user to upload earnings calendar
+// You can restrict this to specific UIDs later if needed
 
 export function AdminCalendarUpload() {
   const { user, firebaseUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [previewEvents, setPreviewEvents] = useState<any[]>([]);
 
-  // Display user ID for setup
-  if (user) {
-    console.log('Your user ID:', user.uid);
-    // Show the ID on screen temporarily
-    return (
-      <Card className="p-4">
-        <h2 className="text-xl font-bold mb-4">Your User ID</h2>
-        <p className="mb-4 font-mono bg-gray-100 p-2 rounded">{user.uid}</p>
-        <p className="text-sm text-muted-foreground">Copy this ID and let me know when you have it, so I can update the files with your specific ID.</p>
-      </Card>
-    );
-  }
+  // Allow any authenticated user to upload earnings calendar
 
   // Not logged in
   if (!user) {
