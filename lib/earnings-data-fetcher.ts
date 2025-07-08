@@ -25,7 +25,7 @@ export class EarningsDataFetcher {
   constructor() {
     this.alpacaApiKey = process.env.ALPACA_API_KEY || '';
     this.alpacaSecretKey = process.env.ALPACA_SECRET_KEY || '';
-    this.alphaVantageKey = process.env.ALPHA_VANTAGE_API_KEY || '';
+    this.alphaVantageKey = process.env.NEXT_PUBLIC_ALPHA_VANTAGE_API_KEY || '';
     this.fmpKey = process.env.FMP_API_KEY || '';
   }
 
