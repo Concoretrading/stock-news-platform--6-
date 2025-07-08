@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { StockCard } from "@/components/stock-card"
 import { Button } from "@/components/ui/button"
 import { SearchStocks } from "@/components/search-stocks"
@@ -24,6 +25,7 @@ const DEFAULT_STOCKS = [
 export default function StocksPage() {
   const [selectedStocks, setSelectedStocks] = useState(DEFAULT_STOCKS)
   const [showStockSelector, setShowStockSelector] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     // Load saved stocks from localStorage
@@ -37,6 +39,10 @@ export default function StocksPage() {
     setSelectedStocks(newStocks)
     localStorage.setItem("selectedStocks", JSON.stringify(newStocks))
     setShowStockSelector(false)
+  }
+
+  const handleStockClick = (ticker: string) => {
+    router.push(`/stocks/${ticker}`)
   }
 
   return (
@@ -69,6 +75,7 @@ export default function StocksPage() {
               key={stock.ticker}
               ticker={stock.ticker}
               name={stock.name}
+              onClick={() => handleStockClick(stock.ticker)}
             />
           ))}
         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { StockCard } from "@/components/stock-card"
+import { EnlargedStockView } from "@/components/enlarged-stock-view"
 import { StockSelector } from "@/components/stock-selector"
 import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
 import { StockManualNewsForm } from "@/components/stock-manual-news-form"
@@ -41,6 +42,7 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [enlargedStock, setEnlargedStock] = useState<Stock | null>(null)
   const { toast } = useToast()
 
   // Carousel settings - show 8 stocks, total of 10 (so 2 pages)
@@ -154,6 +156,14 @@ export default function HomePage() {
     }
   }
 
+  const handleStockClick = (stock: Stock) => {
+    setEnlargedStock(stock)
+  }
+
+  const handleCloseEnlargedView = () => {
+    setEnlargedStock(null)
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header with Calendar and Logout */}
@@ -217,6 +227,7 @@ export default function HomePage() {
                     <StockCard 
                       ticker={stock.symbol}
                       name={stock.name}
+                      onClick={() => handleStockClick(stock)}
                     />
                   </div>
                 ))}
@@ -335,6 +346,15 @@ export default function HomePage() {
             currentStocks={watchlist.map(stock => ({ ticker: stock.symbol, name: stock.name }))}
             onUpdate={(stocks) => handleUpdateWatchlist(stocks.map(stock => ({ symbol: stock.ticker, name: stock.name })))}
             onClose={() => setShowStockSelector(false)}
+          />
+        )}
+
+        {/* Enlarged Stock View */}
+        {enlargedStock && (
+          <EnlargedStockView
+            ticker={enlargedStock.symbol}
+            name={enlargedStock.name}
+            onClose={handleCloseEnlargedView}
           />
         )}
       </div>
