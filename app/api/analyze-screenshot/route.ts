@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { verifyAuthToken } from "@/lib/services/auth-service";
+import { getAuth } from "@/lib/firebase-admin";
 import { getWatchlistTickers, analyzeScreenshot } from "@/lib/services/screenshot-service";
 
 export async function POST(request: NextRequest) {
@@ -12,12 +12,8 @@ export async function POST(request: NextRequest) {
 
     let decodedToken;
     try {
-      decodedToken = await verifyAuthToken(idToken);
+      decodedToken = await (await getAuth()).verifyIdToken(idToken);
     } catch (err) {
-      // Handle build-time gracefully
-      if (err instanceof Error && err.message.includes('Authentication service not available during build')) {
-        return NextResponse.json({ error: "Service temporarily unavailable" }, { status: 503 });
-      }
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     const userId = decodedToken.uid;

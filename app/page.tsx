@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { AppHeader } from "@/components/app-header"
 import { StockCard } from "@/components/stock-card"
 import { EnlargedStockView } from "@/components/enlarged-stock-view"
+import { CatalystStatsDashboard } from "@/components/catalyst-stats-dashboard"
 import { StockSelector } from "@/components/stock-selector"
 import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
 import { StockManualNewsForm } from "@/components/stock-manual-news-form"
@@ -252,6 +253,11 @@ export default function HomePage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Catalyst Statistics Dashboard */}
+        <div className="mb-8">
+          <CatalystStatsDashboard />
+        </div>
 
         {/* Three Aspects of Time Section */}
         <div className="mb-8">

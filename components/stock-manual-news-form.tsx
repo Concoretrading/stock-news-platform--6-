@@ -32,15 +32,28 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
     setIsSubmitting(true)
 
     try {
+      // Debug: Check if user is authenticated
+      const user = auth.currentUser;
+      console.log('Current user:', user);
+      if (!user) {
+        toast({
+          title: "Authentication Error",
+          description: "Please make sure you are logged in before adding a news catalyst.",
+          variant: "destructive",
+        })
+        setIsSubmitting(false);
+        return;
+      }
+
       let imagePath = null
       if (formData.image) {
-        const user = auth.currentUser;
-        if (!user) throw new Error('User not authenticated');
         const fileExt = formData.image.name.split('.').pop();
         const filePath = `manual-news-images/${user.uid}_${Date.now()}.${fileExt}`;
+        console.log('Uploading image to:', filePath);
         await uploadImageToStorage(formData.image, filePath);
         imagePath = filePath; // Store the storage path
       }
+      
       // Prepare the data for API submission
       const submissionData = {
         stockSymbol: ticker,
@@ -53,6 +66,8 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
         source: formData.source || null,
       }
 
+      console.log('Submitting data:', submissionData);
+
       // Call the API
       const response = await fetchWithAuth('/api/manual-news', {
         method: 'POST',
@@ -62,7 +77,9 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
         body: JSON.stringify(submissionData),
       })
 
+      console.log('API Response status:', response.status);
       const result = await response.json()
+      console.log('API Response data:', result);
 
       if (result.success) {
         toast({
@@ -84,6 +101,7 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
         throw new Error(result.error || 'Failed to add news catalyst')
       }
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to add news catalyst. Please try again.",
