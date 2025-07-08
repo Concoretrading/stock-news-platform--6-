@@ -29,17 +29,17 @@ export default function CalendarPage() {
         <div className="flex gap-6">
           {/* Vertical Tabs */}
           <Card className="h-fit">
-            <TabsList className="flex flex-col h-auto bg-muted/50 p-2 gap-2">
-              <TabsTrigger value="events" className="w-32 justify-start">
-                <Calendar className="h-4 w-4 mr-2" />
+            <TabsList className="flex flex-col h-auto bg-muted/50 p-3 gap-3">
+              <TabsTrigger value="events" className="w-48 justify-start text-lg py-4">
+                <Calendar className="h-5 w-5 mr-3" />
                 Events
               </TabsTrigger>
-              <TabsTrigger value="earnings" className="w-32 justify-start">
-                <TrendingUp className="h-4 w-4 mr-2" />
+              <TabsTrigger value="earnings" className="w-48 justify-start text-lg py-4">
+                <TrendingUp className="h-5 w-5 mr-3" />
                 Earnings
               </TabsTrigger>
-              <TabsTrigger value="elite" className="w-32 justify-start">
-                <Star className="h-4 w-4 mr-2" />
+              <TabsTrigger value="elite" className="w-48 justify-start text-lg py-4">
+                <Star className="h-5 w-5 mr-3" />
                 Elite
               </TabsTrigger>
             </TabsList>
@@ -80,7 +80,13 @@ export default function CalendarPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <EarningsCalendar type="elite" />
+                <div className="text-center p-8 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
+                  <Star className="h-16 w-16 mx-auto mb-4 text-purple-600" />
+                  <h3 className="text-xl font-semibold text-purple-800 mb-4">Coming Soon</h3>
+                  <p className="text-gray-700 leading-relaxed max-w-2xl mx-auto">
+                    This section here will be an absolute game changer for everyone in the family allowing you to draw from the past the future and give you the most for the present on 3 stocks of your choice. Coming soon
+                  </p>
+                </div>
               </CardContent>
             </TabsContent>
           </Card>
