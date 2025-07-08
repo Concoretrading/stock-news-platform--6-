@@ -4,25 +4,36 @@ import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
 
 // Initialize Vision API client with proper credentials
 let vision: ImageAnnotatorClient;
-try {
-  // Check if we're in production (Vercel) or local development
-  if (process.env.NODE_ENV === 'production' && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-    // Production: Use base64 encoded credentials from environment variable
-    const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString());
-    vision = new ImageAnnotatorClient({ credentials });
-    console.log('Vision API initialized for production with base64 credentials');
-  } else {
-    // Local development: Use file path
-    vision = new ImageAnnotatorClient({
-      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'concorenews',
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS || './concorenews-firebase-adminsdk.json'
-    });
-    console.log('Vision API initialized for local development with JSON file');
+
+function initializeVisionClient(): ImageAnnotatorClient {
+  try {
+    // Check if we're in production (Vercel) or local development
+    if (process.env.NODE_ENV === 'production' && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+      // Production: Use base64 encoded credentials from environment variable
+      const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString());
+      console.log('Vision API initialized for production with base64 credentials');
+      return new ImageAnnotatorClient({ credentials });
+    } else {
+      // Local development: Use file path and explicit project ID
+      const config = {
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'concorenews',
+        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS || './concorenews-firebase-adminsdk.json'
+      };
+      console.log('Vision API initialized for local development with config:', config);
+      return new ImageAnnotatorClient(config);
+    }
+  } catch (error) {
+    console.error('Failed to initialize Vision API client:', error);
+    throw new Error(`Vision API initialization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
+}
+
+// Initialize the client at module level
+try {
+  vision = initializeVisionClient();
 } catch (error) {
-  console.error('Failed to initialize Vision API client:', error);
-  // Create a fallback client
-  vision = new ImageAnnotatorClient();
+  console.error('Critical: Vision API client initialization failed:', error);
+  // Don't create a fallback client - this will force proper error handling
 }
 
 type CloudVisionVertex = protos.google.cloud.vision.v1.IVertex;
@@ -205,6 +216,16 @@ function findNearestDate(text: string, logoVertices: IVertex[]): string | null {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Vision API client is properly initialized
+    if (!vision) {
+      console.error('Vision API client not initialized');
+      return NextResponse.json({
+        success: false,
+        error: 'Google Vision API is not properly configured. Please check your credentials and environment variables.',
+        details: 'Vision API client initialization failed'
+      }, { status: 500 });
+    }
+
     // Authenticate user (admin only)
     const authHeader = request.headers.get('authorization') || '';
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
