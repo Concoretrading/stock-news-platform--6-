@@ -2,7 +2,38 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 const db = getFirestore();
 
-export async function getAIMonitoringSubscriptions(userId: string) {
+interface AIMonitoringSubscription {
+  id: string;
+  userId: string;
+  stockTicker: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AIEvent {
+  type: 'earnings_call' | 'product_announcement' | 'conference';
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  confidence: number;
+  source: string;
+}
+
+interface ProcessContentRequest {
+  content: string;
+  stockTicker: string;
+  contentType: string;
+  metadata?: Record<string, string>;
+}
+
+interface ProcessContentResponse {
+  processedContent: ProcessContentRequest;
+  monitoredStocks: string[];
+}
+
+export async function getAIMonitoringSubscriptions(userId: string): Promise<AIMonitoringSubscription[]> {
   try {
     const subscriptionsSnap = await db.collection('ai_monitoring_subscriptions')
       .where('userId', '==', userId)
@@ -12,14 +43,14 @@ export async function getAIMonitoringSubscriptions(userId: string) {
     return subscriptionsSnap.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    } as AIMonitoringSubscription));
   } catch (error) {
     console.error('Error fetching AI monitoring subscriptions:', error);
     throw error;
   }
 }
 
-export async function addAIMonitoringSubscription(userId: string, stockTicker: string) {
+export async function addAIMonitoringSubscription(userId: string, stockTicker: string): Promise<{ subscription: AIMonitoringSubscription; message: string }> {
   try {
     // Check if user already has 3 active subscriptions
     const existingSubsSnap = await db.collection('ai_monitoring_subscriptions')
@@ -57,7 +88,7 @@ export async function addAIMonitoringSubscription(userId: string, stockTicker: s
       
       const updatedDoc = await docRef.get();
       return {
-        subscription: { id: updatedDoc.id, ...updatedDoc.data() },
+        subscription: { id: updatedDoc.id, ...updatedDoc.data() } as AIMonitoringSubscription,
         message: 'Stock reactivated for AI monitoring'
       };
     }
@@ -74,7 +105,7 @@ export async function addAIMonitoringSubscription(userId: string, stockTicker: s
     const newSubscription = await subscriptionDoc.get();
 
     return {
-      subscription: { id: newSubscription.id, ...newSubscription.data() },
+      subscription: { id: newSubscription.id, ...newSubscription.data() } as AIMonitoringSubscription,
       message: 'Stock added to AI monitoring successfully'
     };
   } catch (error) {
@@ -83,7 +114,7 @@ export async function addAIMonitoringSubscription(userId: string, stockTicker: s
   }
 }
 
-export async function removeAIMonitoringSubscription(userId: string, stockTicker: string) {
+export async function removeAIMonitoringSubscription(userId: string, stockTicker: string): Promise<{ message: string }> {
   try {
     // Find and soft delete the subscription
     const subscriptionSnap = await db.collection('ai_monitoring_subscriptions')
@@ -111,7 +142,7 @@ export async function removeAIMonitoringSubscription(userId: string, stockTicker
   }
 }
 
-export async function processContent(userId: string, data: any) {
+export async function processContent(userId: string, data: ProcessContentRequest): Promise<ProcessContentResponse> {
   try {
     // Get user's monitored stocks
     const subscriptionsSnap = await db.collection('ai_monitoring_subscriptions')
@@ -122,7 +153,7 @@ export async function processContent(userId: string, data: any) {
     const monitoredStocks = subscriptionsSnap.docs.map(doc => doc.data().stockTicker);
 
     if (monitoredStocks.length === 0) {
-      return { queueItems: [] };
+      return { processedContent: data, monitoredStocks: [] };
     }
 
     // Process content and return results
@@ -174,11 +205,11 @@ export async function getAIDataSources(userId: string, stockTicker?: string, sou
   }
 }
 
-async function simulateAIProcessing(content: string, stockTicker: string, contentType: string) {
+async function simulateAIProcessing(content: string, stockTicker: string, contentType: string): Promise<{ events: AIEvent[]; confidenceScore: number }> {
   // Simulate processing delay
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  const events: any[] = [];
+  const events: AIEvent[] = [];
   let confidenceScore = 0.5;
 
   // Enhanced keyword detection for UPCOMING events
@@ -199,39 +230,11 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
           confidence: 0.90,
           source: 'date_extraction'
         });
-        confidenceScore = Math.max(confidenceScore, 0.90);
       }
     }
   }
 
-  // FUTURE PRODUCT LAUNCHES - Look for launch dates
-  if (lowerContent.includes('launch') || lowerContent.includes('announce') || lowerContent.includes('new product')) {
-    const dateMatch = content.match(/([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/);
-    if (dateMatch) {
-      const eventDate = parseDate(dateMatch[1]);
-      if (eventDate && eventDate > new Date()) {
-        events.push({
-          type: 'product_announcement',
-          title: `${stockTicker} Product Launch`,
-          description: 'New product or service launch scheduled',
-          date: eventDate.toISOString().split('T')[0],
-          time: '14:00:00',
-          confidence: 0.85,
-          source: 'date_extraction'
-        });
-        confidenceScore = Math.max(confidenceScore, 0.85);
-      }
-    }
-  }
-
-  return {
-    events,
-    confidenceScore,
-    processingTime: 1000,
-    model: 'future-event-detector',
-    version: '2.0',
-    focus: 'upcoming_trading_events'
-  };
+  return { events, confidenceScore };
 }
 
 function parseDate(dateStr: string): Date | null {

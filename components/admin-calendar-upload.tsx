@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 const ADMIN_UID = 'YOUR_USER_ID'; // Replace this with your actual Firebase user ID
 
 export function AdminCalendarUpload() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [previewEvents, setPreviewEvents] = useState<any[]>([]);
 
@@ -48,7 +48,7 @@ export function AdminCalendarUpload() {
       const response = await fetch('/api/ai-calendar-events', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${await user.getIdToken()}`
+          'Authorization': `Bearer ${await firebaseUser?.getIdToken()}`
         },
         body: formData
       });
@@ -59,8 +59,19 @@ export function AdminCalendarUpload() {
         throw new Error(data.error || 'Failed to process screenshot');
       }
 
-      setPreviewEvents(data.events);
-      toast.success(`Found ${data.events.length} earnings events`);
+      // Transform events to match earnings_calendar format
+      const transformedEvents = data.events.map((event: any) => ({
+        ...event,
+        earningsDate: event.eventDate,
+        earningsType: 'BMO', // Default to Before Market Open
+        isConfirmed: true,
+        estimatedEPS: null,
+        estimatedRevenue: null,
+        conferenceCallUrl: null
+      }));
+
+      setPreviewEvents(transformedEvents);
+      toast.success(`Found ${transformedEvents.length} earnings events`);
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to process screenshot');
@@ -90,7 +101,7 @@ export function AdminCalendarUpload() {
             <div className="max-h-60 overflow-y-auto space-y-2">
               {previewEvents.map((event, i) => (
                 <div key={i} className="text-sm">
-                  {event.companyName} ({event.stockTicker}) - {new Date(event.eventDate).toLocaleDateString()}
+                  {event.companyName} ({event.stockTicker}) - {new Date(event.earningsDate).toLocaleDateString()}
                 </div>
               ))}
             </div>

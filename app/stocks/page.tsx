@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { SearchStocks } from "@/components/search-stocks"
 import { Settings } from "lucide-react"
 import { StockSelector } from "@/components/stock-selector"
-import { useStockPrices } from "@/hooks/useStockPrices"
 
 const DEFAULT_STOCKS = [
   { ticker: "AAPL", name: "Apple Inc." },
@@ -25,12 +24,6 @@ const DEFAULT_STOCKS = [
 export default function StocksPage() {
   const [selectedStocks, setSelectedStocks] = useState(DEFAULT_STOCKS)
   const [showStockSelector, setShowStockSelector] = useState(false)
-  const [stockCounts, setStockCounts] = useState<Record<string, number>>({})
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-
-  // Get tickers for price fetching
-  const tickers = selectedStocks.map((s) => s.ticker)
-  const { prices, loading, error, refresh } = useStockPrices(tickers, { enabled: true, interval: 600000 }) // 10 min
 
   useEffect(() => {
     // Load saved stocks from localStorage
@@ -38,32 +31,12 @@ export default function StocksPage() {
     if (savedStocks) {
       setSelectedStocks(JSON.parse(savedStocks))
     }
-
-    // Mock news counts - would be replaced with actual API call
-    const mockCounts: Record<string, number> = {}
-    selectedStocks.forEach((stock) => {
-      mockCounts[stock.ticker] = Math.floor(Math.random() * 30) + 5
-    })
-    setStockCounts(mockCounts)
   }, [])
 
   const handleStocksUpdate = (newStocks: typeof DEFAULT_STOCKS) => {
     setSelectedStocks(newStocks)
     localStorage.setItem("selectedStocks", JSON.stringify(newStocks))
     setShowStockSelector(false)
-
-    // Update news counts for new stocks
-    const mockCounts: Record<string, number> = {}
-    newStocks.forEach((stock) => {
-      mockCounts[stock.ticker] = Math.floor(Math.random() * 30) + 5
-    })
-    setStockCounts(mockCounts)
-  }
-
-  // Handle manual refresh
-  const handleRefresh = async () => {
-    await refresh()
-    setLastUpdated(new Date())
   }
 
   return (
@@ -85,38 +58,17 @@ export default function StocksPage() {
       <section>
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold">Your Watch List ({selectedStocks.length} stocks)</h2>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handleRefresh} disabled={loading}>
-              {loading ? "Refreshing..." : "Refresh Prices"}
-            </Button>
-            <Button variant="outline" onClick={() => setShowStockSelector(true)}>
-              <Settings className="mr-2 h-4 w-4" />
-              Manage Watch List
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => setShowStockSelector(true)}>
+            <Settings className="mr-2 h-4 w-4" />
+            Manage Watch List
+          </Button>
         </div>
-        {lastUpdated && (
-          <div className="text-xs text-muted-foreground mb-2">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-          </div>
-        )}
-        {error && (
-          <div className="text-xs text-red-500 mb-2">{error}</div>
-        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {selectedStocks.map((stock) => (
             <StockCard
               key={stock.ticker}
               ticker={stock.ticker}
               name={stock.name}
-              newsCount={stockCounts[stock.ticker] || 0}
-              stock={{
-                symbol: stock.ticker,
-                name: stock.name,
-                price: prices[stock.ticker] ?? 0,
-                change: 0, // You can enhance this to show real change
-                changePercent: 0, // You can enhance this to show real change percent
-              }}
             />
           ))}
         </div>

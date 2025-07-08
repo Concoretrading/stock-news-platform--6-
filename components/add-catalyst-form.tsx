@@ -11,24 +11,40 @@ import { useToast } from '@/hooks/use-toast';
 import { uploadImageToStorage, getUserStocks, saveNewsCatalyst } from '@/lib/firebase-services';
 import { getAuth } from 'firebase/auth';
 
+interface Stock {
+  id: string;
+  ticker: string;
+}
+
+interface FormData {
+  headline: string;
+  date: string;
+  priceBefore: string;
+  priceAfter: string;
+  notes: string;
+  image: File | null;
+}
+
+interface AddCatalystFormProps {
+  selectedStockSymbol: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+  userWatchlist?: string[];
+}
+
 function AddCatalystForm({ 
   selectedStockSymbol, 
   onSuccess, 
   onCancel, 
   userWatchlist = []
-}: { 
-  selectedStockSymbol: string
-  onSuccess?: () => void
-  onCancel?: () => void
-  userWatchlist?: string[]
-}) {
-  const [formData, setFormData] = useState({
+}: AddCatalystFormProps) {
+  const [formData, setFormData] = useState<FormData>({
     headline: '',
     date: new Date().toISOString().split('T')[0],
     priceBefore: '',
     priceAfter: '',
     notes: '',
-    image: null as File | null,
+    image: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -53,7 +69,7 @@ function AddCatalystForm({
     }
     const watchlist = userWatchlist && userWatchlist.length > 0
       ? userWatchlist.map(t => t.toUpperCase())
-      : (await getUserStocks()).map((s: any) => (s.ticker || s.id).toUpperCase());
+      : (await getUserStocks()).map((stock: any) => (stock.ticker || stock.id || '').toUpperCase());
     const inWatchlist = watchlist.includes(selectedStockSymbol.toUpperCase());
     if (!inWatchlist) {
       toast({ title: 'Not in Watchlist', description: `Please add ${selectedStockSymbol.toUpperCase()} to your watchlist first.`, variant: 'destructive' });
@@ -62,18 +78,17 @@ function AddCatalystForm({
     }
     let imagePath = '';
     if (formData.image) {
-      const fileExt = formData.image.name.split('.').pop();
       const filePath = `users/${user.uid}/stocks/${selectedStockSymbol}/catalysts/${Date.now()}_${formData.image.name}`;
       await uploadImageToStorage(formData.image, filePath);
       imagePath = filePath;
     }
     const catalystData = {
-      title: formData.headline,
-      description: formData.notes,
-      imagePath,
+      headline: formData.headline,
+      body: formData.notes,
       date: formData.date,
-      priceBefore: formData.priceBefore === '' ? null : Number(formData.priceBefore),
-      priceAfter: formData.priceAfter === '' ? null : Number(formData.priceAfter),
+      imageUrl: imagePath,
+      priceBefore: formData.priceBefore === '' ? undefined : Number(formData.priceBefore),
+      priceAfter: formData.priceAfter === '' ? undefined : Number(formData.priceAfter),
     };
     const catalystId = await saveNewsCatalyst(selectedStockSymbol, catalystData);
     if (catalystId) {

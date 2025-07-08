@@ -312,12 +312,31 @@ async function simulateEarningsTranscript(stockTicker: string, earningsDate: str
   return mockTranscripts[stockTicker as keyof typeof mockTranscripts] || null;
 }
 
+interface AIEvent {
+  type: 'earnings_call' | 'product_announcement' | 'conference';
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  confidence: number;
+  source: string;
+}
+
+interface AIAnalysisResponse {
+  events: AIEvent[];
+  confidenceScore: number;
+  processingTime: number;
+  model: string;
+  version: string;
+  focus: string;
+}
+
 // Reuse the AI processing function from the other file
-async function simulateAIProcessing(content: string, stockTicker: string, contentType: string) {
+async function simulateAIProcessing(content: string, stockTicker: string, contentType: string): Promise<AIAnalysisResponse> {
   // Simulate processing delay
   await new Promise(resolve => setTimeout(resolve, 500));
 
-  const events: any[] = [];
+  const events: AIEvent[] = [];
   let confidenceScore = 0.5;
 
   // Enhanced keyword detection for UPCOMING events

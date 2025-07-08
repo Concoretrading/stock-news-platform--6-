@@ -10,7 +10,9 @@ import "./globals.css"
 function VersionDisplay() {
   return (
     <div className="fixed bottom-2 left-2 text-xs text-muted-foreground/50">
-      Build: {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev'}
+      Build: {process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev'} |
+      Time: {process.env.NEXT_PUBLIC_BUILD_TIME ? new Date(parseInt(process.env.NEXT_PUBLIC_BUILD_TIME)).toLocaleString() : 'unknown'} |
+      Env: {process.env.NODE_ENV}
     </div>
   )
 }

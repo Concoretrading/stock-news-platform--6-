@@ -1,5 +1,5 @@
 import { getFirestore } from 'firebase-admin/firestore';
-import { ImageAnnotatorClient } from '@google-cloud/vision';
+import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
 import { getStorage } from '@/lib/firebase-admin';
 
 const db = getFirestore();
@@ -7,7 +7,51 @@ const vision = new ImageAnnotatorClient();
 const storage = getStorage();
 const bucket = storage.bucket();
 
-export async function getWatchlistTickers(userId: string) {
+interface NewsEntryResult {
+  ticker: string;
+  success: boolean;
+  id?: string;
+  error?: string;
+}
+
+interface ScreenshotAnalysis {
+  userId: string;
+  imageStoragePath: string;
+  imageUrl: string;
+  detectedText: string;
+  matches: string[];
+  headline: string;
+  date: string;
+  price: number | null;
+  source: string;
+  createdAt: string;
+}
+
+interface NewsEntry {
+  userId: string;
+  ticker: string;
+  headline: string;
+  date: string;
+  price: number | null;
+  source: string;
+  imageUrl: string;
+  type: 'screenshot';
+  createdAt: string;
+}
+
+interface AnalyzeScreenshotResult {
+  matches: string[];
+  extractedText: string;
+  headline: string;
+  date: string;
+  price: number | null;
+  source: string;
+  imageStoragePath: string;
+  newsEntryResults?: NewsEntryResult[];
+  message: string;
+}
+
+export async function getWatchlistTickers(userId: string): Promise<string[]> {
   try {
     const stocksSnap = await db.collection('stocks')
       .where('userId', '==', userId)
@@ -20,7 +64,12 @@ export async function getWatchlistTickers(userId: string) {
   }
 }
 
-export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, imageType: string, watchlistTickers: string[]) {
+export async function analyzeScreenshot(
+  userId: string,
+  imageBuffer: Buffer,
+  imageType: string,
+  watchlistTickers: string[]
+): Promise<AnalyzeScreenshotResult> {
   try {
     // Upload image to Firebase Storage
     const filename = `screenshots/${userId}/${Date.now()}.${imageType.split('/')[1]}`;
@@ -66,7 +115,7 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     // Extract headline, date, price, and source
     let headline = '';
     let date = '';
-    let price = null;
+    let price: number | null = null;
     let source = '';
 
     // Find headline (usually near ticker mention)
@@ -121,7 +170,7 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
       price,
       source,
       createdAt: new Date().toISOString()
-    });
+    } as ScreenshotAnalysis);
 
     // Create news entries for matched tickers
     const newsEntryResults = await Promise.all(matches.map(async (ticker) => {
@@ -136,11 +185,11 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
           imageUrl: url,
           type: 'screenshot',
           createdAt: new Date().toISOString()
-        });
-        return { ticker, success: true, id: newsRef.id };
+        } as NewsEntry);
+        return { ticker, success: true, id: newsRef.id } as NewsEntryResult;
       } catch (error) {
         console.error(`Failed to create news entry for ${ticker}:`, error);
-        return { ticker, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+        return { ticker, success: false, error: error instanceof Error ? error.message : 'Unknown error' } as NewsEntryResult;
       }
     }));
 

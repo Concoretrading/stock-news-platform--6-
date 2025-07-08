@@ -7,29 +7,18 @@ import { cn } from "@/lib/utils"
 import { badgeVariants } from "@/components/ui/badge"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 
-interface Stock {
-  symbol: string
+interface StockCardProps {
+  ticker: string
   name: string
 }
 
-interface StockCardProps {
-  stock?: Stock
-  ticker?: string
-  name?: string
-}
-
-export function StockCard({ stock, ticker, name }: StockCardProps) {
+export function StockCard({ ticker, name }: StockCardProps) {
   const [catalystCount, setCatalystCount] = useState<number | null>(null)
-  
-  // Handle both prop patterns
-  const symbol = stock?.symbol || ticker || "N/A"
-  const stockName = stock?.name || name || "Unknown"
 
   useEffect(() => {
     const fetchCatalystCount = async () => {
       try {
-        // Get catalysts for the last month
-        const response = await fetchWithAuth(`/api/catalysts/count?ticker=${symbol}&period=month`)
+        const response = await fetchWithAuth(`/api/catalysts/count?ticker=${ticker}&period=month`)
         const data = await response.json()
         setCatalystCount(data.count)
       } catch (error) {
@@ -38,16 +27,16 @@ export function StockCard({ stock, ticker, name }: StockCardProps) {
     }
 
     fetchCatalystCount()
-  }, [symbol])
+  }, [ticker])
 
   return (
-    <Link href={`/stocks/${symbol}`}>
+    <Link href={`/stocks/${ticker}`}>
       <Card className="hover:shadow-lg transition-shadow cursor-pointer">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-xl">{symbol}</h3>
-              <p className="text-sm text-muted-foreground">{stockName}</p>
+              <h3 className="font-bold text-xl">{ticker}</h3>
+              <p className="text-sm text-muted-foreground">{name}</p>
             </div>
             {catalystCount !== null && (
               <div className={cn(badgeVariants({ variant: "outline" }), "text-xs")}>

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchWithAuth } from "@/lib/fetchWithAuth";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Twitter, Globe, Calendar, FileText, Settings, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Globe, Calendar, FileText, Settings, RefreshCw } from "lucide-react";
 
 interface DataSource {
   id: string;
@@ -167,10 +167,11 @@ export function AIDataSourceManager() {
 
   const getSourceIcon = (sourceType: string) => {
     switch (sourceType) {
-      case 'twitter_handle': return <Twitter className="h-4 w-4" />;
       case 'company_website': return <Globe className="h-4 w-4" />;
       case 'earnings_calendar': return <Calendar className="h-4 w-4" />;
       case 'press_release': return <FileText className="h-4 w-4" />;
+      case 'sec_filing': return <FileText className="h-4 w-4" />;
+      case 'analyst_report': return <FileText className="h-4 w-4" />;
       default: return <Settings className="h-4 w-4" />;
     }
   };
@@ -237,7 +238,6 @@ export function AIDataSourceManager() {
                     <SelectValue placeholder="Select source type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="twitter_handle">Twitter Handle</SelectItem>
                     <SelectItem value="company_website">Company Website</SelectItem>
                     <SelectItem value="earnings_calendar">Earnings Calendar</SelectItem>
                     <SelectItem value="press_release">Press Release</SelectItem>
@@ -270,7 +270,7 @@ export function AIDataSourceManager() {
                   id="sourceIdentifier"
                   value={newSource.sourceIdentifier}
                   onChange={(e) => setNewSource({...newSource, sourceIdentifier: e.target.value})}
-                  placeholder="@Apple or RSS feed URL"
+                  placeholder="RSS feed URL or identifier"
                 />
               </div>
               <div>

@@ -26,7 +26,7 @@ interface UpcomingEvent {
 }
 
 export default function UpcomingEventsCalendar() {
-  const { user } = useAuth();
+  const { user, firebaseUser } = useAuth();
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export default function UpcomingEventsCalendar() {
       setIsLoading(true);
       setError(null);
 
-      const token = await user?.getIdToken();
+      const token = await firebaseUser?.getIdToken();
       const params = new URLSearchParams({
         monthsAhead: monthsAhead.toString()
       });

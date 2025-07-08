@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthToken } from '@/lib/services/auth-service';
-import { getEarningsCalendar, updateEarningsCalendar } from '@/lib/services/earnings-service';
+import { getEarningsCalendar, addEarningsEvent } from '@/lib/services/earnings-service';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const stockTicker = searchParams.get('stockTicker');
 
-    const earnings = await getEarningsCalendar(startDate, endDate, stockTicker);
+    const earnings = await getEarningsCalendar();
 
     return NextResponse.json({
       success: true,
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    await updateEarningsCalendar(data);
+    await addEarningsEvent(data);
 
     return NextResponse.json({
       success: true,
