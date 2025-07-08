@@ -81,14 +81,18 @@ export default function CalendarPage() {
         endDate: format(endOfMonthDate, 'yyyy-MM-dd')
       });
 
+      console.log('Fetching earnings data:', params.toString());
       const response = await fetchWithAuth(`/api/earnings-calendar?${params}`);
       const data = await response.json();
+      
+      console.log('API Response:', data);
       
       if (!data.success) {
         throw new Error(data.error || 'Failed to fetch earnings data');
       }
 
       setEarnings(data.data);
+      console.log('Earnings set:', data.data.length, 'events');
       setError(null);
     } catch (err) {
       console.error('Error fetching earnings:', err);
@@ -292,11 +296,52 @@ export default function CalendarPage() {
                         {format(day, 'd')}
                       </div>
                       
-                      {dayEarnings.length > 0 && (
-                        <div className="text-xs text-muted-foreground">
-                          {dayEarnings.length} earnings
-                        </div>
-                      )}
+                      <div className="space-y-1">
+                        {dayEarnings.slice(0, 3).map(earning => (
+                          <Dialog key={`${earning.symbol}-${earning.reportDate}`}>
+                            <DialogTrigger asChild>
+                              <div className="text-[10px] p-1 rounded cursor-pointer hover:opacity-80 transition-opacity bg-gray-100 dark:bg-gray-800 flex items-center">
+                                <span className="font-medium">{earning.symbol}</span>
+                                <span className="ml-1 opacity-75">
+                                  {earning.earningsType === 'Before Market Open' ? '(BMO)' :
+                                   earning.earningsType === 'After Market Close' ? '(AMC)' : ''}
+                                </span>
+                              </div>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>{earning.name} ({earning.symbol})</DialogTitle>
+                                <DialogDescription>Earnings Report Details</DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-3 pt-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Report Date</span>
+                                  <span className="text-sm">{format(parseISO(earning.reportDate), 'PPP')}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Time</span>
+                                  <span className="text-sm px-2 py-1 rounded bg-gray-100 dark:bg-gray-800">{earning.earningsType}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium">Estimate</span>
+                                  <span className="text-sm">{earning.estimate === 'N/A' ? 'Not Available' : `${earning.estimate} ${earning.currency}`}</span>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        ))}
+                        {dayEarnings.length > 3 && (
+                          <div 
+                            className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedWeek(startOfWeek(day));
+                            }}
+                          >
+                            +{dayEarnings.length - 3} more
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -309,22 +354,19 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Calendar</h1>
-        <p className="text-muted-foreground">{TABS.find(tab => tab.key === activeTab)?.description}</p>
-      </div>
+    <div className="container mx-auto py-8">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+        <div className="flex items-center justify-between border-b pb-4">
+          <TabsList className="h-10">
+            {TABS.map(tab => (
+              <TabsTrigger key={tab.key} value={tab.key} className="px-8">
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-8">
-          {TABS.map(tab => (
-            <TabsTrigger key={tab.key} value={tab.key}>
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        <TabsContent value="earnings" className="space-y-12">
+        <TabsContent value="earnings" className="flex-grow pt-6">
           {loading ? (
             <div className="text-center py-12">Loading earnings data...</div>
           ) : error ? (
@@ -336,13 +378,13 @@ export default function CalendarPage() {
           )}
         </TabsContent>
 
-        <TabsContent value="events">
+        <TabsContent value="events" className="pt-6">
           <div className="text-center py-12 text-muted-foreground">
             Economic events calendar coming soon
           </div>
         </TabsContent>
 
-        <TabsContent value="elite">
+        <TabsContent value="elite" className="pt-6">
           <div className="text-center py-12 text-muted-foreground">
             Elite events calendar coming soon
           </div>
