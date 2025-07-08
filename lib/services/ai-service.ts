@@ -1,6 +1,19 @@
 import { getFirestore } from 'firebase-admin/firestore';
 
-const db = getFirestore();
+// Safe database getter that handles build-time issues
+function getDatabase() {
+  try {
+    return getFirestore();
+  } catch (error) {
+    if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+      console.warn('Firebase not initialized:', error);
+      throw new Error('Firebase not initialized');
+    }
+    throw error;
+  }
+}
+
+// Remove the module-level db constant to avoid build-time issues
 
 interface AIMonitoringSubscription {
   id: string;
@@ -35,6 +48,7 @@ interface ProcessContentResponse {
 
 export async function getAIMonitoringSubscriptions(userId: string): Promise<AIMonitoringSubscription[]> {
   try {
+    const db = getDatabase();
     const subscriptionsSnap = await db.collection('ai_monitoring_subscriptions')
       .where('userId', '==', userId)
       .where('isActive', '==', true)
@@ -52,6 +66,7 @@ export async function getAIMonitoringSubscriptions(userId: string): Promise<AIMo
 
 export async function addAIMonitoringSubscription(userId: string, stockTicker: string): Promise<{ subscription: AIMonitoringSubscription; message: string }> {
   try {
+    const db = getDatabase();
     // Check if user already has 3 active subscriptions
     const existingSubsSnap = await db.collection('ai_monitoring_subscriptions')
       .where('userId', '==', userId)
@@ -116,6 +131,7 @@ export async function addAIMonitoringSubscription(userId: string, stockTicker: s
 
 export async function removeAIMonitoringSubscription(userId: string, stockTicker: string): Promise<{ message: string }> {
   try {
+    const db = getDatabase();
     // Find and soft delete the subscription
     const subscriptionSnap = await db.collection('ai_monitoring_subscriptions')
       .where('userId', '==', userId)
@@ -144,6 +160,7 @@ export async function removeAIMonitoringSubscription(userId: string, stockTicker
 
 export async function processContent(userId: string, data: ProcessContentRequest): Promise<ProcessContentResponse> {
   try {
+    const db = getDatabase();
     // Get user's monitored stocks
     const subscriptionsSnap = await db.collection('ai_monitoring_subscriptions')
       .where('userId', '==', userId)
@@ -169,6 +186,7 @@ export async function processContent(userId: string, data: ProcessContentRequest
 
 export async function getAIDataSources(userId: string, stockTicker?: string, sourceType?: string) {
   try {
+    const db = getDatabase();
     // Get user's monitored stocks
     const subscriptionsSnap = await db.collection('ai_monitoring_subscriptions')
       .where('userId', '==', userId)
