@@ -2,8 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@/lib/firebase-admin';
 import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
 
-// Initialize Vision API client
-const vision = new ImageAnnotatorClient();
+// Initialize Vision API client with proper credentials
+let vision: ImageAnnotatorClient;
+try {
+  // Check if we're in production (Vercel) or local development
+  if (process.env.NODE_ENV === 'production' && process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    // Production: Use base64 encoded credentials from environment variable
+    const credentials = JSON.parse(Buffer.from(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'base64').toString());
+    vision = new ImageAnnotatorClient({ credentials });
+    console.log('Vision API initialized for production with base64 credentials');
+  } else {
+    // Local development: Use file path
+    vision = new ImageAnnotatorClient({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID || 'concorenews',
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS || './concorenews-firebase-adminsdk.json'
+    });
+    console.log('Vision API initialized for local development with JSON file');
+  }
+} catch (error) {
+  console.error('Failed to initialize Vision API client:', error);
+  // Create a fallback client
+  vision = new ImageAnnotatorClient();
+}
 
 type CloudVisionVertex = protos.google.cloud.vision.v1.IVertex;
 
@@ -216,11 +236,29 @@ export async function POST(request: NextRequest) {
     const imageBuffer = Buffer.from(arrayBuffer);
 
     // Use Google Vision API to detect logos and text
-    const [logoResult] = await vision.logoDetection(imageBuffer);
-    const [textResult] = await vision.textDetection(imageBuffer);
+    let logos: any[] = [];
+    let detectedText = '';
     
-    const logos = logoResult.logoAnnotations || [];
-    const detectedText = textResult.fullTextAnnotation?.text || '';
+    try {
+      console.log('Attempting Vision API logo detection...');
+      const [logoResult] = await vision.logoDetection(imageBuffer);
+      logos = logoResult.logoAnnotations || [];
+      console.log('Logo detection successful, found:', logos.length, 'logos');
+      
+      console.log('Attempting Vision API text detection...');
+      const [textResult] = await vision.textDetection(imageBuffer);
+      detectedText = textResult.fullTextAnnotation?.text || '';
+      console.log('Text detection successful, text length:', detectedText.length);
+      
+    } catch (visionError) {
+      console.error('Vision API Error:', visionError);
+      // Provide a fallback message when Vision API fails
+      return NextResponse.json({
+        success: false,
+        error: 'Google Vision API is not properly configured. Please check your credentials.',
+        details: visionError instanceof Error ? visionError.message : 'Unknown Vision API error'
+      }, { status: 500 });
+    }
 
     console.log('Detected logos:', logos.map(l => l.description));
     console.log('Detected text snippet:', detectedText.substring(0, 200));

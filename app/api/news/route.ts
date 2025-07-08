@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@/lib/firebase-admin";
-import { getFirestore } from "firebase-admin/firestore";
+import { getAuth, getFirestore } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getFirestore();
+    const db = await getFirestore();
     
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;

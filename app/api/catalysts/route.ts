@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getAuth, getStorage } from "@/lib/firebase-admin"
-import { getFirestore } from "firebase-admin/firestore"
+import { getAuth, getStorage, getFirestore } from "@/lib/firebase-admin"
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,7 +31,7 @@ const MOCK_CATALYSTS = [
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getFirestore()
+    const db = await getFirestore()
     
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
@@ -76,7 +75,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getFirestore()
+    const db = await getFirestore()
     
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
@@ -134,7 +133,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const db = getFirestore()
+    const db = await getFirestore()
     
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null

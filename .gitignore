@@ -25,3 +25,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Firebase service account keys (sensitive)
+concorenews-firebase-adminsdk.json
+concorenews-firebase-earnings-adminsdk.json
+*-firebase-adminsdk*.json

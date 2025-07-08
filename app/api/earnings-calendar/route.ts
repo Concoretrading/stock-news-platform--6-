@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@/lib/firebase-admin';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth, getFirestore } from '@/lib/firebase-admin';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,7 +8,7 @@ export const revalidate = 0;
 // GET: Fetch earnings calendar data
 export async function GET(request: NextRequest) {
   try {
-    const db = getFirestore();
+    const db = await getFirestore();
     
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
@@ -58,7 +57,7 @@ export async function GET(request: NextRequest) {
 // POST: Update earnings calendar (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const db = getFirestore();
+    const db = await getFirestore();
     
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {

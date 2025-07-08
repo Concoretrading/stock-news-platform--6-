@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth } from '@/lib/firebase-admin'
-import { getFirestore } from 'firebase-admin/firestore'
+import { getAuth, getFirestore } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -8,7 +7,7 @@ export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getFirestore();
+    const db = await getFirestore()
     
     // Authenticate user (admin only)
     const authHeader = request.headers.get('authorization') || ''
@@ -47,7 +46,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const db = getFirestore();
+    const db = await getFirestore();
     
     // Authenticate user (admin only)
     const authHeader = request.headers.get('authorization') || ''
