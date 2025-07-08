@@ -102,18 +102,18 @@ export default function CalendarPage() {
     }
   }
 
-  function getEarningsForDate(date: Date): EarningsEvent[] {
-    return earnings.filter(earning => {
+  function getEarningsForDate(date: Date, earningsList: EarningsEvent[]): EarningsEvent[] {
+    return earningsList.filter((earning: EarningsEvent) => {
       const earningDate = parseISO(earning.reportDate);
       return isSameDay(earningDate, date);
-    }).sort((a, b) => {
+    }).sort((a: EarningsEvent, b: EarningsEvent) => {
       // Sort by market time: BMO first, then market hours, then AMC
-      const timeOrder = {
+      const timeOrder: Record<string, number> = {
         'Before Market Open': 0,
         'During Market Hours': 1,
         'After Market Close': 2
       };
-      return (timeOrder[a.earningsType] || 1) - (timeOrder[b.earningsType] || 1);
+      return (timeOrder[a.earningsType] ?? 1) - (timeOrder[b.earningsType] ?? 1);
     });
   }
 
@@ -191,7 +191,7 @@ export default function CalendarPage() {
         </div>
         <div className="grid grid-cols-7 gap-4">
           {days.map(day => {
-            const dayEarnings = getEarningsForDate(day);
+            const dayEarnings = getEarningsForDate(day, earnings);
             const isCurrentDay = isToday(day);
             
             return (
@@ -268,7 +268,7 @@ export default function CalendarPage() {
                 onClick={() => setSelectedWeek(week)}
               >
                 {days.map(day => {
-                  const dayEarnings = getEarningsForDate(day);
+                  const dayEarnings = getEarningsForDate(day, earnings);
                   const isCurrentMonth = isSameMonth(day, month);
                   const isCurrentDay = isToday(day);
                   const isHovered = hoveredWeek && isSameWeek(day, hoveredWeek);

@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@/lib/firebase-admin'
 import { getFirestore } from 'firebase-admin/firestore'
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const db = getFirestore()
 
 // Helper to fetch current price for a ticker (reuse your price API logic)
@@ -104,6 +108,4 @@ export async function GET(request: NextRequest) {
     console.error('Error checking alerts:', error)
     return NextResponse.json({ error: 'Failed to check alerts' }, { status: 500 })
   }
-}
-
-export const dynamic = "force-dynamic"; 
+} 

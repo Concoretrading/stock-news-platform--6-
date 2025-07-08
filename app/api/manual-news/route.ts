@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getAuth } from "@/lib/firebase-admin"
-import { getFirestore } from "firebase-admin/firestore"
+import { verifyAuthToken } from "@/lib/services/auth-service"
+import { addManualNews } from "@/lib/services/news-service"
+import { getFirestore } from 'firebase-admin/firestore';
 
-const db = getFirestore()
+const db = getFirestore();
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,49 +16,29 @@ export async function POST(request: NextRequest) {
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
-    let decodedToken
+
+    let decodedToken;
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken)
+      decodedToken = await verifyAuthToken(idToken)
     } catch (err) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
     }
     const userId = decodedToken.uid
 
-    // 1. Parse body
     const body = await request.json()
-    const { stockSymbol, headline, body: newsBody, date, imageUrl, priceBefore, priceAfter, source } = body
+    const id = await addManualNews(userId, body)
 
-    if (!stockSymbol || !headline || !newsBody || !date) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
-    }
-
-    // 2. Insert or get stock (in Firestore, just store ticker info in catalyst)
-    // 3. Insert news article (manual catalyst)
-    const normalizedDate = new Date(date)
-    if (isNaN(normalizedDate.getTime())) {
-      return NextResponse.json({ error: "Invalid date format." }, { status: 400 })
-    }
-    const catalystDoc = await db.collection("catalysts").add({
-      userId,
-      stockTickers: [stockSymbol.toUpperCase()],
-      title: headline,
-      description: newsBody,
-      date: normalizedDate.toISOString().split("T")[0],
-      imageUrl: imageUrl || null,
-      isManual: true,
-      createdAt: new Date().toISOString(),
-      priceBefore: priceBefore ? Number(priceBefore) : null,
-      priceAfter: priceAfter ? Number(priceAfter) : null,
-      source: source || null,
-    })
     return NextResponse.json({
       success: true,
       message: "News entry saved successfully",
-      id: catalystDoc.id,
+      id
     })
   } catch (error) {
-    console.error("Error saving news:", error)
-    return NextResponse.json({ success: false, error: "Failed to save news entry" }, { status: 500 })
+    console.error('Error saving manual news:', error);
+    return NextResponse.json({ 
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save news entry'
+    }, { status: 500 });
   }
 }
 
@@ -66,7 +51,7 @@ export async function GET(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken)
+      decodedToken = await verifyAuthToken(idToken)
     } catch (err) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
     }
