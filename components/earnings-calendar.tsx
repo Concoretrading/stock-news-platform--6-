@@ -163,11 +163,6 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           </DialogHeader>
 
           <div className="space-y-6">
-            {/* Earnings Time */}
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              <span>{selectedEvent.earningsType === 'BMO' ? 'Before Market Open' : 'After Market Close'}</span>
-            </div>
 
             {/* Current Earnings Estimates */}
             <Card className="p-4">
@@ -203,16 +198,64 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
               </Card>
             )}
 
-            {/* Conference Call Link */}
-            {selectedEvent.conferenceCallUrl && (
-              <Button 
-                className="w-full"
-                onClick={() => window.open(selectedEvent.conferenceCallUrl, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Join Earnings Call
-              </Button>
-            )}
+            {/* Conference Call Section */}
+            <Card className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <h3 className="font-semibold mb-3 flex items-center gap-2">
+                <Clock className="h-4 w-4 text-blue-600" />
+                Conference Call
+              </h3>
+              {selectedEvent.conferenceCallUrl ? (
+                <div className="space-y-3">
+                  <p className="text-sm text-gray-600">
+                    Access the live earnings call and investor information for {selectedEvent.companyName}.
+                  </p>
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    onClick={() => window.open(selectedEvent.conferenceCallUrl, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open Investor Relations
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500 mb-3">
+                    Conference call information not yet available for {selectedEvent.companyName}.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.open(`https://www.google.com/search?q=${selectedEvent.stockTicker}+earnings+call+investor+relations`, '_blank')}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Search for Earnings Call
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            {/* Earnings Timing Banner */}
+            <div className={`p-3 rounded-lg text-center font-medium ${
+              selectedEvent.earningsType === 'BMO' 
+                ? 'bg-orange-100 text-orange-800 border border-orange-200' 
+                : 'bg-purple-100 text-purple-800 border border-purple-200'
+            }`}>
+              <div className="flex items-center justify-center gap-2">
+                <Clock className="h-4 w-4" />
+                <span>
+                  {selectedEvent.earningsType === 'BMO' 
+                    ? '🌅 Before Market Open (Pre-Market)' 
+                    : '🌆 After Market Close (Post-Market)'
+                  }
+                </span>
+              </div>
+              <p className="text-xs mt-1 opacity-75">
+                {selectedEvent.earningsType === 'BMO' 
+                  ? 'Results typically released around 6:00-8:00 AM ET' 
+                  : 'Results typically released around 4:00-6:00 PM ET'
+                }
+              </p>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -107,9 +107,14 @@ export function AdminEarningsUpload() {
         throw new Error(data.error || 'Failed to save earnings');
       }
 
-      toast.success(`Successfully saved ${previewEvents.length} earnings events for all users to see!`);
+      toast.success(`🎉 Successfully saved ${previewEvents.length} earnings events! They are now visible on the calendar for all users.`);
       setPreviewEvents([]);
       setUploadedImage(null);
+      
+      // Show success message with calendar link
+      setTimeout(() => {
+        toast.success(`📅 View the saved earnings events in the Calendar tab!`);
+      }, 2000);
     } catch (error) {
       console.error('Save error:', error);
       toast.error('Failed to save earnings events');
@@ -198,9 +203,28 @@ export function AdminEarningsUpload() {
             <div className="max-h-60 overflow-y-auto space-y-2">
               {previewEvents.map((event, i) => (
                 <div key={i} className="text-sm p-2 bg-amber-50 rounded border border-amber-100">
-                  <span className="font-medium">{event.companyName}</span> 
-                  <span className="text-amber-600"> ({event.stockTicker})</span>
-                  <span className="text-gray-600"> - {new Date(event.earningsDate).toLocaleDateString()}</span>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-medium">{event.companyName}</span> 
+                      <span className="text-amber-600"> ({event.stockTicker})</span>
+                      <span className="text-gray-600"> - {new Date(event.earningsDate).toLocaleDateString()}</span>
+                      {event.earningsType && (
+                        <span className="ml-2 px-2 py-1 bg-amber-200 text-amber-800 rounded text-xs">
+                          {event.earningsType}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {event.detectedLogoName && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      Logo: {event.detectedLogoName}
+                    </div>
+                  )}
+                  {event.detectedFromText && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      From text: "{event.detectedLine}"
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -228,7 +252,15 @@ export function AdminEarningsUpload() {
         )}
 
         <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
-          <strong>Admin Instructions:</strong> Copy screenshots to clipboard and paste them here, or upload files. Review detected events and click save to make them visible to all users in the earnings calendar.
+          <strong>📋 Admin Workflow:</strong>
+          <ol className="list-decimal list-inside mt-2 space-y-1">
+            <li>Copy earnings calendar screenshot (Ctrl+C / Cmd+C)</li>
+            <li>Paste here (Ctrl+V / Cmd+V) or upload file</li>
+            <li>AI detects company logos and dates automatically</li>
+            <li>Review detected events and click "Save"</li>
+            <li>Events appear on calendar with logos, BMO/AMC timing, and conference call links</li>
+            <li>All users can click logos to see earnings details</li>
+          </ol>
         </div>
       </CardContent>
     </Card>
