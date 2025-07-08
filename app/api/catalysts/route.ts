@@ -2,6 +2,10 @@ import { type NextRequest, NextResponse } from "next/server"
 import { getAuth, getStorage } from "@/lib/firebase-admin"
 import { getFirestore } from "firebase-admin/firestore"
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const db = getFirestore()
 
 // Mock data for when Supabase is not available
