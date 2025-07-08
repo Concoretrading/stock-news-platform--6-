@@ -7,9 +7,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   experimental: {
-    serverActions: {
-      allowedOrigins: ['localhost:3000', '*.vercel.app']
-    }
+    serverComponentsExternalPackages: ['firebase-admin']
   },
   images: {
     domains: ['localhost'],
@@ -25,7 +23,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-  },
+  }
 }
 
 export default nextConfig
