@@ -203,7 +203,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             {isLoadingStocks ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 {Array.from({ length: stocksPerPage }).map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="h-32 bg-muted rounded-lg"></div>
@@ -211,7 +211,7 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
                 {visibleStocks.map((stock) => (
                   <div key={stock.symbol} className="transform transition-transform hover:scale-105">
                     <StockCard 
@@ -253,19 +253,19 @@ export default function HomePage() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* The Past */}
-            <Card className="border-amber-200 hover:border-amber-400 transition-colors">
+            <Card className="border-amber-200 hover:border-amber-400 transition-colors flex flex-col">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl font-bold text-amber-700 dark:text-amber-300">
                   The Past
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center space-y-4">
+              <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history as long as it's a stock in your watch list.
+                  • Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history as long as it's a stock in your watch list.
                 </p>
                 <Dialog open={showPastInstructions} onOpenChange={setShowPastInstructions}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50">
+                    <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 mt-auto">
                       <Upload className="h-4 w-4 mr-2" />
                       Try It
                     </Button>
@@ -284,11 +284,6 @@ export default function HomePage() {
                           <li>The catalyst will be stored in your stock's history</li>
                         </ol>
                       </div>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-blue-800 text-sm">
-                          💡 <strong>Pro tip:</strong> You can drop screenshots anywhere on the platform - the entire website acts as a drop zone!
-                        </p>
-                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
@@ -296,34 +291,34 @@ export default function HomePage() {
             </Card>
 
             {/* The Present */}
-            <Card className="border-green-200 hover:border-green-400 transition-colors">
+            <Card className="border-green-200 hover:border-green-400 transition-colors flex flex-col">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-300">
                   The Present
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center space-y-4">
+              <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  We are building some incredibly powerful tools that will be available to the Concore family very soon.
+                  • We are building some incredibly powerful tools that will be available to the Concore family very soon.
                 </p>
-                <div className="w-full py-3 px-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="w-full py-3 px-4 bg-green-50 border border-green-200 rounded-lg mt-auto">
                   <span className="text-green-700 font-medium">Coming Soon</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* The Future */}
-            <Card className="border-purple-200 hover:border-purple-400 transition-colors">
+            <Card className="border-purple-200 hover:border-purple-400 transition-colors flex flex-col">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-300">
                   The Future
                 </CardTitle>
               </CardHeader>
-              <CardContent className="text-center space-y-4">
+              <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  We have built a multi-functional calendar to keep us completely prepared for any future upcoming events.
+                  • We have built a multi-functional calendar to keep us completely prepared for any future upcoming events.
                 </p>
-                <Link href="/calendar">
+                <Link href="/calendar" className="mt-auto">
                   <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50">
                     <Calendar className="h-4 w-4 mr-2" />
                     Open Calendar
