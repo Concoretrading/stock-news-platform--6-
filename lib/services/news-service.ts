@@ -1,28 +1,26 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore } from '@/lib/firebase-admin';
 
-const db = getFirestore();
+// Helper function to get database safely
+async function getDatabase() {
+  return await getFirestore();
+}
 
-export async function fetchNews(userId: string, params?: {
-  ticker?: string;
-  fromDate?: string;
-  toDate?: string;
-}) {
-  const { ticker, fromDate, toDate } = params || {};
-
-  let catalystsQuery = db.collection('catalysts').where('userId', '==', userId);
-  if (ticker) {
-    catalystsQuery = catalystsQuery.where('stockTickers', 'array-contains', ticker.toUpperCase());
+export async function fetchNews(userId: string, filters?: { ticker?: string; fromDate?: string; toDate?: string }) {
+  try {
+    const db = await getDatabase();
+    
+    let query = db.collection('catalysts').where('userId', '==', userId);
+    
+    if (filters?.ticker) {
+      query = query.where('stockTickers', 'array-contains', filters.ticker.toUpperCase());
+    }
+    
+    const snapshot = await query.orderBy('date', 'desc').limit(50).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching news:', error);
+    throw error;
   }
-  if (fromDate) {
-    catalystsQuery = catalystsQuery.where('date', '>=', fromDate);
-  }
-  if (toDate) {
-    catalystsQuery = catalystsQuery.where('date', '<=', toDate);
-  }
-
-  // Firestore does not support multiple orderBy on different fields unless they are indexed
-  const catalystsSnap = await catalystsQuery.orderBy('date', 'desc').get();
-  return catalystsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 export async function getManualNews(userId: string, params?: {
@@ -31,9 +29,10 @@ export async function getManualNews(userId: string, params?: {
 }) {
   const { ticker, query } = params || {};
 
-  let catalystsQuery = db.collection('catalysts')
-    .where('userId', '==', userId)
-    .where('isManual', '==', true);
+     const db = await getDatabase();
+   let catalystsQuery = db.collection('catalysts')
+     .where('userId', '==', userId)
+     .where('isManual', '==', true);
 
   if (ticker) {
     catalystsQuery = catalystsQuery.where('stockTickers', 'array-contains', ticker.toUpperCase());
@@ -44,41 +43,27 @@ export async function getManualNews(userId: string, params?: {
   return catalystsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-export async function addManualNews(userId: string, data: {
-  stockSymbol: string;
-  headline: string;
-  body: string;
-  date: string;
-  imageUrl?: string;
-  priceBefore?: number;
-  priceAfter?: number;
-  source?: string;
-}) {
-  const { stockSymbol, headline, body: newsBody, date, imageUrl, priceBefore, priceAfter, source } = data;
-
-  if (!stockSymbol || !headline || !newsBody || !date) {
-    throw new Error('Missing required fields');
+export async function addManualNews(userId: string, newsData: any) {
+  try {
+    const db = await getDatabase();
+    
+    const catalystDoc = await db.collection('catalysts').add({
+      userId,
+      stockTickers: [newsData.stockSymbol.toUpperCase()],
+      title: newsData.headline,
+      description: newsData.body || null,
+      date: new Date(newsData.date).toISOString().split('T')[0],
+      imageUrl: newsData.imagePath || null,
+      isManual: true,
+      createdAt: new Date().toISOString(),
+      priceBefore: newsData.priceBefore ? Number(newsData.priceBefore) : null,
+      priceAfter: newsData.priceAfter ? Number(newsData.priceAfter) : null,
+      source: newsData.source || null,
+    });
+    
+    return catalystDoc.id;
+  } catch (error) {
+    console.error('Error adding manual news:', error);
+    throw error;
   }
-
-  const normalizedDate = new Date(date);
-  if (isNaN(normalizedDate.getTime())) {
-    throw new Error('Invalid date format');
-  }
-
-  const catalystDoc = await db.collection('catalysts').add({
-    userId,
-    stockTickers: [stockSymbol.toUpperCase()],
-    title: headline,
-    description: newsBody,
-    date: normalizedDate.toISOString(),
-    imageUrl: imageUrl || null,
-    priceBefore: priceBefore || null,
-    priceAfter: priceAfter || null,
-    source: source || 'Manual Entry',
-    isManual: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  });
-
-  return catalystDoc.id;
 } 

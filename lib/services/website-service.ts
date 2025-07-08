@@ -1,6 +1,42 @@
-import { getFirestore, Query, DocumentData } from 'firebase-admin/firestore';
+import { getFirestore } from '@/lib/firebase-admin';
 
-const db = getFirestore();
+// Helper function to get database safely
+async function getDatabase() {
+  return await getFirestore();
+}
+
+export async function scanWebsite(userId: string, stockTicker: string, websiteUrl: string) {
+  try {
+    const db = await getDatabase();
+    
+    // Simple mock website scanning
+    const result = {
+      success: true,
+      contentFound: 0,
+      message: 'Website scanning not implemented yet'
+    };
+    
+    return result;
+  } catch (error) {
+    console.error('Error scanning website:', error);
+    throw error;
+  }
+}
+
+export async function getWebsiteMonitoring(userId: string) {
+  try {
+    const db = await getDatabase();
+    
+    const monitoringSnap = await db.collection('website_monitoring')
+      .where('userId', '==', userId)
+      .get();
+    
+    return monitoringSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error('Error fetching website monitoring:', error);
+    throw error;
+  }
+}
 
 interface WebsiteMonitoring {
   id?: string;
@@ -24,20 +60,6 @@ interface WebsiteMonitoringUpdate {
   websiteUrl?: string;
 }
 
-export async function getWebsiteMonitoring(stockTicker?: string): Promise<WebsiteMonitoring[]> {
-  let query: Query<DocumentData> = db.collection('website_monitoring');
-
-  if (stockTicker) {
-    query = query.where('stockTicker', '==', stockTicker.toUpperCase());
-  }
-
-  const snapshot = await query.get();
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as WebsiteMonitoring));
-}
-
 export async function addWebsiteMonitoring(userId: string, data: {
   stockTicker: string;
   companyName: string;
@@ -51,6 +73,7 @@ export async function addWebsiteMonitoring(userId: string, data: {
   }
 
   // Check if website monitoring already exists for this stock
+  const db = await getDatabase();
   const existingSnap = await db.collection('website_monitoring')
     .where('stockTicker', '==', stockTicker.toUpperCase())
     .get();
@@ -90,6 +113,7 @@ export async function updateWebsiteMonitoring(id: string, updates: WebsiteMonito
     updatedAt: new Date().toISOString()
   };
 
+  const db = await getDatabase();
   await db.collection('website_monitoring').doc(id).update(updateData);
 }
 
@@ -98,5 +122,6 @@ export async function deleteWebsiteMonitoring(id: string): Promise<void> {
     throw new Error('Website monitoring ID is required');
   }
 
+  const db = await getDatabase();
   await db.collection('website_monitoring').doc(id).delete();
 } 

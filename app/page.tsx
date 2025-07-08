@@ -4,13 +4,17 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { StockCard } from "@/components/stock-card"
 import { StockSelector } from "@/components/stock-selector"
+import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
+import { StockManualNewsForm } from "@/components/stock-manual-news-form"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, Settings } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { TrendingUp, Settings, Camera, Calendar, PlusCircle, BarChart3 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { getUserStocks, addStockToWatchlist } from "@/lib/firebase-services"
+import Link from "next/link"
 
 interface Stock {
   id?: string
@@ -30,6 +34,8 @@ export default function HomePage() {
   const router = useRouter()
   const [watchlist, setWatchlist] = useState<Stock[]>([])
   const [showStockSelector, setShowStockSelector] = useState(false)
+  const [showScreenshotAnalyzer, setShowScreenshotAnalyzer] = useState(false)
+  const [showManualNewsForm, setShowManualNewsForm] = useState(false)
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -141,10 +147,133 @@ export default function HomePage() {
     setRefreshKey(prev => prev + 1)
   }
 
+  const handleScrollToStocks = () => {
+    const stocksSection = document.getElementById('stocks-section')
+    if (stocksSection) {
+      stocksSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Getting Started - Workflow Guidance */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Getting Started with ConcoreNews</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Screenshot Analysis */}
+          <Card className="border-blue-200 hover:border-blue-400 transition-colors cursor-pointer">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Camera className="h-5 w-5 text-blue-600" />
+                Screenshot Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-3">
+                Upload trading screenshots for instant AI analysis to extract stock tickers and news.
+              </p>
+              <Dialog open={showScreenshotAnalyzer} onOpenChange={setShowScreenshotAnalyzer}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Try Screenshot Analysis
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>Screenshot Analysis</DialogTitle>
+                  </DialogHeader>
+                  <ScreenshotAnalyzer 
+                    onCatalystAdded={(tickers) => {
+                      toast({
+                        title: "Catalyst Added",
+                        description: `Added catalysts for: ${tickers.join(', ')}`,
+                      })
+                      setShowScreenshotAnalyzer(false)
+                    }}
+                  />
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+
+          {/* Manual Catalyst Entry */}
+          <Card className="border-green-200 hover:border-green-400 transition-colors cursor-pointer">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <PlusCircle className="h-5 w-5 text-green-600" />
+                Add News Catalyst
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-3">
+                Manually add news catalysts with headlines, dates, prices, and notes for your stocks.
+              </p>
+              <Dialog open={showManualNewsForm} onOpenChange={setShowManualNewsForm}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Add Catalyst
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add News Catalyst</DialogTitle>
+                  </DialogHeader>
+                  {watchlist.length > 0 ? (
+                    <StockManualNewsForm 
+                      ticker={watchlist[0].symbol}
+                    />
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      Please add stocks to your watchlist first
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </CardContent>
+          </Card>
+
+          {/* Calendar View */}
+          <Link href="/calendar">
+            <Card className="border-purple-200 hover:border-purple-400 transition-colors cursor-pointer">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                  Calendar & Events
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-gray-600 mb-3">
+                  View earnings calendar, upcoming events, and important dates for your stocks.
+                </p>
+                <Button variant="outline" size="sm" className="w-full">
+                  Open Calendar
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Stock Analysis */}
+          <Card className="border-orange-200 hover:border-orange-400 transition-colors cursor-pointer">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <BarChart3 className="h-5 w-5 text-orange-600" />
+                Stock Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 mb-3">
+                Click on any stock below to view detailed analysis, news history, and catalysts.
+              </p>
+              <Button variant="outline" size="sm" className="w-full" onClick={handleScrollToStocks}>
+                Analyze Stocks
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
       {/* Watchlist Section */}
-      <Card>
+      <Card id="stocks-section">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">

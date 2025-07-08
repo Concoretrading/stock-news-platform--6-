@@ -1,34 +1,51 @@
+import { initializeApp, getApps, getApp } from 'firebase/app'
 import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  User
+} from 'firebase/auth'
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc, 
   collection, 
   addDoc, 
   query, 
   where, 
-  orderBy, 
   getDocs, 
-  onSnapshot,
-  doc,
   deleteDoc,
   updateDoc,
-  setDoc,
-  DocumentData,
+  orderBy,
+  onSnapshot,
+  Unsubscribe,
   QuerySnapshot,
-  Unsubscribe
-} from 'firebase/firestore';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  User,
-  UserCredential
-} from 'firebase/auth';
-import { storage } from './firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+  DocumentData
+} from 'firebase/firestore'
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
-const db = getFirestore();
-const auth = getAuth();
+// Firebase config
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+}
+
+// Initialize Firebase
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
+const auth = getAuth(app)
+const storage = getStorage(app)
+
+// Helper function to get database safely
+function getDatabase() {
+  return getFirestore(app)
+}
 
 interface Stock {
   id?: string;
@@ -99,7 +116,7 @@ export const signUp = async (email: string, password: string): Promise<AuthResul
       { ticker: 'INTC', companyName: 'Intel Corporation' },
     ];
     for (const stock of defaultStocks) {
-      await addDoc(collection(db, 'stocks'), {
+      await addDoc(collection(getDatabase(), 'stocks'), {
         userId: user.uid,
         ticker: stock.ticker,
         companyName: stock.companyName,
@@ -123,7 +140,7 @@ export const signIn = async (email: string, password: string): Promise<AuthResul
 
 export const signOutUser = async (): Promise<SignOutResult> => {
   try {
-    await signOut(auth);
+    await firebaseSignOut(auth);
     return { success: true, error: null };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -144,7 +161,7 @@ export const addStockToWatchlist = async (ticker: string, companyName: string): 
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    const docRef = await addDoc(collection(db, 'stocks'), {
+    const docRef = await addDoc(collection(getDatabase(), 'stocks'), {
       userId: user.uid,
       ticker: ticker.toUpperCase(),
       companyName,
@@ -163,7 +180,7 @@ export const getUserStocks = async (): Promise<Stock[]> => {
     if (!user) throw new Error('User not authenticated');
 
     const q = query(
-      collection(db, 'stocks'),
+      collection(getDatabase(), 'stocks'),
       where('userId', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
@@ -181,7 +198,7 @@ export const deleteStock = async (stockId: string): Promise<StockResult> => {
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    await deleteDoc(doc(db, 'stocks', stockId));
+    await deleteDoc(doc(getDatabase(), 'stocks', stockId));
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -199,7 +216,7 @@ export const addManualCatalyst = async (
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    const docRef = await addDoc(collection(db, 'catalysts'), {
+    const docRef = await addDoc(collection(getDatabase(), 'catalysts'), {
       userId: user.uid,
       title,
       description,
@@ -224,7 +241,7 @@ export const addScreenshotCatalyst = async (
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    const docRef = await addDoc(collection(db, 'catalysts'), {
+    const docRef = await addDoc(collection(getDatabase(), 'catalysts'), {
       userId: user.uid,
       title: extractedText.substring(0, 100) + '...',
       description: extractedText,
@@ -247,7 +264,7 @@ export const getUserCatalysts = async (): Promise<Catalyst[]> => {
     if (!user) throw new Error('User not authenticated');
 
     const q = query(
-      collection(db, 'catalysts'),
+      collection(getDatabase(), 'catalysts'),
       where('userId', '==', user.uid),
       orderBy('date', 'desc')
     );
@@ -265,7 +282,7 @@ export const deleteCatalyst = async (catalystId: string): Promise<CatalystResult
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    await deleteDoc(doc(db, 'catalysts', catalystId));
+    await deleteDoc(doc(getDatabase(), 'catalysts', catalystId));
     return { success: true };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -277,12 +294,12 @@ export const subscribeToCatalysts = (callback: (catalysts: Catalyst[]) => void):
   if (!user) throw new Error('User not authenticated');
 
   const q = query(
-    collection(db, 'catalysts'),
+    collection(getDatabase(), 'catalysts'),
     where('userId', '==', user.uid),
     orderBy('date', 'desc')
   );
 
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
     const catalysts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Catalyst));
     callback(catalysts);
   });
@@ -293,12 +310,12 @@ export const subscribeToStocks = (callback: (stocks: Stock[]) => void): Unsubscr
   if (!user) throw new Error('User not authenticated');
 
   const q = query(
-    collection(db, 'stocks'),
+    collection(getDatabase(), 'stocks'),
     where('userId', '==', user.uid),
     orderBy('createdAt', 'desc')
   );
 
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
     const stocks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Stock));
     callback(stocks);
   });
@@ -345,7 +362,7 @@ export async function saveNewsCatalyst(
     const user = auth.currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    const docRef = await addDoc(collection(db, 'catalysts'), {
+    const docRef = await addDoc(collection(getDatabase(), 'catalysts'), {
       userId: user.uid,
       stockTickers: [stockSymbol.toUpperCase()],
       title: catalystData.headline,
@@ -374,13 +391,13 @@ export function listenForStockCatalysts(
   if (!user) throw new Error('User not authenticated');
 
   const q = query(
-    collection(db, 'catalysts'),
+    collection(getDatabase(), 'catalysts'),
     where('userId', '==', user.uid),
     where('stockTickers', 'array-contains', stockSymbol.toUpperCase()),
     orderBy('date', 'desc')
   );
 
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
     const catalysts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Catalyst));
     onCatalystsReceived(catalysts);
   });
@@ -403,7 +420,7 @@ export const saveStockAlertSettings = async (
       createdAt: new Date()
     };
 
-    const docRef = await addDoc(collection(db, 'stock_alert_settings'), alertSettings);
+    const docRef = await addDoc(collection(getDatabase(), 'stock_alert_settings'), alertSettings);
     return { success: true, id: docRef.id };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };

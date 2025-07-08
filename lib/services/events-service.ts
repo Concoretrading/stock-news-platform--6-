@@ -1,7 +1,10 @@
-import { getFirestore, Query, DocumentData } from 'firebase-admin/firestore';
+import { getFirestore } from '@/lib/firebase-admin';
 import { getQuarterFromDate, getCategoryFromEventType, getImpactFromConfidence } from '@/lib/utils';
 
-const db = getFirestore();
+// Helper function to get database safely
+async function getDatabase() {
+  return await getFirestore();
+}
 
 interface BaseEvent {
   id: string;
@@ -41,6 +44,7 @@ interface RegulatoryEvent extends BaseEvent {
 
 export async function getUpcomingEvents(stockTicker: string | null, startDate: string, endDate: string): Promise<BaseEvent[]> {
   try {
+    const db = await getDatabase();
     const [earnings, aiEvents, companyEvents, regulatoryEvents] = await Promise.all([
       getUpcomingEarnings(stockTicker, startDate, endDate),
       getAIDetectedEvents(stockTicker, startDate, endDate),
@@ -59,7 +63,8 @@ export async function getUpcomingEvents(stockTicker: string | null, startDate: s
 
 async function getUpcomingEarnings(stockTicker: string | null, startDate: string, endDate: string): Promise<EarningsEvent[]> {
   try {
-    let query: Query<DocumentData> = db.collection('earnings_calendar')
+    const db = await getDatabase();
+    let query = db.collection('earnings_calendar')
       .where('earningsDate', '>=', startDate)
       .where('earningsDate', '<=', endDate);
 
@@ -98,7 +103,8 @@ async function getUpcomingEarnings(stockTicker: string | null, startDate: string
 
 async function getAIDetectedEvents(stockTicker: string | null, startDate: string, endDate: string): Promise<AIEvent[]> {
   try {
-    let query: Query<DocumentData> = db.collection('ai_detected_events')
+    const db = await getDatabase();
+    let query = db.collection('ai_detected_events')
       .where('eventDate', '>=', startDate)
       .where('eventDate', '<=', endDate);
 

@@ -1,55 +1,146 @@
 import { initializeApp, cert, getApps, applicationDefault, App } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getStorage } from 'firebase-admin/storage';
+import { getAuth as getFirebaseAuth, Auth } from 'firebase-admin/auth';
+import { getStorage as getFirebaseStorage, Storage } from 'firebase-admin/storage';
+import { getFirestore as getFirebaseFirestore, Firestore } from 'firebase-admin/firestore';
 
-// Hardcode the default bucket for testing
-const storageBucket = 'concorenews.firebasestorage.app';
+class FirebaseAdmin {
+  private static instance: FirebaseAdmin;
+  private app: App | null = null;
+  private _auth: Auth | null = null;
+  private _storage: Storage | null = null;
+  private _firestore: Firestore | null = null;
+  private initialized = false;
+  private initializationPromise: Promise<void> | null = null;
 
-// Only initialize Firebase if we're not in build time and have proper credentials
-if (!getApps().length && typeof window === 'undefined') {
-  try {
-    // Check if we have the required environment variables
-    const hasCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || 
-                          process.env.FIREBASE_PROJECT_ID ||
-                          process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  private constructor() {}
 
-    if (hasCredentials) {
-      initializeApp({
+  static getInstance(): FirebaseAdmin {
+    if (!FirebaseAdmin.instance) {
+      FirebaseAdmin.instance = new FirebaseAdmin();
+    }
+    return FirebaseAdmin.instance;
+  }
+
+  private async initialize(): Promise<void> {
+    if (this.initialized) return;
+    if (this.initializationPromise) return this.initializationPromise;
+
+    this.initializationPromise = this._doInitialize();
+    await this.initializationPromise;
+  }
+
+  private async _doInitialize(): Promise<void> {
+    try {
+      // Skip initialization during build time
+      if (this.isBuildTime()) {
+        console.log('Skipping Firebase initialization during build time');
+        return;
+      }
+
+      // Skip if already initialized
+      if (getApps().length > 0) {
+        this.app = getApps()[0];
+        this.initialized = true;
+        return;
+      }
+
+      // Check for credentials
+      const hasCredentials = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON || 
+                            process.env.FIREBASE_PROJECT_ID ||
+                            process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+      if (!hasCredentials) {
+        console.warn('Firebase admin credentials not found');
+        return;
+      }
+
+      // Initialize Firebase
+      this.app = initializeApp({
         credential: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
           ? cert(JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON))
           : applicationDefault(),
-        storageBucket,
+        storageBucket: 'concorenews.firebasestorage.app',
       });
-    } else if (process.env.NODE_ENV !== 'production') {
-      // For development, try to initialize with minimal config
-      console.warn('Firebase admin credentials not found, some features may not work');
+
+      this.initialized = true;
+    } catch (error) {
+      console.warn('Firebase admin initialization failed:', error);
+      // Don't throw - fail gracefully
     }
-  } catch (error) {
-    console.warn('Failed to initialize Firebase admin:', error);
-    // Don't throw error during build time
+  }
+
+  private isBuildTime(): boolean {
+    return (
+      process.env.NEXT_PHASE === 'phase-production-build' ||
+      process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV ||
+      typeof window !== 'undefined'
+    );
+  }
+
+  async getAuth(): Promise<Auth> {
+    if (this.isBuildTime()) {
+      throw new Error('Firebase admin not available during build time');
+    }
+
+    await this.initialize();
+    
+    if (!this._auth && this.app) {
+      this._auth = getFirebaseAuth(this.app);
+    }
+    
+    if (!this._auth) {
+      throw new Error('Firebase admin not initialized');
+    }
+    
+    return this._auth;
+  }
+
+  async getStorage(): Promise<Storage> {
+    if (this.isBuildTime()) {
+      throw new Error('Firebase admin not available during build time');
+    }
+
+    await this.initialize();
+    
+    if (!this._storage && this.app) {
+      this._storage = getFirebaseStorage(this.app);
+    }
+    
+    if (!this._storage) {
+      throw new Error('Firebase admin not initialized');
+    }
+    
+    return this._storage;
+  }
+
+  async getFirestore(): Promise<Firestore> {
+    if (this.isBuildTime()) {
+      throw new Error('Firebase admin not available during build time');
+    }
+
+    await this.initialize();
+    
+    if (!this._firestore && this.app) {
+      this._firestore = getFirebaseFirestore(this.app);
+    }
+    
+    if (!this._firestore) {
+      throw new Error('Firebase admin not initialized');
+    }
+    
+    return this._firestore;
   }
 }
 
-// Safe getter functions that handle missing Firebase
-function getAdminApp(): App | null {
-  const apps = getApps();
-  return apps.length > 0 ? apps[0] : null;
+// Export async getter functions
+export async function getAuth(): Promise<Auth> {
+  return FirebaseAdmin.getInstance().getAuth();
 }
 
-function getAdminAuth() {
-  const app = getAdminApp();
-  if (!app) {
-    throw new Error('Firebase admin not initialized');
-  }
-  return getAuth(app);
+export async function getStorage(): Promise<Storage> {
+  return FirebaseAdmin.getInstance().getStorage();
 }
 
-function getAdminStorage() {
-  const app = getAdminApp();
-  if (!app) {
-    throw new Error('Firebase admin not initialized');
-  }
-  return getStorage(app);
-}
-
-export { getAdminAuth as getAuth, getAdminStorage as getStorage }; 
+export async function getFirestore(): Promise<Firestore> {
+  return FirebaseAdmin.getInstance().getFirestore();
+} 

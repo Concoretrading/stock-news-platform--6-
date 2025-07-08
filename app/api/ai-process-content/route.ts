@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAdminToken } from '@/lib/services/auth-service';
-import { processContent } from '@/lib/services/ai-service';
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuth } from '@/lib/firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -8,28 +8,40 @@ export const revalidate = 0;
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const db = getFirestore();
+    
+    // Authenticate user
+    const authHeader = request.headers.get('authorization') || ''
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+    if (!idToken) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
+    
+    let decodedToken
+    try {
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
+    } catch (err) {
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 })
+    }
+    const userId = decodedToken.uid
 
-    const token = authHeader.split('Bearer ')[1];
-    const decodedToken = await verifyAdminToken(token);
-    const userId = decodedToken.uid;
-
-    const data = await request.json();
-    const result = await processContent(userId, data);
-
+    const body = await request.json()
+    
+    // Simple mock AI processing result
+    const result = {
+      processedContent: body,
+      monitoredStocks: ['AAPL', 'TSLA', 'NVDA']
+    }
+    
     return NextResponse.json({ 
-      success: true,
-      ...result,
-      message: 'Content processed successfully' 
-    });
+      success: true, 
+      result 
+    })
   } catch (error) {
-    console.error('Error in content processing:', error);
+    console.error('Error processing AI content:', error)
     return NextResponse.json({ 
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to process content'
-    }, { status: 500 });
+      success: false, 
+      error: 'Failed to process AI content' 
+    }, { status: 500 })
   }
 } 

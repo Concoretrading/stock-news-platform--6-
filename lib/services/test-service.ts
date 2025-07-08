@@ -1,7 +1,7 @@
 import { getAuth } from '@/lib/firebase-admin';
 
 export async function verifyToken(token: string) {
-  return getAuth().verifyIdToken(token);
+  return (await getAuth()).verifyIdToken(token);
 }
 
 export function getEnvironmentCheck() {

@@ -1,12 +1,15 @@
 /// <reference types="node" />
-import { getFirestore, Query, DocumentData } from 'firebase-admin/firestore';
+import { getFirestore } from '@/lib/firebase-admin';
+import { Query, DocumentData } from 'firebase-admin/firestore';
 import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
 import { getStorage } from '@/lib/firebase-admin';
 
-const db = getFirestore();
+// Helper function to get database safely
+async function getDatabase() {
+  return await getFirestore();
+}
+
 const vision = new ImageAnnotatorClient();
-const storage = getStorage();
-const bucket = storage.bucket();
 
 type CloudVisionVertex = protos.google.cloud.vision.v1.IVertex;
 
@@ -85,13 +88,13 @@ function convertToIVertex(vertex: CloudVisionVertex): IVertex {
   };
 }
 
-export async function analyzeCalendarScreenshot(
-  userId: string,
-  imageBuffer: Buffer,
-  imageType: string
-): Promise<AnalysisResult> {
+export async function analyzeCalendarScreenshot(userId: string, imageBuffer: Buffer, imageType: string) {
   try {
+    const db = await getDatabase();
+    
     // Upload image to Firebase Storage
+    const storage = await getStorage();
+    const bucket = storage.bucket();
     const filename = `calendar-screenshots/${userId}/${Date.now()}.${imageType}`;
     const file = bucket.file(filename);
     await file.save(imageBuffer);
@@ -287,6 +290,7 @@ function getFullCompanyName(logoName: string): string {
 
 async function getLogoUrl(companyName: string): Promise<string | undefined> {
   try {
+    const db = await getDatabase();
     // First check if we already have this logo stored
     const logoDoc = await db.collection('company_logos')
       .where('companyName', '==', companyName)
@@ -318,7 +322,8 @@ interface CalendarEventUpdate {
 
 export async function getCalendarEvents(userId: string, params: CalendarEventParams) {
   try {
-    let query: Query<DocumentData> = db.collection('earnings_calendar');
+    const db = await getDatabase();
+         let query: Query<DocumentData> = db.collection('earnings_calendar');
 
     if (params.stockTicker) {
       query = query.where('stockTicker', '==', params.stockTicker.toUpperCase());
@@ -345,6 +350,7 @@ export async function getCalendarEvents(userId: string, params: CalendarEventPar
 
 export async function updateCalendarEvent(userId: string, eventId: string, updates: CalendarEventUpdate) {
   try {
+    const db = await getDatabase();
     const eventRef = db.collection('earnings_calendar').doc(eventId);
     await eventRef.update({
       ...updates,

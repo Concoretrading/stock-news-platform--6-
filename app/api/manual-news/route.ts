@@ -1,9 +1,6 @@
-import { NextRequest, NextResponse } from "next/server"
-import { verifyAuthToken } from "@/lib/services/auth-service"
-import { addManualNews } from "@/lib/services/news-service"
-import { getFirestore } from 'firebase-admin/firestore';
-
-const db = getFirestore();
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuth } from '@/lib/firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,39 +8,64 @@ export const revalidate = 0;
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("authorization") || ""
-    const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
+    const db = getFirestore();
+    
+    // Authenticate user
+    const authHeader = request.headers.get('authorization') || ''
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
     if (!idToken) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+      return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
     }
-
-    let decodedToken;
+    let decodedToken
     try {
-      decodedToken = await verifyAuthToken(idToken)
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
     } catch (err) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+      return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 })
     }
     const userId = decodedToken.uid
 
     const body = await request.json()
-    const id = await addManualNews(userId, body)
+    const { stockSymbol, headline, body: newsBody, date, imagePath, priceBefore, priceAfter, source } = body
 
-    return NextResponse.json({
-      success: true,
-      message: "News entry saved successfully",
-      id
+    if (!stockSymbol || !headline || !date) {
+      return NextResponse.json({ success: false, error: 'Stock symbol, headline, and date are required' }, { status: 400 })
+    }
+
+    // Add news entry to catalysts collection
+    const catalystData = {
+      userId,
+      stockTickers: [stockSymbol.toUpperCase()],
+      title: headline,
+      description: newsBody || null,
+      date: new Date(date).toISOString().split('T')[0],
+      imageUrl: imagePath || null,
+      isManual: true,
+      createdAt: new Date().toISOString(),
+      priceBefore: priceBefore ? Number(priceBefore) : null,
+      priceAfter: priceAfter ? Number(priceAfter) : null,
+      source: source || null,
+    }
+
+    const docRef = await db.collection('catalysts').add(catalystData)
+    
+    return NextResponse.json({ 
+      success: true, 
+      id: docRef.id,
+      message: `News catalyst added for ${stockSymbol}` 
     })
   } catch (error) {
-    console.error('Error saving manual news:', error);
+    console.error('Error adding manual news:', error)
     return NextResponse.json({ 
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to save news entry'
-    }, { status: 500 });
+      success: false, 
+      error: 'Failed to add news catalyst' 
+    }, { status: 500 })
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getFirestore()
+    
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
     if (!idToken) {
@@ -51,7 +73,7 @@ export async function GET(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await verifyAuthToken(idToken)
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
     } catch (err) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
     }

@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAuthToken } from "@/lib/services/auth-service";
-import { fetchNews } from "@/lib/services/news-service";
+import { getAuth } from "@/lib/firebase-admin";
+import { getFirestore } from "firebase-admin/firestore";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getFirestore();
+    
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!idToken) {
@@ -14,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     let decodedToken;
     try {
-      decodedToken = await verifyAuthToken(idToken);
+      decodedToken = await (await getAuth()).verifyIdToken(idToken);
     } catch (err) {
       return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 });
     }
@@ -25,11 +27,15 @@ export async function GET(request: NextRequest) {
     const fromDate = searchParams.get("from");
     const toDate = searchParams.get("to");
 
-    const catalysts = await fetchNews(userId, {
-      ticker: ticker || undefined,
-      fromDate: fromDate || undefined,
-      toDate: toDate || undefined
-    });
+    // Fetch catalysts from database
+    let query = db.collection('catalysts').where('userId', '==', userId);
+    
+    if (ticker) {
+      query = query.where('stockTickers', 'array-contains', ticker.toUpperCase());
+    }
+    
+    const catalystsSnap = await query.orderBy('date', 'desc').limit(50).get();
+    const catalysts = catalystsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json({ success: true, data: catalysts });
   } catch (error) {

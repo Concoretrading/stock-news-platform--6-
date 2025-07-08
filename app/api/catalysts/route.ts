@@ -6,8 +6,6 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const db = getFirestore()
-
 // Mock data for when Supabase is not available
 const MOCK_CATALYSTS = [
   {
@@ -34,6 +32,8 @@ const MOCK_CATALYSTS = [
 
 export async function GET(request: NextRequest) {
   try {
+    const db = getFirestore()
+    
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
     if (!idToken) {
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken)
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
     } catch (err) {
       return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 })
     }
@@ -76,6 +76,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const db = getFirestore()
+    
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
     if (!idToken) {
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken)
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
     } catch (err) {
       return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 })
     }
@@ -132,6 +134,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const db = getFirestore()
+    
     const authHeader = request.headers.get("authorization") || ""
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null
     if (!idToken) {
@@ -139,7 +143,7 @@ export async function DELETE(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await getAuth().verifyIdToken(idToken)
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
     } catch (err) {
       return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 })
     }
@@ -166,7 +170,7 @@ export async function DELETE(request: NextRequest) {
     // Delete image from Firebase Storage if it exists
     if (catalyst.imageUrl) {
       try {
-        const storage = getStorage()
+        const storage = await getStorage()
         // Extract the storage path from the imageUrl
         const bucket = storage.bucket()
         const url = new URL(catalyst.imageUrl)

@@ -1,48 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from 'next/server'
+import { getAuth } from '@/lib/firebase-admin'
 import { getFirestore } from 'firebase-admin/firestore'
-import { startOfMonth, endOfMonth, subMonths } from 'date-fns'
 
-// Force dynamic rendering for this route
-export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const ticker = searchParams.get("ticker")
-    const period = searchParams.get("period") || "week"
-
-    if (!ticker) {
-      return NextResponse.json({ error: "Ticker is required" }, { status: 400 })
-    }
-
     const db = getFirestore()
-    const now = new Date()
-    let startDate: Date
-    let endDate = now
-
-    // Calculate date range based on period
-    switch (period) {
-      case "month":
-        startDate = startOfMonth(subMonths(now, 1))
-        endDate = endOfMonth(now)
-        break
-      case "week":
-      default:
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) // 7 days ago
-        break
+    
+    // Authenticate user
+    const authHeader = request.headers.get('authorization') || ''
+    const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+    if (!idToken) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
     }
+    let decodedToken
+    try {
+      decodedToken = await (await getAuth()).verifyIdToken(idToken)
+    } catch (err) {
+      return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 })
+    }
+    const userId = decodedToken.uid
 
-    // Query catalysts collection for the specified ticker and date range
-    const snapshot = await db.collection('catalysts')
-      .where('stockTickers', 'array-contains', ticker)
-      .where('date', '>=', startDate.toISOString())
-      .where('date', '<=', endDate.toISOString())
+    // Get the total count of catalysts for this user
+    const catalystsSnap = await db.collection('catalysts')
+      .where('userId', '==', userId)
       .get()
-    const count = snapshot.size
-
-    return NextResponse.json({ count })
+    
+    const totalCount = catalystsSnap.size
+    
+    return NextResponse.json({ count: totalCount })
   } catch (error) {
-    console.error("Error fetching catalyst count:", error)
-    return NextResponse.json({ error: "Failed to fetch catalyst count" }, { status: 500 })
+    console.error('Error getting catalyst count:', error)
+    return NextResponse.json({ error: 'Failed to get catalyst count' }, { status: 500 })
   }
 }

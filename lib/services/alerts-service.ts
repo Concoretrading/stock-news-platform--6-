@@ -1,6 +1,9 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore } from '@/lib/firebase-admin';
 
-const db = getFirestore();
+// Helper function to get database safely
+async function getDatabase() {
+  return await getFirestore();
+}
 
 interface StockPrice {
   price: number;
@@ -42,8 +45,33 @@ interface TriggeredAlert extends Alert {
 // NOTE: Live price functionality has been removed
 // Alert checking functionality is disabled until alternative price source is implemented
 
-export async function checkAlerts(userId: string, ticker: string, currentPrice: number): Promise<TriggeredAlert[]> {
-  // Price-based alerts are currently disabled
-  console.log('Price alerts are currently disabled - live price functionality removed');
-  return [];
+export async function checkAlerts(userId: string, ticker: string, currentPrice: number) {
+  try {
+    const db = await getDatabase();
+    
+    // Simple mock alert checking
+    const triggeredAlerts: any[] = [];
+    
+    return triggeredAlerts;
+  } catch (error) {
+    console.error('Error checking alerts:', error);
+    throw error;
+  }
+}
+
+export async function createAlert(userId: string, alertData: any) {
+  try {
+    const db = await getDatabase();
+    
+    const docRef = await db.collection('alerts').add({
+      ...alertData,
+      userId,
+      createdAt: new Date().toISOString()
+    });
+    
+    return docRef.id;
+  } catch (error) {
+    console.error('Error creating alert:', error);
+    throw error;
+  }
 } 

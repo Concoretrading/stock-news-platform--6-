@@ -1,46 +1,78 @@
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore } from '@/lib/firebase-admin';
 import { getStorage } from 'firebase-admin/storage';
 
-const db = getFirestore();
+// Helper function to get database safely
+async function getDatabase() {
+  return await getFirestore();
+}
 
-export async function deleteCatalyst(userId: string, id: string) {
-  if (!id) {
-    throw new Error('ID parameter is required');
-  }
+interface Catalyst {
+  id: string;
+  title: string;
+  description?: string;
+  stockTickers: string[];
+  date: string;
+  imageUrl?: string;
+  isManual: boolean;
+  createdAt: string;
+  userId: string;
+  priceBefore?: number;
+  priceAfter?: number;
+}
 
-  // Fetch the catalyst to check ownership and get imageUrl
-  const docRef = db.collection('catalysts').doc(id);
-  const docSnap = await docRef.get();
-  
-  if (!docSnap.exists) {
-    throw new Error('Catalyst not found');
-  }
-
-  const catalyst = docSnap.data();
-  if (!catalyst) {
-    throw new Error('Catalyst not found');
-  }
-
-  if (catalyst.userId !== userId) {
-    throw new Error('Unauthorized');
-  }
-
-  // Delete image from Firebase Storage if it exists
-  if (catalyst.imageUrl) {
-    try {
-      const storage = getStorage();
-      // Extract the storage path from the imageUrl
-      const bucket = storage.bucket();
-      const url = new URL(catalyst.imageUrl);
-      // The path after the bucket name
-      const pathStart = url.pathname.indexOf('/') + 1;
-      const filePath = url.pathname.substring(pathStart);
-      await bucket.file(filePath).delete();
-    } catch (err) {
-      console.error('Error deleting image from storage:', err);
+export async function getCatalystsForUser(userId: string, ticker?: string): Promise<Catalyst[]> {
+  try {
+    const db = await getDatabase();
+    let query = db.collection('catalysts').where('userId', '==', userId);
+    
+    if (ticker) {
+      query = query.where('stockTickers', 'array-contains', ticker.toUpperCase());
     }
+    
+    const snapshot = await query.orderBy('date', 'desc').get();
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Catalyst));
+  } catch (error) {
+    console.error('Error fetching catalysts:', error);
+    throw error;
   }
+}
 
-  // Delete the Firestore document
-  await docRef.delete();
+export async function addCatalyst(userId: string, catalystData: Omit<Catalyst, 'id' | 'userId' | 'createdAt'>): Promise<string> {
+  try {
+    const db = await getDatabase();
+    const docRef = await db.collection('catalysts').add({
+      ...catalystData,
+      userId,
+      createdAt: new Date().toISOString()
+    });
+    return docRef.id;
+  } catch (error) {
+    console.error('Error adding catalyst:', error);
+    throw error;
+  }
+}
+
+export async function deleteCatalyst(userId: string, catalystId: string): Promise<void> {
+  try {
+    const db = await getDatabase();
+    const docRef = db.collection('catalysts').doc(catalystId);
+    const doc = await docRef.get();
+    
+    if (!doc.exists) {
+      throw new Error('Catalyst not found');
+    }
+    
+    const catalyst = doc.data();
+    if (catalyst?.userId !== userId) {
+      throw new Error('Unauthorized');
+    }
+    
+    await docRef.delete();
+  } catch (error) {
+    console.error('Error deleting catalyst:', error);
+    throw error;
+  }
 } 

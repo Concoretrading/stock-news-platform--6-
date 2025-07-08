@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
     try {
       decodedToken = await verifyAuthToken(idToken);
     } catch (err) {
+      // Handle build-time gracefully
+      if (err instanceof Error && err.message.includes('Authentication service not available during build')) {
+        return NextResponse.json({ error: "Service temporarily unavailable" }, { status: 503 });
+      }
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
     const userId = decodedToken.uid;
@@ -33,7 +37,7 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Analyze the screenshot
-    const result = await analyzeScreenshot(userId, buffer, image.type, watchlistTickers);
+    const result = await analyzeScreenshot(userId, buffer, image.type);
 
     return NextResponse.json({
       success: true,
