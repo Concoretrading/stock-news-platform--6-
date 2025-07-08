@@ -1,8 +1,9 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthChange, getCurrentUser } from '@/lib/firebase-services';
 import { User as FirebaseUser } from "firebase/auth";
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 
 interface User {
   uid: string;
@@ -26,7 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthChange((fbUser: any) => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
         setUser({
           uid: fbUser.uid,
@@ -46,8 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { signOutUser } = await import('@/lib/firebase-services');
-      await signOutUser();
+      await firebaseSignOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
     }
