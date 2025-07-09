@@ -221,9 +221,9 @@ export default function HomePage() {
                 <Badge variant="secondary" className="text-xs sm:text-sm">{watchlist.length} of {maxStocks} stocks</Badge>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                {/* Carousel Navigation */}
+                {/* Carousel Navigation - Only show on desktop */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-2 order-2 sm:order-1">
+                  <div className="hidden sm:flex items-center justify-center gap-2 order-2 sm:order-1">
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -269,22 +269,42 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
-                {visibleStocks.map((stock) => (
-                  <div key={stock.symbol} className="transform transition-transform hover:scale-105">
-                    <StockCard 
-                      ticker={stock.symbol}
-                      name={stock.name}
-                      onClick={() => handleStockClick(stock)}
-                    />
+              <>
+                {/* Mobile: Vertical Scrollable Carousel */}
+                <div className="block sm:hidden">
+                  <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2">
+                    {watchlist.map((stock) => (
+                      <div key={stock.symbol} className="transform transition-transform hover:scale-105">
+                        <StockCard 
+                          ticker={stock.symbol}
+                          name={stock.name}
+                          onClick={() => handleStockClick(stock)}
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
+                
+                {/* Desktop: Grid Layout */}
+                <div className="hidden sm:block">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+                    {visibleStocks.map((stock) => (
+                      <div key={stock.symbol} className="transform transition-transform hover:scale-105">
+                        <StockCard 
+                          ticker={stock.symbol}
+                          name={stock.name}
+                          onClick={() => handleStockClick(stock)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
             
-            {/* Page Indicators */}
+            {/* Page Indicators - Only show on desktop */}
             {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
+              <div className="hidden sm:flex justify-center mt-6">
                 <div className="flex space-x-2">
                   {Array.from({ length: totalPages }).map((_, idx) => (
                     <button
