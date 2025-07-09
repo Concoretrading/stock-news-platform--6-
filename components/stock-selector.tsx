@@ -30,9 +30,10 @@ interface StockSelectorProps {
   onUpdateWatchlist: (stocks: Stock[]) => void
   currentStocks: Stock[]
   maxStocks: number
+  isShowingDefaults?: boolean // New prop to indicate if currentStocks are UI-only defaults
 }
 
-export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStocks, maxStocks }: StockSelectorProps) {
+export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStocks, maxStocks, isShowingDefaults }: StockSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedStocks, setSelectedStocks] = useState<Stock[]>([])
   const [loading, setLoading] = useState(false)
@@ -42,9 +43,20 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
     if (isOpen) {
       console.log('🔴 STOCK SELECTOR OPENED')
       console.log('🔴 Props currentStocks:', currentStocks.length, currentStocks.map(s => s.symbol))
-      setSelectedStocks(currentStocks)
+      console.log('🔴 Props isShowingDefaults:', isShowingDefaults)
+      
+      if (isShowingDefaults) {
+        // When showing UI-only defaults, start with empty selection
+        // This prevents auto-saving the default stocks to database
+        console.log('🔴 Showing defaults - starting with empty selection')
+        setSelectedStocks([])
+      } else {
+        // When showing actual saved stocks, use them as initial selection
+        console.log('🔴 Showing saved stocks - using current stocks as selection')
+        setSelectedStocks(currentStocks)
+      }
     }
-  }, [isOpen, currentStocks])
+  }, [isOpen, currentStocks, isShowingDefaults])
 
   const availableStocks = tickers.filter(ticker => 
     ticker.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||

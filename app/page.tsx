@@ -35,9 +35,11 @@ export default function HomePage() {
   const [watchlist, setWatchlist] = useState<Stock[]>([])
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [showStockSelector, setShowStockSelector] = useState(false)
-  const [showPastInstructions, setShowPastInstructions] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [currentPage, setCurrentPage] = useState(0)
+  const [showPastInstructions, setShowPastInstructions] = useState(false)
+  const [showFutureInstructions, setShowFutureInstructions] = useState(false)
+  const [isShowingDefaults, setIsShowingDefaults] = useState(false) // Track if showing UI-only defaults
   const { user, loading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
@@ -95,6 +97,7 @@ export default function HomePage() {
           { symbol: "INTC", name: "Intel Corporation" },
         ]
         setWatchlist(defaultStocks)
+        setIsShowingDefaults(true)
       } else {
         // Existing user - use their saved stocks from database
         console.log('🔍 Existing user - using saved stocks from database')
@@ -103,6 +106,7 @@ export default function HomePage() {
           symbol: stock.ticker,
           name: stock.companyName
         })))
+        setIsShowingDefaults(false)
       }
     } catch (error) {
       console.error('❌ Error loading watchlist:', error)
@@ -128,6 +132,12 @@ export default function HomePage() {
         name: stock.name
       })))
       setCurrentPage(0)
+      
+      // If user was seeing defaults and now has actual stocks, update the flag
+      if (isShowingDefaults && newStocks.length > 0) {
+        setIsShowingDefaults(false)
+        console.log('🔍 User transitioned from defaults to saved stocks')
+      }
       
       toast({
         title: "Watchlist Updated",
@@ -349,6 +359,7 @@ export default function HomePage() {
             onUpdateWatchlist={(stocks) => handleUpdateWatchlist(stocks)}
             currentStocks={watchlist}
             maxStocks={maxStocks}
+            isShowingDefaults={isShowingDefaults}
           />
         )}
       </div>
