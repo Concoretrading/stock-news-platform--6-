@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, isPast } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, TrendingUp, DollarSign, Building2, Zap, AlertTriangle, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, TrendingUp, DollarSign, Building2, Zap, AlertTriangle, Clock, X } from 'lucide-react';
 import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
@@ -68,58 +68,198 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         // Add sample events for the current month
         const today = new Date();
         
-        // Sample economic events - only add for current month to reduce flickering
+        // Comprehensive Market Watch Economic Data - spread throughout the month
         const sampleEvents = [
-          // Economic Data Releases
+          // EMPLOYMENT DATA
           {
             id: 'sample-1',
-            date: `${currentMonthKey}-15`,
+            date: `${currentMonthKey}-01`,
+            ticker: 'JOBS',
+            company_name: 'Non-Farm Payrolls',
+            event_type: 'Employment Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-2',
+            date: `${currentMonthKey}-01`,
+            ticker: 'UNEMP',
+            company_name: 'Unemployment Rate',
+            event_type: 'Employment Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-3',
+            date: `${currentMonthKey}-08`,
+            ticker: 'CLAIMS',
+            company_name: 'Initial Jobless Claims',
+            event_type: 'Employment Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          // INFLATION DATA
+          {
+            id: 'sample-4',
+            date: `${currentMonthKey}-12`,
             ticker: 'CPI',
             company_name: 'Consumer Price Index',
-            event_type: 'Economic Data Release',
+            event_type: 'Inflation Data',
             confirmed: true,
             auto_generated: true
           },
           {
             id: 'sample-5',
-            date: `${currentMonthKey}-12`,
+            date: `${currentMonthKey}-14`,
             ticker: 'PPI',
             company_name: 'Producer Price Index',
-            event_type: 'Economic Data Release',
+            event_type: 'Inflation Data',
             confirmed: true,
             auto_generated: true
           },
           {
             id: 'sample-6',
-            date: `${currentMonthKey}-08`,
-            ticker: 'CLAIMS',
-            company_name: 'Initial Jobless Claims',
-            event_type: 'Economic Data Release',
+            date: `${currentMonthKey}-29`,
+            ticker: 'PCE',
+            company_name: 'Personal Consumption Expenditures',
+            event_type: 'Inflation Data',
             confirmed: true,
             auto_generated: true
           },
-          // Fed Events
-          {
-            id: 'sample-3',
-            date: `${currentMonthKey}-20`,
-            ticker: 'FOMC',
-            company_name: 'Federal Reserve',
-            event_type: 'FOMC Meeting',
-            confirmed: true,
-            auto_generated: true
-          },
+          // CONSUMER/RETAIL DATA
           {
             id: 'sample-7',
-            date: `${currentMonthKey}-18`,
-            ticker: 'FED',
-            company_name: 'Federal Reserve Beige Book',
-            event_type: 'Fed Report Release',
+            date: `${currentMonthKey}-15`,
+            ticker: 'RETAIL',
+            company_name: 'Retail Sales',
+            event_type: 'Consumer Data',
             confirmed: true,
             auto_generated: true
           },
-          // Market Events
           {
             id: 'sample-8',
+            date: `${currentMonthKey}-26`,
+            ticker: 'CONF',
+            company_name: 'Consumer Confidence',
+            event_type: 'Consumer Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-9',
+            date: `${currentMonthKey}-27`,
+            ticker: 'MICH',
+            company_name: 'Michigan Consumer Sentiment',
+            event_type: 'Consumer Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          // MANUFACTURING DATA
+          {
+            id: 'sample-10',
+            date: `${currentMonthKey}-03`,
+            ticker: 'ISM',
+            company_name: 'ISM Manufacturing PMI',
+            event_type: 'Manufacturing Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-11',
+            date: `${currentMonthKey}-05`,
+            ticker: 'ISPMI',
+            company_name: 'ISM Services PMI',
+            event_type: 'Manufacturing Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-12',
+            date: `${currentMonthKey}-16`,
+            ticker: 'IP',
+            company_name: 'Industrial Production',
+            event_type: 'Manufacturing Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          // HOUSING DATA
+          {
+            id: 'sample-13',
+            date: `${currentMonthKey}-19`,
+            ticker: 'STARTS',
+            company_name: 'Housing Starts',
+            event_type: 'Housing Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-14',
+            date: `${currentMonthKey}-21`,
+            ticker: 'EXIST',
+            company_name: 'Existing Home Sales',
+            event_type: 'Housing Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-15',
+            date: `${currentMonthKey}-24`,
+            ticker: 'NEW',
+            company_name: 'New Home Sales',
+            event_type: 'Housing Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          // GDP & TRADE DATA
+          {
+            id: 'sample-16',
+            date: `${currentMonthKey}-30`,
+            ticker: 'GDP',
+            company_name: 'Gross Domestic Product',
+            event_type: 'Economic Growth',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-17',
+            date: `${currentMonthKey}-06`,
+            ticker: 'TRADE',
+            company_name: 'Trade Balance',
+            event_type: 'Trade Data',
+            confirmed: true,
+            auto_generated: true
+          },
+          // FED EVENTS
+          {
+            id: 'sample-18',
+            date: `${currentMonthKey}-20`,
+            ticker: 'FOMC',
+            company_name: 'Federal Reserve FOMC Meeting',
+            event_type: 'Fed Meeting',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-19',
+            date: `${currentMonthKey}-18`,
+            ticker: 'BEIGE',
+            company_name: 'Fed Beige Book Release',
+            event_type: 'Fed Report',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-20',
+            date: `${currentMonthKey}-10`,
+            ticker: 'MINUTES',
+            company_name: 'FOMC Meeting Minutes',
+            event_type: 'Fed Report',
+            confirmed: true,
+            auto_generated: true
+          },
+          // MARKET STRUCTURE EVENTS
+          {
+            id: 'sample-21',
             date: `${currentMonthKey}-17`,
             ticker: 'VIX',
             company_name: 'VIX Options Expiration',
@@ -128,7 +268,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: true
           },
           {
-            id: 'sample-9',
+            id: 'sample-22',
             date: `${currentMonthKey}-22`,
             ticker: 'WITCHING',
             company_name: 'Triple Witching Day',
@@ -137,17 +277,17 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: true
           },
           {
-            id: 'sample-10',
+            id: 'sample-23',
             date: `${currentMonthKey}-28`,
             ticker: 'MARKET',
-            company_name: 'Market Holiday - Thanksgiving',
+            company_name: 'Market Holiday',
             event_type: 'Market Closed',
             confirmed: true,
             auto_generated: true
           },
-          // Earnings Events
+          // EARNINGS EVENTS (Major Tech)
           {
-            id: 'sample-2', 
+            id: 'sample-24', 
             date: format(today, 'yyyy-MM-dd'),
             ticker: 'AAPL',
             company_name: 'Apple Inc.',
@@ -156,7 +296,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: false
           },
           {
-            id: 'sample-4',
+            id: 'sample-25',
             date: `${currentMonthKey}-25`,
             ticker: 'TSLA',
             company_name: 'Tesla Inc.',
@@ -165,7 +305,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: false
           },
           {
-            id: 'sample-11',
+            id: 'sample-26',
             date: `${currentMonthKey}-14`,
             ticker: 'NVDA',
             company_name: 'NVIDIA Corporation',
@@ -174,10 +314,28 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: false
           },
           {
-            id: 'sample-12',
+            id: 'sample-27',
             date: `${currentMonthKey}-26`,
             ticker: 'MSFT',
             company_name: 'Microsoft Corporation',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'sample-28',
+            date: `${currentMonthKey}-07`,
+            ticker: 'GOOGL',
+            company_name: 'Alphabet Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'sample-29',
+            date: `${currentMonthKey}-09`,
+            ticker: 'META',
+            company_name: 'Meta Platforms',
             event_type: 'Earnings Call',
             confirmed: true,
             auto_generated: false
@@ -347,18 +505,18 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   const getEventIcon = (ticker: string, eventType: string) => {
     if (ticker === 'MARKET') return <AlertTriangle className="h-4 w-4" />;
     if (ticker === 'WITCHING') return <Zap className="h-4 w-4" />;
-    if (ticker === 'FOMC' || ticker === 'FED') return <Building2 className="h-4 w-4" />;
+    if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') return <Building2 className="h-4 w-4" />;
     if (ticker === 'VIX') return <TrendingUp className="h-4 w-4" />;
-    if (['CPI', 'PPI', 'CLAIMS', 'RETAIL', 'HOUSING', 'PMI', 'GDP', 'MICH'].includes(ticker)) return <DollarSign className="h-4 w-4" />;
+    if (['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(ticker)) return <DollarSign className="h-4 w-4" />;
     return <TrendingUp className="h-4 w-4" />;
   };
 
   const getEventColor = (ticker: string, eventType: string) => {
     if (ticker === 'MARKET') return 'bg-red-100 text-red-800 border-red-200';
     if (ticker === 'WITCHING') return 'bg-purple-100 text-purple-800 border-purple-200';
-    if (ticker === 'FOMC' || ticker === 'FED') return 'bg-blue-100 text-blue-800 border-blue-200';
+    if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') return 'bg-blue-100 text-blue-800 border-blue-200';
     if (ticker === 'VIX') return 'bg-orange-100 text-orange-800 border-orange-200';
-    if (['CPI', 'PPI', 'CLAIMS', 'RETAIL', 'HOUSING', 'PMI', 'GDP', 'MICH'].includes(ticker)) return 'bg-green-100 text-green-800 border-green-200';
+    if (['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(ticker)) return 'bg-green-100 text-green-800 border-green-200';
     return 'bg-slate-100 text-slate-800 border-slate-200';
   };
 
@@ -441,7 +599,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                           </div>
                         )}
                         
-                        {(event.ticker === 'FOMC' || event.ticker === 'FED') && (
+                        {(event.ticker === 'FOMC' || event.ticker === 'BEIGE' || event.ticker === 'MINUTES') && (
                           <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <div className="flex items-center gap-2 text-blue-800">
                               <Building2 className="h-4 w-4" />
@@ -451,7 +609,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                           </div>
                         )}
                         
-                        {['CPI', 'PPI', 'CLAIMS', 'RETAIL', 'HOUSING', 'PMI', 'GDP', 'MICH'].includes(event.ticker) && (
+                        {['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(event.ticker) && (
                           <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
                             <div className="flex items-center gap-2 text-green-800">
                               <DollarSign className="h-4 w-4" />
@@ -541,21 +699,31 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
               const dayEvents = events[dateKey] || [];
               const isCurrentMonth = isSameMonth(day, currentDate);
               const isDayToday = isToday(day);
+              const isDayPast = isPast(day) && !isDayToday;
               
               return (
                 <div
                   key={dateKey}
                   className={cn(
-                    "min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
+                    "relative min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
                     "hover:bg-accent hover:shadow-sm",
                     !isCurrentMonth && "opacity-40 bg-muted/20",
                     isDayToday && "ring-2 ring-primary bg-primary/5",
+                    isDayPast && "bg-muted/10"
                   )}
                   onClick={() => handleDateClick(day)}
                 >
+                  {/* Cross overlay for past dates */}
+                  {isDayPast && dayEvents.length > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <X className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/50 stroke-[1.5]" />
+                    </div>
+                  )}
+                  
                   <div className={cn(
                     "text-xs sm:text-sm font-medium mb-1 sm:mb-2",
-                    isDayToday && "text-primary font-bold"
+                    isDayToday && "text-primary font-bold",
+                    isDayPast && "text-muted-foreground"
                   )}>
                     {format(day, 'd')}
                   </div>
@@ -566,7 +734,8 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                         key={`${event.date}-${index}`}
                         className={cn(
                           "text-xs px-1 sm:px-2 py-1 rounded-md border truncate",
-                          getEventColor(event.ticker, event.event_type)
+                          getEventColor(event.ticker, event.event_type),
+                          isDayPast && "opacity-60"
                         )}
                         title={`${event.ticker}: ${event.company_name}`}
                       >
@@ -575,7 +744,10 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                     ))}
                     
                     {dayEvents.length > 2 && (
-                      <div className="text-xs text-muted-foreground px-1 sm:px-2 py-1">
+                      <div className={cn(
+                        "text-xs text-muted-foreground px-1 sm:px-2 py-1",
+                        isDayPast && "opacity-60"
+                      )}>
                         +{dayEvents.length - 2} more
                       </div>
                     )}
