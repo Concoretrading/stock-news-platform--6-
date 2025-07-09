@@ -6,7 +6,7 @@ import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Calendar, BarChart2 } from 'lucide-react';
+import { ArrowLeft, Calendar, BarChart2, Star } from 'lucide-react';
 import { ModernCalendar } from '@/components/modern-calendar';
 import { EarningsCalendar } from '@/components/earnings-calendar';
 import { AdminCalendarUpload } from '@/components/admin-calendar-upload';
@@ -78,6 +78,12 @@ export default function CalendarPage() {
           >
             <BarChart2 className="inline h-4 w-4 mr-1" /> Earnings
           </button>
+          <button
+            className={`flex-1 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === 'elite' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            onClick={() => setActiveTab('elite')}
+          >
+            <Star className="inline h-4 w-4 mr-1" /> Elite
+          </button>
         </div>
       </div>
 
@@ -85,10 +91,8 @@ export default function CalendarPage() {
       {isMobile ? (
         <div>
           {activeTab === 'events' ? (
-            // Only show current month for events
             <ModernCalendar type="events" />
-          ) : (
-            // Earnings: allow vertical scroll for months, drill-down
+          ) : activeTab === 'earnings' ? (
             <div className="flex flex-col gap-2">
               {months.map((m, i) => (
                 <div key={i}>
@@ -98,7 +102,6 @@ export default function CalendarPage() {
                   >
                     {m.label}
                   </button>
-                  {/* Expand to show weeks if this month is expanded */}
                   {expandedMonth === i && (
                     <div className="pl-4 pt-2 flex flex-col gap-1">
                       {weeks.map((w) => (
@@ -109,7 +112,6 @@ export default function CalendarPage() {
                           >
                             Week {w}
                           </button>
-                          {/* Expand to show calendar for this week */}
                           {expandedWeek === w && (
                             <div className="pl-4 pt-1">
                               <EarningsCalendar type="earnings" />
@@ -122,14 +124,47 @@ export default function CalendarPage() {
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {months.map((m, i) => (
+                <div key={i}>
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-lg font-semibold text-base ${expandedMonth === i ? 'bg-primary/10' : 'bg-muted'}`}
+                    onClick={() => setExpandedMonth(expandedMonth === i ? null : i)}
+                  >
+                    {m.label}
+                  </button>
+                  {expandedMonth === i && (
+                    <div className="pl-4 pt-2 flex flex-col gap-1">
+                      {weeks.map((w) => (
+                        <div key={w}>
+                          <button
+                            className={`w-full text-left px-3 py-2 rounded font-medium text-sm ${expandedWeek === w ? 'bg-primary/20' : 'bg-muted/50'}`}
+                            onClick={() => setExpandedWeek(expandedWeek === w ? null : w)}
+                          >
+                            Week {w}
+                          </button>
+                          {expandedWeek === w && (
+                            <div className="pl-4 pt-1">
+                              <EarningsCalendar type="elite" />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </div>
       ) : (
-        // Desktop: Normal tab layout
+        // Desktop: Restore original tab layout
         <Tabs defaultValue="events" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="earnings">Earnings</TabsTrigger>
+            <TabsTrigger value="elite">Elite</TabsTrigger>
             {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
           </TabsList>
           <TabsContent value="events">
@@ -158,6 +193,20 @@ export default function CalendarPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <EarningsCalendar type="earnings" />
+            </CardContent>
+          </TabsContent>
+          <TabsContent value="elite">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Star className="h-4 w-4 sm:h-5 sm:w-5" />
+                Elite Earnings
+              </CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Premium earnings events with enhanced data and analysis
+              </p>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <EarningsCalendar type="elite" />
             </CardContent>
           </TabsContent>
           {isAdmin && (
