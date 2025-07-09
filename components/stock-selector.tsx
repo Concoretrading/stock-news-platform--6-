@@ -79,7 +79,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       
       console.log('Starting save operation...')
       console.log('Selected stocks:', selectedStocks)
-      console.log('Current stocks:', currentStocks)
+      console.log('Current stocks from props:', currentStocks)
       
       // Get current stocks from API with timeout
       const currentResponse = await Promise.race([
@@ -95,15 +95,15 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
         throw new Error(currentResult.error || 'Failed to get current stocks')
       }
       
-      const currentStocks = currentResult.data
-      console.log('Current stocks from API:', currentStocks)
+      const currentApiStocks = currentResult.data
+      console.log('Current stocks from API:', currentApiStocks)
       
       // Find stocks to add and remove
-      const currentSymbols = currentStocks.map((stock: any) => stock.ticker)
+      const currentSymbols = currentApiStocks.map((stock: any) => stock.ticker)
       const selectedSymbols = selectedStocks.map(stock => stock.symbol)
       
       const stocksToAdd = selectedStocks.filter(stock => !currentSymbols.includes(stock.symbol))
-      const stocksToRemove = currentStocks.filter((stock: any) => !selectedSymbols.includes(stock.ticker))
+      const stocksToRemove = currentApiStocks.filter((stock: any) => !selectedSymbols.includes(stock.ticker))
       
       console.log('Stocks to add:', stocksToAdd)
       console.log('Stocks to remove:', stocksToRemove)
