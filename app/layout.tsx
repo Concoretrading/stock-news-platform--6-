@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { AuthProvider } from "@/components/auth-provider"
+import ClientLayout from "./ClientLayout"
 import "./globals.css"
 
 // Version display component
@@ -37,7 +38,9 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            {children}
+            <ClientLayout>
+              {children}
+            </ClientLayout>
             <Toaster />
             <ScreenshotButton />
             <VersionDisplay />
