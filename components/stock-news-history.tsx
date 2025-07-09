@@ -11,9 +11,7 @@ import { useAuth } from "@/components/auth-provider"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
-import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc, updateDoc } from "firebase/firestore"
 import { AddCatalystForm } from "./add-catalyst-form"
-import { deleteCatalyst, getUserStocks } from "@/lib/firebase-services"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import {
   ChevronDownIcon,
@@ -151,13 +149,11 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   useEffect(() => {
     async function fetchTimelinePrefs() {
       if (!user) return;
-      const db = getFirestore();
-      const prefsRef = doc(db, "users", user.uid, "timelinePrefs", "prefs");
-      const prefsSnap = await getDoc(prefsRef);
-      if (prefsSnap.exists()) {
-        const data = prefsSnap.data();
-        setCustomMonths((data.customMonths || []).map((m: string) => new Date(m + "-01")));
-        setDeletedMonths(new Set(data.deletedMonths || []));
+      const response = await fetchWithAuth(`/api/timeline-prefs?uid=${user.uid}`);
+      const result = await response.json();
+      if (result.success) {
+        setCustomMonths((result.data.customMonths || []).map((m: string) => new Date(m + "-01")));
+        setDeletedMonths(new Set(result.data.deletedMonths || []));
       }
     }
     fetchTimelinePrefs();
@@ -165,52 +161,60 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
 
   async function saveTimelinePrefs(newCustomMonths: Date[], newDeletedMonths: Set<string>) {
     if (!user) return;
-    const db = getFirestore();
-    const prefsRef = doc(db, "users", user.uid, "timelinePrefs", "prefs");
-    await setDoc(prefsRef, {
-      customMonths: newCustomMonths.map(m => `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`),
-      deletedMonths: Array.from(newDeletedMonths),
+    const response = await fetchWithAuth(`/api/timeline-prefs?uid=${user.uid}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        customMonths: newCustomMonths.map(m => `${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, "0")}`),
+        deletedMonths: Array.from(newDeletedMonths),
+      }),
     });
+    const result = await response.json();
+    if (result.success) {
+      toast({ title: "Timeline preferences saved", description: "Your timeline preferences have been saved." });
+    } else {
+      toast({ title: "Save failed", description: result.error || "Failed to save timeline preferences.", variant: "destructive" });
+    }
   }
 
   useEffect(() => {
-    if (authLoading || !user) {
-      setLoading(true);
-      return;
+    async function fetchCatalysts() {
+      if (authLoading) {
+        setLoading(true);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        let url = '/api/catalysts';
+        if (ticker && ticker !== "all") {
+          url += `?ticker=${ticker.toUpperCase()}`;
+        }
+
+        const response = await fetchWithAuth(url);
+        const result = await response.json();
+
+        if (result.success) {
+          setCatalysts(result.data || []);
+        } else {
+          console.error('Failed to fetch catalysts:', result.error);
+          setCatalysts([]);
+        }
+      } catch (error) {
+        console.error("Error loading catalysts:", error);
+        setError("Failed to load catalyst data");
+        setCatalysts([]);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    const db = getFirestore();
-
-    let q = query(
-      collection(db, "catalysts"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
-    );
-    if (ticker && ticker !== "all") {
-      q = query(
-        collection(db, "catalysts"),
-        where("userId", "==", user.uid),
-        where("stockTickers", "array-contains", ticker.toUpperCase()),
-        orderBy("createdAt", "desc")
-      );
-    }
-
-    setLoading(true);
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const catalysts: Catalyst[] = [];
-      querySnapshot.forEach((doc) => {
-        catalysts.push({ id: doc.id, ...doc.data() } as Catalyst);
-      });
-      setCatalysts(catalysts);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error loading catalysts:", error);
-      setError("Failed to load catalyst data");
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [ticker, refreshKey, user, authLoading]);
+    fetchCatalysts();
+  }, [ticker, refreshKey, authLoading]);
 
   const toggleMonth = (monthKey: string) => {
     const newOpenMonths = new Set(openMonths)
@@ -248,17 +252,23 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     : catalysts
 
   const getCatalystsForWeek = (weekStart: Date, weekEnd: Date) => {
-    const debugInfo: string[] = [];
     const catalysts = filteredCatalysts.filter((catalyst) => {
-      const catalystDate = new Date(catalyst.date + 'T00:00:00.000Z');
-      const isInWeek = isWithinInterval(catalystDate, { start: weekStart, end: weekEnd });
-      debugInfo.push(
-        `Catalyst: ${catalyst.title || catalyst.id} | Date: ${catalyst.date} (parsed: ${catalystDate.toISOString()}) | Week: ${weekStart.toISOString()} - ${weekEnd.toISOString()} | Match: ${isInWeek}`
-      );
-      return isInWeek;
+      // Safe date parsing to prevent RangeError
+      if (!catalyst.date) return false;
+      try {
+        const catalystDate = new Date(catalyst.date + 'T00:00:00.000Z');
+        if (isNaN(catalystDate.getTime())) return false;
+        return isWithinInterval(catalystDate, { start: weekStart, end: weekEnd });
+      } catch (error) {
+        console.warn('Invalid date in catalyst:', catalyst.date);
+        return false;
+      }
     });
-    return { catalysts, debugInfo };
-  };
+    return {
+      catalysts,
+      debugInfo: [`Week ${format(weekStart, "MMM d")} - ${format(weekEnd, "MMM d")}: ${catalysts.length} catalysts`]
+    };
+  }
 
   const handleCatalystAdded = () => {
     setShowAddForm(null)
@@ -364,10 +374,14 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const handleDeleteCatalyst = async (id: string) => {
     try {
       if (!user) throw new Error("Not authenticated");
-      const db = getFirestore();
-      await deleteDoc(doc(db, "catalysts", id));
-      setCatalysts(prev => prev.filter(c => c.id !== id));
-      toast({ title: "Catalyst deleted", description: "The news catalyst was deleted successfully." });
+      const response = await fetchWithAuth(`/api/catalysts/${id}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (result.success) {
+        setCatalysts(prev => prev.filter(c => c.id !== id));
+        toast({ title: "Catalyst deleted", description: "The news catalyst was deleted successfully." });
+      } else {
+        toast({ title: "Delete failed", description: result.error || "Failed to delete catalyst.", variant: "destructive" });
+      }
     } catch (error) {
       toast({ title: "Delete failed", description: error instanceof Error ? error.message : String(error), variant: "destructive" });
     }
@@ -388,7 +402,15 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const months = getAllVisibleMonths()
   const deletedMonthsForRestore = getDeletedMonthsForRestore()
 
-  const todayIso = new Date().toISOString().split('T')[0];
+  // Safe date handling to prevent RangeError
+  let todayIso: string;
+  try {
+    todayIso = new Date().toISOString().split('T')[0];
+  } catch (error) {
+    console.error('Error creating today date:', error);
+    todayIso = '1970-01-01'; // Fallback date
+  }
+  
   const missingTodayCatalysts = catalysts.filter(c => c.date === todayIso);
   const shownCatalystIds = new Set();
   months.forEach(month => {
@@ -595,15 +617,24 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                               variant="outline"
                                               size="sm"
                                               onClick={async () => {
-                                                const db = getFirestore();
-                                                const docRef = doc(db, "catalysts", catalyst.id);
-                                                await updateDoc(docRef, {
-                                                  date: editForm.date || catalyst.date,
-                                                  title: editForm.title,
-                                                  description: editForm.description || '',
+                                                const response = await fetchWithAuth(`/api/catalysts/${catalyst.id}`, {
+                                                  method: 'PUT',
+                                                  headers: {
+                                                    'Content-Type': 'application/json',
+                                                  },
+                                                  body: JSON.stringify({
+                                                    date: editForm.date || catalyst.date,
+                                                    title: editForm.title,
+                                                    description: editForm.description || '',
+                                                  }),
                                                 });
-                                                setEditingId(null);
-                                                toast({ title: "Catalyst updated", description: "The news catalyst was updated successfully." });
+                                                const result = await response.json();
+                                                if (result.success) {
+                                                  setEditingId(null);
+                                                  toast({ title: "Catalyst updated", description: "The news catalyst was updated successfully." });
+                                                } else {
+                                                  toast({ title: "Update failed", description: result.error || "Failed to update catalyst.", variant: "destructive" });
+                                                }
                                               }}
                                               className="h-6 w-6 p-0 text-green-600 hover:text-green-800"
                                             >

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { getFirestore, collection, query, where, orderBy, onSnapshot } from "firebase/firestore"
-import { getAuth } from "firebase/auth"
 import { useToast } from "@/hooks/use-toast"
 import { NewsImage } from "./stock-news-history"
+import { fetchWithAuth } from "@/lib/fetchWithAuth"
 
 interface Catalyst {
   id: string
@@ -27,36 +26,31 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   const { toast } = useToast()
 
   useEffect(() => {
-    const db = getFirestore();
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) return;
-
-    let q = query(
-      collection(db, "catalysts"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
-    );
-    if (ticker) {
-      q = query(
-        collection(db, "catalysts"),
-        where("userId", "==", user.uid),
-        where("stockTickers", "array-contains", ticker.toUpperCase()),
-        orderBy("createdAt", "desc")
-      );
+    async function fetchCatalysts() {
+      try {
+        let url = '/api/catalysts'
+        if (ticker) {
+          url += `?ticker=${ticker.toUpperCase()}`
+        }
+        
+        const response = await fetchWithAuth(url)
+        const result = await response.json()
+        
+        if (result.success) {
+          setAllEntries(result.data || [])
+        } else {
+          console.error('Failed to fetch catalysts:', result.error)
+          setAllEntries([])
+        }
+      } catch (error) {
+        console.error('Error fetching catalysts:', error)
+        toast({ title: "Error", description: "Failed to fetch news" })
+        setAllEntries([])
+      }
     }
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const catalysts: Catalyst[] = [];
-      querySnapshot.forEach((doc) => {
-        catalysts.push({ id: doc.id, ...doc.data() } as Catalyst);
-      });
-      setAllEntries(catalysts);
-    }, (error) => {
-      toast({ title: "Error", description: error.message || "Failed to fetch news" });
-    });
-    return () => unsubscribe();
-  }, [ticker, toast]);
+    fetchCatalysts()
+  }, [ticker, toast])
 
   useEffect(() => {
     if (!searchQuery) {
