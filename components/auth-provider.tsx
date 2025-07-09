@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
+      console.log('🔧 Auth state changed:', fbUser ? `User: ${fbUser.uid}` : 'No user')
       if (fbUser) {
         setUser({
           uid: fbUser.uid,

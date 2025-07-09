@@ -102,27 +102,10 @@ export const signUp = async (email: string, password: string): Promise<AuthResul
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    // Add 10 default stocks to the new user's watchlist
-    const defaultStocks: Omit<Stock, 'id' | 'userId' | 'createdAt'>[] = [
-      { ticker: 'AAPL', companyName: 'Apple Inc.' },
-      { ticker: 'MSFT', companyName: 'Microsoft Corporation' },
-      { ticker: 'GOOGL', companyName: 'Alphabet Inc.' },
-      { ticker: 'AMZN', companyName: 'Amazon.com, Inc.' },
-      { ticker: 'TSLA', companyName: 'Tesla, Inc.' },
-      { ticker: 'NVDA', companyName: 'NVIDIA Corporation' },
-      { ticker: 'META', companyName: 'Meta Platforms, Inc.' },
-      { ticker: 'NFLX', companyName: 'Netflix, Inc.' },
-      { ticker: 'AMD', companyName: 'Advanced Micro Devices, Inc.' },
-      { ticker: 'INTC', companyName: 'Intel Corporation' },
-    ];
-    for (const stock of defaultStocks) {
-      await addDoc(collection(getDatabase(), 'stocks'), {
-        userId: user.uid,
-        ticker: stock.ticker,
-        companyName: stock.companyName,
-        createdAt: new Date()
-      });
-    }
+    
+    // No automatic stock addition - users choose their own stocks
+    console.log('🔧 New user created - no automatic stocks added');
+    
     return { user, error: null };
   } catch (error) {
     return { user: null, error: error instanceof Error ? error.message : 'Unknown error' };
