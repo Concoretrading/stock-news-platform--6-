@@ -213,13 +213,13 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
         <div className="flex gap-6 flex-1 min-h-0">
           {/* Selected Stocks Panel */}
           <div className="w-1/3 flex flex-col min-h-0">
-            <h3 className="text-lg font-semibold mb-2 flex-shrink-0">Selected Stocks</h3>
+            <h3 className="text-lg font-semibold mb-2 flex-shrink-0">Your Watchlist (Remove ✕)</h3>
             <div className="flex-1 border border-border rounded-lg p-4 overflow-y-auto bg-muted/20">
               <div className="space-y-2">
                 {selectedStocks.length === 0 ? (
                   <p className="text-sm text-muted-foreground text-center py-8">
                     No stocks selected yet.<br />
-                    Browse and add stocks from the right panel.
+                    Add stocks from the panel on the right →
                   </p>
                 ) : (
                   selectedStocks.map((stock) => (
@@ -245,6 +245,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           
           {/* Available Stocks Panel */}
           <div className="w-2/3 flex flex-col min-h-0">
+            <h3 className="text-lg font-semibold mb-3 flex-shrink-0">Add Stocks (+)</h3>
             <div className="mb-4 flex-shrink-0">
               <Input
                 placeholder="Search stocks... (e.g. AAPL, Apple, Tesla)"
@@ -267,21 +268,23 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
                           <span className="font-medium text-sm">{stock.ticker}</span>
                           {isSelected(stock) && (
                             <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
-                              ✓ Selected
+                              ✓ In Watchlist
                             </span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
                       </div>
-                      <Button
-                        variant={isSelected(stock) ? "destructive" : "default"}
-                        size="sm"
-                        onClick={() => toggleStock(stock)}
-                        disabled={!isSelected(stock) && selectedStocks.length >= maxStocks}
-                        className="ml-3 h-8 text-xs"
-                      >
-                        {isSelected(stock) ? "Remove" : "Add"}
-                      </Button>
+                      {!isSelected(stock) && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => toggleStock(stock)}
+                          disabled={selectedStocks.length >= maxStocks}
+                          className="ml-3 h-8 text-xs"
+                        >
+                          Add
+                        </Button>
+                      )}
                     </div>
                   </Card>
                 ))}
