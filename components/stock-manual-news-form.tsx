@@ -14,7 +14,15 @@ import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { uploadImageToStorage } from "@/lib/firebase-services"
 import { useAuth } from "@/components/auth-provider"
 
-export function StockManualNewsForm({ ticker }: { ticker: string }) {
+export function StockManualNewsForm({ 
+  ticker, 
+  onSuccess, 
+  onClose 
+}: { 
+  ticker: string
+  onSuccess?: () => void
+  onClose?: () => void
+}) {
   const [formData, setFormData] = useState({
     headline: "",
     date: new Date().toISOString().split("T")[0],
@@ -97,6 +105,11 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
           notes: "",
           image: null,
         })
+
+        // Call success callback to notify parent component
+        if (onSuccess) {
+          onSuccess()
+        }
       } else {
         throw new Error(result.error || 'Failed to add news catalyst')
       }

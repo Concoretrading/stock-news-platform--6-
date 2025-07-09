@@ -768,7 +768,10 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                       ✕
                                     </Button>
                                   </div>
-                                  <StockManualNewsForm ticker={ticker === "all" ? "AAPL" : ticker} />
+                                  <StockManualNewsForm 
+                                    ticker={ticker === "all" ? "AAPL" : ticker} 
+                                    onSuccess={handleCatalystAdded}
+                                  />
                                 </div>
                               ) : (
                                 <Button
