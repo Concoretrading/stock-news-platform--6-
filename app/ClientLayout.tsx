@@ -192,7 +192,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         return
       }
 
-      // Try multiple ways to get text content
+      // PRIORITY 1: Check for image files first (screenshots should be processed as images)
+      const files = e.dataTransfer?.files
+      if (files && files.length > 0) {
+        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+        if (imageFiles.length > 0) {
+          console.log('🖼️ Image files dropped, processing as screenshots')
+          for (const file of imageFiles) {
+            await processScreenshot(file)
+          }
+          return
+        }
+      }
+
+      // PRIORITY 2: Try multiple ways to get text content
       let textData = ''
       
       // Method 1: Try different MIME types
@@ -235,19 +248,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         console.log('✅ Processing article text')
         await processNewsArticle(textData)
         return
-      }
-
-      // Check for image files
-      const files = e.dataTransfer?.files
-      if (files && files.length > 0) {
-        const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
-        if (imageFiles.length > 0) {
-          console.log('🖼️ Image files dropped, letting screenshot analyzer handle')
-          for (const file of imageFiles) {
-            await processScreenshot(file)
-          }
-          return
-        }
       }
 
       // If we get here, nothing was processed
