@@ -64,7 +64,7 @@ export default function ScreenshotButton({ onCatalystAdded, className = "" }: Sc
     <div className={`fixed bottom-6 right-6 ${className}`}>
       <Button
         size="lg"
-        className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 text-white"
+        className="h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white"
         onClick={() => document.getElementById('screenshot-upload')?.click()}
         disabled={isLoading}
         title="Upload Screenshot"
