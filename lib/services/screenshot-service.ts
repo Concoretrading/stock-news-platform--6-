@@ -17,7 +17,30 @@ let vision: ImageAnnotatorClient | null = null;
 function getVisionClient() {
   if (!vision) {
     try {
-      vision = new ImageAnnotatorClient();
+      // Try reading credentials file directly
+      const fs = require('fs');
+      const path = require('path');
+      const credentialsPath = path.join(process.cwd(), 'concorenews-firebase-adminsdk.json');
+      
+      if (fs.existsSync(credentialsPath)) {
+        const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
+        vision = new ImageAnnotatorClient({
+          credentials: credentials,
+          projectId: credentials.project_id
+        });
+        console.log('✅ Google Vision API initialized with credentials file');
+      } else {
+        // Fall back to environment variable
+        const credentialsEnvPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        if (credentialsEnvPath) {
+          vision = new ImageAnnotatorClient({
+            keyFilename: credentialsEnvPath
+          });
+        } else {
+          // Fall back to default credentials
+          vision = new ImageAnnotatorClient();
+        }
+      }
     } catch (error) {
       console.error('Failed to initialize Vision client:', error);
       throw new Error('Google Vision API is not properly configured');
