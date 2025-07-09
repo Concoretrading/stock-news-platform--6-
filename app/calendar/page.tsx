@@ -146,7 +146,17 @@ export default function CalendarPage() {
                           </button>
                           {expandedWeek === w && (
                             <div className="pl-4 pt-1">
-                              <EarningsCalendar type="elite" />
+                              <div className="text-center py-8">
+                                <div className="w-full py-6 px-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                                  <p className="text-amber-800 font-medium mb-2">
+                                    This section here will be an absolute game changer for everyone in the family
+                                  </p>
+                                  <p className="text-amber-700 text-sm mb-3">
+                                    allowing you to draw from the past the future and give you the most for the present.
+                                  </p>
+                                  <span className="text-amber-600 font-semibold">Coming soon</span>
+                                </div>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -206,7 +216,17 @@ export default function CalendarPage() {
               </p>
             </CardHeader>
             <CardContent className="pt-0">
-              <EarningsCalendar type="elite" />
+              <div className="text-center py-8">
+                <div className="w-full py-6 px-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
+                  <p className="text-amber-800 font-medium mb-2">
+                    This section here will be an absolute game changer for everyone in the family
+                  </p>
+                  <p className="text-amber-700 text-sm mb-3">
+                    allowing you to draw from the past the future and give you the most for the present.
+                  </p>
+                  <span className="text-amber-600 font-semibold">Coming soon</span>
+                </div>
+              </div>
             </CardContent>
           </TabsContent>
           {isAdmin && (
