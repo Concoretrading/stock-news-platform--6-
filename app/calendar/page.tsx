@@ -2,6 +2,7 @@
 
 import { AdminCalendarUpload } from '@/components/admin-calendar-upload';
 import { AdminEarningsUpload } from '@/components/admin-earnings-upload';
+import { EarningsCalendar } from '@/components/earnings-calendar';
 import { ModernCalendar } from '@/components/modern-calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,12 +83,9 @@ export default function CalendarPage() {
                   <TrendingUp className="h-5 w-5" />
                   Earnings Calendar
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Focus view showing only company earnings events and related announcements
-                </p>
               </CardHeader>
               <CardContent>
-                <ModernCalendar type="earnings" />
+                <EarningsCalendar type="earnings" />
               </CardContent>
             </TabsContent>
 
