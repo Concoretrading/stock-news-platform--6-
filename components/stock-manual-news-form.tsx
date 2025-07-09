@@ -93,8 +93,9 @@ export function StockManualNewsForm({
 
       if (result.success) {
         toast({
-          title: "News Catalyst Added",
-          description: `Successfully added news catalyst for ${ticker}`,
+          title: "✅ Success! News Catalyst Saved",
+          description: `Your news catalyst for ${ticker} has been successfully added to the timeline!`,
+          duration: 5000, // Show for 5 seconds instead of default
         })
 
         // Reset form
