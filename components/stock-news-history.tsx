@@ -256,17 +256,8 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     fetchCatalysts();
   }, [ticker, refreshKey, authLoading]);
 
-  // Refresh data when form is likely to be submitted (check for new entries every 2 seconds when form is open)
-  useEffect(() => {
-    if (showAddForm) {
-      const interval = setInterval(() => {
-        // Silently refetch catalysts when form is open
-        fetchCatalysts()
-      }, 2000)
-      
-      return () => clearInterval(interval)
-    }
-  }, [showAddForm])
+  // Remove the auto-refresh interval that was causing form flashing
+  // Instead, we'll refresh when form is submitted via handleCatalystAdded
 
   const toggleMonth = (monthKey: string) => {
     const newOpenMonths = new Set(openMonths)
@@ -324,6 +315,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
 
   const handleCatalystAdded = () => {
     setShowAddForm(null)
+    fetchCatalysts() // Refresh after successful add
   }
 
   const handleCatalystUpdated = () => {
