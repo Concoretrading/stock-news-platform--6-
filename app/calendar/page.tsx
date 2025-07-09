@@ -130,39 +130,42 @@ export default function CalendarPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {months.map((m, i) => (
-                <div key={i}>
-                  <button
-                    className={`w-full text-left px-4 py-3 rounded-lg font-semibold text-base ${expandedMonth === i ? 'bg-primary/10' : 'bg-muted'}`}
-                    onClick={() => setExpandedMonth(expandedMonth === i ? null : i)}
-                  >
-                    {m.label}
-                  </button>
-                  {expandedMonth === i && (
-                    <div className="pl-4 pt-2">
-                      <div className="text-center py-8">
-                        <div className="w-full py-6 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-xl shadow-sm">
-                          <div className="max-w-sm mx-auto">
-                            <div className="mb-4">
-                              <Star className="h-10 w-10 mx-auto text-amber-500 mb-3" />
-                            </div>
-                            <p className="text-amber-800 font-semibold text-base mb-2 leading-relaxed">
-                              This section here will be an absolute game changer for everyone in the family
-                            </p>
-                            <p className="text-amber-700 text-sm mb-3 leading-relaxed">
-                              allowing you to draw from the past the future and give you the most for the present.
-                            </p>
-                            <div className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-full">
-                              <span className="text-amber-700 font-medium text-sm">Coming soon</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+            <div className="text-center py-8">
+              <div className="w-full py-8 px-6 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-xl shadow-lg relative overflow-hidden">
+                {/* Decorative background elements */}
+                <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                  <div className="absolute top-3 right-3 w-16 h-16 bg-amber-300 rounded-full blur-lg"></div>
+                  <div className="absolute bottom-6 left-6 w-12 h-12 bg-orange-300 rounded-full blur-md"></div>
                 </div>
-              ))}
+                
+                <div className="relative z-10 max-w-sm mx-auto">
+                  {/* Enhanced star icon with glow effect */}
+                  <div className="mb-4 flex justify-center">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-pulse"></div>
+                      <Star className="h-12 w-12 text-amber-500 relative z-10 drop-shadow-lg" />
+                    </div>
+                  </div>
+                  
+                  {/* Main message with better typography */}
+                  <div className="space-y-3">
+                    <h3 className="text-amber-800 font-bold text-base leading-tight">
+                      This section here will be an absolute game changer for everyone in the family
+                    </h3>
+                    <p className="text-amber-700 text-sm leading-relaxed font-medium">
+                      allowing you to draw from the past the future and give you the most for the present.
+                    </p>
+                  </div>
+                  
+                  {/* Enhanced coming soon badge */}
+                  <div className="mt-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-200">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                      Coming soon
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -215,19 +218,39 @@ export default function CalendarPage() {
             </CardHeader>
             <CardContent className="pt-0">
               <div className="text-center py-12">
-                <div className="w-full py-8 px-6 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-xl shadow-sm">
-                  <div className="max-w-md mx-auto">
-                    <div className="mb-6">
-                      <Star className="h-12 w-12 mx-auto text-amber-500 mb-4" />
+                <div className="w-full py-10 px-8 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg relative overflow-hidden">
+                  {/* Decorative background elements */}
+                  <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                    <div className="absolute top-4 right-4 w-20 h-20 bg-amber-300 rounded-full blur-xl"></div>
+                    <div className="absolute bottom-8 left-8 w-16 h-16 bg-orange-300 rounded-full blur-lg"></div>
+                    <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-yellow-300 rounded-full blur-md"></div>
+                  </div>
+                  
+                  <div className="relative z-10 max-w-lg mx-auto">
+                    {/* Enhanced star icon with glow effect */}
+                    <div className="mb-6 flex justify-center">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-pulse"></div>
+                        <Star className="h-16 w-16 text-amber-500 relative z-10 drop-shadow-lg" />
+                      </div>
                     </div>
-                    <p className="text-amber-800 font-semibold text-lg mb-3 leading-relaxed">
-                      This section here will be an absolute game changer for everyone in the family
-                    </p>
-                    <p className="text-amber-700 text-base mb-4 leading-relaxed">
-                      allowing you to draw from the past the future and give you the most for the present.
-                    </p>
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 border border-amber-300 rounded-full">
-                      <span className="text-amber-700 font-medium">Coming soon</span>
+                    
+                    {/* Main message with better typography */}
+                    <div className="space-y-4">
+                      <h3 className="text-amber-800 font-bold text-xl sm:text-2xl leading-tight">
+                        This section here will be an absolute game changer for everyone in the family
+                      </h3>
+                      <p className="text-amber-700 text-base sm:text-lg leading-relaxed font-medium">
+                        allowing you to draw from the past the future and give you the most for the present.
+                      </p>
+                    </div>
+                    
+                    {/* Enhanced coming soon badge */}
+                    <div className="mt-8">
+                      <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-200">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        Coming soon
+                      </div>
                     </div>
                   </div>
                 </div>
