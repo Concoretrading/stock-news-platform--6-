@@ -64,15 +64,19 @@ export default function ScreenshotButton({ onCatalystAdded, className = "" }: Sc
     <div className={`fixed bottom-6 right-6 z-50 ${className}`}>
       <Button
         size="lg"
-        className="h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
+        className="h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center border-2 border-white"
         onClick={() => document.getElementById('screenshot-upload')?.click()}
         disabled={isLoading}
-        title="Upload Screenshot"
+        title="Upload Screenshot for AI Analysis"
       >
         {isLoading ? (
           <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
-          <Camera className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-center w-8 h-8 relative">
+            <Camera className="w-full h-full text-white" style={{ strokeWidth: 2 }} />
+            {/* Debug indicator - small dot to verify button is working */}
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full"></div>
+          </div>
         )}
       </Button>
       <input
