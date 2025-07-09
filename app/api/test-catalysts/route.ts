@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const ticker = searchParams.get('ticker');
     
-    let filteredCatalysts = [];
+    let filteredCatalysts: any[] = [];
     if (ticker) {
       const filteredSnap = await db.collection('catalysts')
         .where('userId', '==', 'test-user-localhost')
