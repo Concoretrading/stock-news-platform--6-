@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from "react"
 import { AuthProvider } from "@/components/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { NewsPasteButton } from "@/components/news-paste-button"
-import { useToast } from '@/hooks/use-toast'
-import { fetchWithAuth } from '@/lib/fetchWithAuth'
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/components/auth-provider"
+import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getCurrentUser } from '@/lib/firebase-services'
 
 interface ClientLayoutProps {
@@ -31,19 +32,42 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
   const processNewsArticle = async (articleText: string) => {
     setProcessingArticle(true)
-    
     try {
-      // Clean up HTML if present
-      const cleanText = articleText.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-      
-      console.log('Processing article:', cleanText.substring(0, 200))
-      
-      const response = await fetchWithAuth("/api/process-news-article", {
+      const response = await fetchWithAuth('/api/process-news-article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ articleText })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast({
+          title: "News Article Processed! 📰",
+          description: `Found ${data.tickers?.length || 0} stock matches, created ${data.successCount || 0} catalyst entries`,
+        })
+      } else {
+        throw new Error('Failed to process article')
+      }
+    } catch (error) {
+      toast({
+        title: "Processing Failed",
+        description: "Unable to process the news article. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setProcessingArticle(false)
+    }
+  }
+
+  const processScreenshot = async (file: File) => {
+    setProcessingArticle(true)
+    try {
+      const formData = new FormData()
+      formData.append("image", file)
+
+      const response = await fetchWithAuth("/api/analyze-screenshot", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ articleText: cleanText }),
+        body: formData,
       })
 
       if (!response.ok) {
@@ -52,17 +76,20 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       }
 
       const data = await response.json()
+      const successCount = data.newsEntryResults?.filter((r: any) => r.success).length || 0
+      const tickers = data.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || []
       
       toast({
-        title: "News Article Processed!",
-        description: `Found ${data.tickers?.length || 0} stock matches and created ${data.successCount || 0} catalyst entries.`,
+        title: "Screenshot Processed! 📸",
+        description: successCount > 0 
+          ? `Catalyst(s) added for: ${tickers.join(", ")}`
+          : 'No matching stocks found in your watchlist',
+        variant: successCount > 0 ? 'default' : 'destructive',
       })
-      
     } catch (error) {
-      console.error('Processing error:', error)
       toast({
-        title: "Processing Failed",
-        description: error instanceof Error ? error.message : "Failed to process news article",
+        title: "Screenshot Analysis Failed",
+        description: error instanceof Error ? error.message : "Unable to analyze the screenshot. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -203,6 +230,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
         if (imageFiles.length > 0) {
           console.log('🖼️ Image files dropped, letting screenshot analyzer handle')
+          for (const file of imageFiles) {
+            await processScreenshot(file)
+          }
           return
         }
       }
@@ -263,17 +293,17 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
             {/* Center content */}
             <div className="flex items-center justify-center h-full">
               <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-2xl text-center border-2 border-blue-500 max-w-md mx-4">
-                <div className="text-6xl mb-4">📰</div>
+                <div className="text-6xl mb-4">📰📸</div>
                 <h3 className="text-2xl font-bold mb-3 text-blue-600">Drop Anywhere!</h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  Drop your news article anywhere on this screen
+                  Drop news articles or screenshots anywhere on this screen
                 </p>
                 <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-3">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span>AI will automatically extract stock tickers</span>
                 </div>
                 <p className="text-xs text-gray-400">
-                  💡 If dragging doesn't work, try copying (Ctrl+C) then pasting (Ctrl+V)
+                  💡 News articles: Copy & paste (Ctrl+V) | Screenshots: Drag & drop
                 </p>
               </div>
             </div>

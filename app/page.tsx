@@ -11,7 +11,6 @@ import { TrendingUp, Upload, Calendar, Settings, ChevronLeft, ChevronRight } fro
 import { AppHeader } from "@/components/app-header"
 import { StockCard } from "@/components/stock-card"
 import { StockSelector } from "@/components/stock-selector"
-import { CatalystStatsDashboard } from "@/components/catalyst-stats-dashboard"
 import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
 import { StockManualNewsForm } from "@/components/stock-manual-news-form"
 import { useToast } from "@/hooks/use-toast"
@@ -246,11 +245,6 @@ export default function HomePage() {
             )}
           </CardContent>
         </Card>
-
-        {/* Catalyst Statistics Dashboard */}
-        <div className="mb-8">
-          <CatalystStatsDashboard />
-        </div>
 
         {/* Three Aspects of Time Section */}
         <div className="mb-8">
