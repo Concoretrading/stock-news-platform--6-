@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { ChevronDown, ChevronRight, Calendar, Plus, Trash2, Edit, Download, Undo2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/components/auth-provider"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
 import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc, updateDoc } from "firebase/firestore"
-import { getAuth } from "firebase/auth"
 import AddCatalystForm from "./add-catalyst-form"
 import { deleteCatalyst, getUserStocks } from "@/lib/firebase-services"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
@@ -89,6 +89,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const [deletedMonths, setDeletedMonths] = useState<Set<string>>(new Set())
   const [customMonths, setCustomMonths] = useState<Date[]>([])
   const { toast } = useToast()
+  const { user, loading: authLoading } = useAuth()
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<{title: string, description?: string, source?: string, date?: string}>({title: ""})
   const [deletingId, setDeletingId] = useState<string | null>(null)
@@ -142,8 +143,6 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
 
   useEffect(() => {
     async function fetchTimelinePrefs() {
-      const auth = getAuth();
-      const user = auth.currentUser;
       if (!user) return;
       const db = getFirestore();
       const prefsRef = doc(db, "users", user.uid, "timelinePrefs", "prefs");
@@ -155,11 +154,9 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
       }
     }
     fetchTimelinePrefs();
-  }, []);
+  }, [user]);
 
   async function saveTimelinePrefs(newCustomMonths: Date[], newDeletedMonths: Set<string>) {
-    const auth = getAuth();
-    const user = auth.currentUser;
     if (!user) return;
     const db = getFirestore();
     const prefsRef = doc(db, "users", user.uid, "timelinePrefs", "prefs");
@@ -170,10 +167,12 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   }
 
   useEffect(() => {
+    if (authLoading || !user) {
+      setLoading(true);
+      return;
+    }
+
     const db = getFirestore();
-    const auth = getAuth();
-    const user = auth.currentUser;
-    if (!user) return;
 
     let q = query(
       collection(db, "catalysts"),
@@ -198,11 +197,13 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
       setCatalysts(catalysts);
       setLoading(false);
     }, (error) => {
-      setError(error.message || "Failed to fetch news");
+      console.error("Error loading catalysts:", error);
+      setError("Failed to load catalyst data");
       setLoading(false);
     });
+
     return () => unsubscribe();
-  }, [ticker, refreshKey]);
+  }, [ticker, refreshKey, user, authLoading]);
 
   const toggleMonth = (monthKey: string) => {
     const newOpenMonths = new Set(openMonths)
@@ -355,10 +356,8 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
 
   const handleDeleteCatalyst = async (id: string) => {
     try {
-      const db = getFirestore();
-      const auth = getAuth();
-      const user = auth.currentUser;
       if (!user) throw new Error("Not authenticated");
+      const db = getFirestore();
       await deleteDoc(doc(db, "catalysts", id));
       setCatalysts(prev => prev.filter(c => c.id !== id));
       toast({ title: "Catalyst deleted", description: "The news catalyst was deleted successfully." });
