@@ -80,8 +80,7 @@ export default function CalendarPage() {
                   Earnings Calendar
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <AdminCalendarUpload />
+              <CardContent>
                 <EarningsCalendar type="earnings" />
               </CardContent>
             </TabsContent>
