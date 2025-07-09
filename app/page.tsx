@@ -63,9 +63,14 @@ export default function HomePage() {
   const loadUserWatchlist = async () => {
     try {
       setIsLoadingStocks(true)
+      console.log('🔍 Loading user watchlist...')
+      console.log('🔍 Current user:', user)
+      
       const userStocks = await getUserStocks() as unknown as FirebaseStock[]
+      console.log('🔍 User stocks from Firebase:', userStocks)
       
       if (userStocks.length === 0) {
+        console.log('🔍 No stocks found, adding default stocks...')
         // If no stocks, add the standard set of 10
         const defaultStocks = [
           { symbol: "NVDA", name: "NVIDIA Corporation" },
@@ -79,17 +84,26 @@ export default function HomePage() {
           { symbol: "NFLX", name: "Netflix Inc." },
           { symbol: "MSTR", name: "MicroStrategy Inc." },
         ]
+        
+        console.log('🔍 Adding default stocks:', defaultStocks)
         for (const stock of defaultStocks) {
-          await addStockToWatchlist(stock.symbol, stock.name)
+          console.log(`🔍 Adding stock: ${stock.symbol}`)
+          const result = await addStockToWatchlist(stock.symbol, stock.name)
+          console.log(`🔍 Add result for ${stock.symbol}:`, result)
         }
+        
+        console.log('🔍 Default stocks added, reloading...')
         // Reload after adding defaults
         const updatedStocks = await getUserStocks() as unknown as FirebaseStock[]
+        console.log('🔍 Updated stocks after adding defaults:', updatedStocks)
+        
         setWatchlist(updatedStocks.slice(0, maxStocks).map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
           name: stock.companyName
         })))
       } else {
+        console.log('🔍 Found existing stocks, using them')
         setWatchlist(userStocks.slice(0, maxStocks).map(stock => ({
           id: stock.id,
           symbol: stock.ticker,
@@ -97,7 +111,7 @@ export default function HomePage() {
         })))
       }
     } catch (error) {
-      console.error('Error loading watchlist:', error)
+      console.error('❌ Error loading watchlist:', error)
       toast({
         title: "Error",
         description: "Failed to load your watchlist",

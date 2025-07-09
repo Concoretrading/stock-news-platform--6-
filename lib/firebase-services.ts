@@ -158,37 +158,68 @@ export const onAuthChange = (callback: (user: User | null) => void): Unsubscribe
 // ===== STOCK MANAGEMENT =====
 export const addStockToWatchlist = async (ticker: string, companyName: string): Promise<StockResult> => {
   try {
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not authenticated');
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - adding stock for test user:', userId);
+    } else {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
+      userId = user.uid;
+      console.log('🔧 Production mode - adding stock for Firebase user:', userId);
+    }
 
-    const docRef = await addDoc(collection(getDatabase(), 'stocks'), {
-      userId: user.uid,
+    console.log(`🔧 Adding stock to watchlist: ${ticker} (${companyName}) for user: ${userId}`);
+    
+    const stockData = {
+      userId: userId,
       ticker: ticker.toUpperCase(),
       companyName,
       createdAt: new Date()
-    });
-
+    };
+    
+    console.log('🔧 Stock data to be added:', stockData);
+    
+    const docRef = await addDoc(collection(getDatabase(), 'stocks'), stockData);
+    
+    console.log('🔧 Stock added successfully with ID:', docRef.id);
     return { success: true, id: docRef.id };
   } catch (error) {
+    console.error('❌ Error adding stock to watchlist:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 };
 
 export const getUserStocks = async (): Promise<Stock[]> => {
   try {
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not authenticated');
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user ID:', userId);
+    } else {
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
+      userId = user.uid;
+      console.log('🔧 Production mode - using Firebase user ID:', userId);
+    }
 
+    console.log('🔧 Querying stocks for user:', userId);
     const q = query(
       collection(getDatabase(), 'stocks'),
-      where('userId', '==', user.uid),
+      where('userId', '==', userId),
       orderBy('createdAt', 'desc')
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Stock));
+    const stocks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Stock));
+    console.log('🔧 Retrieved stocks from Firebase:', stocks);
+    return stocks;
   } catch (error) {
-    console.error('Error getting stocks:', error);
+    console.error('❌ Error getting stocks:', error);
     return [];
   }
 };
