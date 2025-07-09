@@ -11,7 +11,6 @@ import { useAuth } from "@/components/auth-provider"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
-import { AddCatalystForm } from "./add-catalyst-form"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import {
   ChevronDownIcon,
@@ -24,6 +23,7 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline"
 import { ToastAction } from "@/components/ui/toast"
+import { StockManualNewsForm } from "./stock-manual-news-form"
 
 interface Catalyst {
   id: string
@@ -179,42 +179,54 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     }
   }
 
-  useEffect(() => {
-    async function fetchCatalysts() {
-      if (authLoading) {
-        setLoading(true);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        let url = '/api/catalysts';
-        if (ticker && ticker !== "all") {
-          url += `?ticker=${ticker.toUpperCase()}`;
-        }
-
-        const response = await fetchWithAuth(url);
-        const result = await response.json();
-
-        if (result.success) {
-          setCatalysts(result.data || []);
-        } else {
-          console.error('Failed to fetch catalysts:', result.error);
-          setCatalysts([]);
-        }
-      } catch (error) {
-        console.error("Error loading catalysts:", error);
-        setError("Failed to load catalyst data");
-        setCatalysts([]);
-      } finally {
-        setLoading(false);
-      }
+  async function fetchCatalysts() {
+    if (authLoading) {
+      setLoading(true);
+      return;
     }
 
+    try {
+      setLoading(true);
+      setError(null);
+
+      let url = '/api/catalysts';
+      if (ticker && ticker !== "all") {
+        url += `?ticker=${ticker.toUpperCase()}`;
+      }
+
+      const response = await fetchWithAuth(url);
+      const result = await response.json();
+
+      if (result.success) {
+        setCatalysts(result.data || []);
+      } else {
+        console.error('Failed to fetch catalysts:', result.error);
+        setCatalysts([]);
+      }
+    } catch (error) {
+      console.error("Error loading catalysts:", error);
+      setError("Failed to load catalyst data");
+      setCatalysts([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
     fetchCatalysts();
   }, [ticker, refreshKey, authLoading]);
+
+  // Refresh data when form is likely to be submitted (check for new entries every 2 seconds when form is open)
+  useEffect(() => {
+    if (showAddForm) {
+      const interval = setInterval(() => {
+        // Silently refetch catalysts when form is open
+        fetchCatalysts()
+      }, 2000)
+      
+      return () => clearInterval(interval)
+    }
+  }, [showAddForm])
 
   const toggleMonth = (monthKey: string) => {
     const newOpenMonths = new Set(openMonths)
@@ -746,13 +758,19 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                             )}
                             <div className="pt-2">
                               {showAddForm === weekKey ? (
-                                <AddCatalystForm
-                                  isOpen={true}
-                                  onClose={() => setShowAddForm(null)}
-                                  onSuccess={() => {
-                                    handleCatalystAdded()
-                                  }}
-                                />
+                                <div className="border rounded-lg p-4 bg-card">
+                                  <div className="flex justify-between items-center mb-4">
+                                    <h3 className="font-medium">Add News Catalyst</h3>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => setShowAddForm(null)}
+                                    >
+                                      ✕
+                                    </Button>
+                                  </div>
+                                  <StockManualNewsForm ticker={ticker === "all" ? "AAPL" : ticker} />
+                                </div>
                               ) : (
                                 <Button
                                   variant="outline"
