@@ -47,22 +47,9 @@ export default function FirebaseAuth() {
       setLoading(false);
       return;
     }
-    // Add 10 default stocks for new user
-    const defaultStocks = [
-      { symbol: 'AAPL', name: 'Apple Inc.' },
-      { symbol: 'MSFT', name: 'Microsoft Corporation' },
-      { symbol: 'GOOGL', name: 'Alphabet Inc.' },
-      { symbol: 'AMZN', name: 'Amazon.com Inc.' },
-      { symbol: 'META', name: 'Meta Platforms Inc.' },
-      { symbol: 'TSLA', name: 'Tesla Inc.' },
-      { symbol: 'NVDA', name: 'NVIDIA Corporation' },
-      { symbol: 'NFLX', name: 'Netflix Inc.' },
-      { symbol: 'CRM', name: 'Salesforce Inc.' },
-      { symbol: 'ORCL', name: 'Oracle Corporation' },
-    ];
-    for (const stock of defaultStocks) {
-      await import('@/lib/firebase-services').then(({ addStockToWatchlist }) => addStockToWatchlist(stock.symbol, stock.name));
-    }
+    
+    // No automatic stock addition - users choose their own stocks
+    console.log('🔧 New user signed up - no automatic stocks added');
     setLoading(false);
   };
 
