@@ -374,9 +374,11 @@ export default function HomePage() {
         {/* Stock Selector Modal */}
         {showStockSelector && (
           <StockSelector
-            currentStocks={watchlist.map(stock => ({ ticker: stock.symbol, name: stock.name }))}
-            onUpdate={(stocks) => handleUpdateWatchlist(stocks.map(stock => ({ symbol: stock.ticker, name: stock.name })))}
+            isOpen={true}
             onClose={() => setShowStockSelector(false)}
+            onUpdateWatchlist={(stocks) => handleUpdateWatchlist(stocks)}
+            currentStocks={watchlist}
+            maxStocks={maxStocks}
           />
         )}
       </div>
