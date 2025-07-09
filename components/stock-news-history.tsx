@@ -717,10 +717,10 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                               {showAddForm === weekKey ? (
                                 <AddCatalystForm
                                   isOpen={true}
-                                  onClose={() => setShowAddForm(false)}
+                                  onClose={() => setShowAddForm(null)}
                                   onSuccess={() => {
                                     loadCatalysts()
-                                    setShowAddForm(false)
+                                    setShowAddForm(null)
                                   }}
                                 />
                               ) : (
