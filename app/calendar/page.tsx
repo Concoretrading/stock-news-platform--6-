@@ -1,7 +1,6 @@
 'use client';
 
 import { AdminCalendarUpload } from '@/components/admin-calendar-upload';
-import { AdminEarningsUpload } from '@/components/admin-earnings-upload';
 import { EarningsCalendar } from '@/components/earnings-calendar';
 import { ModernCalendar } from '@/components/modern-calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -129,7 +128,7 @@ export default function CalendarPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <AdminEarningsUpload />
+                  <AdminCalendarUpload />
                 </CardContent>
               </TabsContent>
             )}
