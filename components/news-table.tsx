@@ -57,6 +57,46 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [undoData, setUndoData] = useState<Catalyst | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set())
+
+  // Toggle description expansion
+  const toggleDescriptionExpansion = (catalystId: string) => {
+    const newExpanded = new Set(expandedDescriptions)
+    if (newExpanded.has(catalystId)) {
+      newExpanded.delete(catalystId)
+    } else {
+      newExpanded.add(catalystId)
+    }
+    setExpandedDescriptions(newExpanded)
+  }
+
+  // Render expandable description
+  const renderDescription = (catalyst: Catalyst) => {
+    if (!catalyst.description) return null
+    
+    const isExpanded = expandedDescriptions.has(catalyst.id)
+    const shouldTruncate = catalyst.description.length > 150
+    const displayText = shouldTruncate && !isExpanded 
+      ? catalyst.description.substring(0, 150) + "..."
+      : catalyst.description
+
+    return (
+      <p className="text-xs text-muted-foreground mb-2">
+        {highlightMatch(displayText, searchQuery || "")}
+        {shouldTruncate && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleDescriptionExpansion(catalyst.id)
+            }}
+            className="ml-2 text-blue-600 hover:text-blue-800 underline"
+          >
+            {isExpanded ? "Read less" : "Read more"}
+          </button>
+        )}
+      </p>
+    )
+  }
 
   // Generate the default 12 months
   const generateDefault12Months = () => {
@@ -295,21 +335,23 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
     })
   }
 
-  const formatPriceChange = (change: number | null | undefined, percentage: number | null | undefined) => {
-    if (change === null || change === undefined) return null
+  const formatPriceChange = (priceBefore: number | null | undefined, priceAfter: number | null | undefined) => {
+    // If we don't have both prices, don't show anything
+    if (!priceBefore || !priceAfter) return null
 
-    // console.log('change value:', change, typeof change);
+    const change = priceAfter - priceBefore
+    const percentage = (change / priceBefore) * 100
     const isPositive = change > 0
-    const changeStr = typeof change === 'number' && !isNaN(change) ? (change > 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`) : 'N/A';
-    // console.log('percentage value:', percentage, typeof percentage);
-    const percentageStr = typeof percentage === 'number' && !isNaN(percentage) ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%)` : "";
 
     return (
       <div className={`flex items-center gap-1 ${isPositive ? "text-green-600" : "text-red-600"}`}>
-        {isPositive ? <ArrowTrendingUpIcon className="h-4 w-4" /> : <ArrowTrendingDownIcon className="h-4 w-4" />}
-        <span className="font-medium">
-          {changeStr}
-          {percentageStr}
+        {isPositive ? (
+          <ArrowTrendingUpIcon className="h-4 w-4" />
+        ) : (
+          <ArrowTrendingDownIcon className="h-4 w-4" />
+        )}
+        <span className="font-medium text-xs">
+          {isPositive ? "+" : ""}{change.toFixed(2)} ({percentage > 0 ? "+" : ""}{percentage.toFixed(1)}%)
         </span>
       </div>
     )
@@ -616,9 +658,7 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
                                           </>
                                         )}
                                       </div>
-                                      {catalyst.description && (
-                                        <p className="text-xs text-muted-foreground mb-2">{highlightMatch(catalyst.description, searchQuery || "")}</p>
-                                      )}
+                                      {renderDescription(catalyst)}
                                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                         <span>{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
                                         {catalyst.source && <span>Source: {highlightMatch(catalyst.source, searchQuery || "")}</span>}

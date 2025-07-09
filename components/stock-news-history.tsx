@@ -100,8 +100,48 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [undoData, setUndoData] = useState<Catalyst | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set())
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  // Toggle description expansion
+  const toggleDescriptionExpansion = (catalystId: string) => {
+    const newExpanded = new Set(expandedDescriptions)
+    if (newExpanded.has(catalystId)) {
+      newExpanded.delete(catalystId)
+    } else {
+      newExpanded.add(catalystId)
+    }
+    setExpandedDescriptions(newExpanded)
+  }
+
+  // Render expandable description
+  const renderDescription = (catalyst: Catalyst) => {
+    if (!catalyst.description) return null
+    
+    const isExpanded = expandedDescriptions.has(catalyst.id)
+    const shouldTruncate = catalyst.description.length > 150
+    const displayText = shouldTruncate && !isExpanded 
+      ? catalyst.description.substring(0, 150) + "..."
+      : catalyst.description
+
+    return (
+      <div className="flex-1 text-xs text-muted-foreground">
+        {displayText}
+        {shouldTruncate && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleDescriptionExpansion(catalyst.id)
+            }}
+            className="ml-2 text-blue-600 hover:text-blue-800 underline"
+          >
+            {isExpanded ? "Read less" : "Read more"}
+          </button>
+        )}
+      </div>
+    )
+  }
 
   // Generate the default 6 months
   const generateDefault6Months = () => {
@@ -343,17 +383,23 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     })
   }
 
-  const formatPriceChange = (change: number | null | undefined, percentage: number | null | undefined) => {
-    if (change === null || change === undefined) return null
+  const formatPriceChange = (priceBefore: number | null | undefined, priceAfter: number | null | undefined) => {
+    // If we don't have both prices, don't show anything
+    if (!priceBefore || !priceAfter) return null
+
+    const change = priceAfter - priceBefore
+    const percentage = (change / priceBefore) * 100
     const isPositive = change > 0
-    const changeStr = typeof change === 'number' && !isNaN(change) ? (change > 0 ? `+$${change.toFixed(2)}` : `-$${Math.abs(change).toFixed(2)}`) : 'N/A';
-    const percentageStr = typeof percentage === 'number' && !isNaN(percentage) ? ` (${percentage > 0 ? "+" : ""}${percentage.toFixed(1)}%)` : "";
+
     return (
       <div className={`flex items-center gap-1 ${isPositive ? "text-green-600" : "text-red-600"}`}>
-        {isPositive ? <ArrowTrendingUpIcon className="h-4 w-4" /> : <ArrowTrendingDownIcon className="h-4 w-4" />}
-        <span className="font-medium">
-          {changeStr}
-          {percentageStr}
+        {isPositive ? (
+          <ArrowTrendingUpIcon className="h-4 w-4" />
+        ) : (
+          <ArrowTrendingDownIcon className="h-4 w-4" />
+        )}
+        <span className="font-medium text-xs">
+          {isPositive ? "+" : ""}{change.toFixed(2)} ({percentage > 0 ? "+" : ""}{percentage.toFixed(1)}%)
         </span>
       </div>
     )
@@ -670,10 +716,15 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                             </Button>
                                           </div>
                                         ) : (
-                                          <div className="flex items-center gap-4 w-full">
-                                            <span className="w-32 text-xs text-muted-foreground">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
-                                            <span className="font-medium text-sm flex-1">{catalyst.title}</span>
-                                            <span className="flex-1 text-xs text-muted-foreground">{catalyst.description}</span>
+                                          <div className="flex items-start gap-4 w-full">
+                                            <span className="w-32 text-xs text-muted-foreground mt-1">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
+                                            <div className="flex-1">
+                                              <div className="flex items-center gap-2 mb-1">
+                                                <div className="font-medium text-sm">{catalyst.title}</div>
+                                                {formatPriceChange(catalyst.priceBefore, catalyst.priceAfter)}
+                                              </div>
+                                              {renderDescription(catalyst)}
+                                            </div>
                                             <Button
                                               variant="ghost"
                                               size="sm"
@@ -685,68 +736,24 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                                   date: catalyst.date || ""
                                                 });
                                               }}
-                                              className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
+                                              className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800 mt-1"
                                             >
                                               <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                              variant="ghost"
+                                              size="sm"
+                                              onClick={() => handleDeleteCatalyst(catalyst.id)}
+                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800 mt-1"
+                                            >
+                                              <Trash2 className="h-4 w-4" />
                                             </Button>
                                           </div>
                                         )}
                                       </div>
-                                      {catalyst.description && (
-                                        <p className="text-xs text-muted-foreground mb-2">{catalyst.description}</p>
-                                      )}
-                                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                        <span>{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
+                                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                                         {catalyst.source && <span>Source: {catalyst.source}</span>}
                                       </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      {editingId === catalyst.id ? (
-                                        <>
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setEditingId(null)}
-                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
-                                          >
-                                            <Undo2 className="h-4 w-4" />
-                                          </Button>
-                                          <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => {/* Save logic here */ setEditingId(null) }}
-                                            className="h-6 w-6 p-0 text-green-600 hover:text-green-800"
-                                          >
-                                            Save
-                                          </Button>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => {
-                                              setEditingId(catalyst.id);
-                                              setEditForm({
-                                                title: catalyst.title || "",
-                                                description: catalyst.description || "",
-                                                date: catalyst.date || ""
-                                              });
-                                            }}
-                                            className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800"
-                                          >
-                                            <Edit className="h-4 w-4" />
-                                          </Button>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDeleteCatalyst(catalyst.id)}
-                                            className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
-                                          >
-                                            <Trash2 className="h-4 w-4" />
-                                          </Button>
-                                        </>
-                                      )}
                                     </div>
                                   </div>
                                 </div>
