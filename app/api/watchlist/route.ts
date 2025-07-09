@@ -98,7 +98,9 @@ export async function POST(request: NextRequest) {
       let duplicatesRemoved = 0;
       
       // For each ticker with multiple entries, keep the newest and delete the rest
-      for (const [ticker, stocks] of stocksByTicker.entries()) {
+      const tickerEntries = Array.from(stocksByTicker.entries());
+      for (let i = 0; i < tickerEntries.length; i++) {
+        const [ticker, stocks] = tickerEntries[i];
         if (stocks.length > 1) {
           console.log(`🧹 Found ${stocks.length} duplicate entries for ${ticker}`);
           
