@@ -12,7 +12,7 @@ import { Plus, Upload, X } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { uploadImageToStorage } from "@/lib/firebase-services"
-import { auth } from "@/lib/firebase"
+import { useAuth } from "@/components/auth-provider"
 
 export function StockManualNewsForm({ ticker }: { ticker: string }) {
   const [formData, setFormData] = useState({
@@ -26,6 +26,7 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  const { user, loading: authLoading } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,7 +34,6 @@ export function StockManualNewsForm({ ticker }: { ticker: string }) {
 
     try {
       // Debug: Check if user is authenticated
-      const user = auth.currentUser;
       console.log('Current user:', user);
       if (!user) {
         toast({
