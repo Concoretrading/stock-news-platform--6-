@@ -220,15 +220,15 @@ export async function POST(request: NextRequest) {
     let skippedCount = 0;
 
     for (const event of extractedEvents) {
-      // Check for duplicates
+      // Check for duplicates in economic_events collection
       const existingQuery = await db
-        .collection('earnings_calendar')
+        .collection('economic_events')
         .where('date', '==', event.date)
         .where('company_name', '==', event.event_name)
         .get();
 
       if (existingQuery.empty) {
-        const docRef = db.collection('earnings_calendar').doc();
+        const docRef = db.collection('economic_events').doc();
         batch.set(docRef, {
           date: event.date,
           ticker: event.event_name.replace(/\s+/g, '_').toUpperCase(),

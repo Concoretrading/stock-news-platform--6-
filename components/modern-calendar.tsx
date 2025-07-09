@@ -58,7 +58,9 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         setIsLoading(true);
         const db = getFirestore();
         
-        const eventsRef = collection(db, 'earnings_calendar');
+        // Choose collection based on type
+        const collectionName = type === 'events' ? 'economic_events' : 'earnings_calendar';
+        const eventsRef = collection(db, collectionName);
         const startDate = format(calendarStart, 'yyyy-MM-dd');
         const endDate = format(calendarEnd, 'yyyy-MM-dd');
         
