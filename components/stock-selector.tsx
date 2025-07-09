@@ -40,6 +40,8 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
 
   useEffect(() => {
     if (isOpen) {
+      console.log('📋 Stock selector opened, loading current stocks:', currentStocks)
+      console.log('📋 Current stocks structure:', currentStocks.map(s => ({ symbol: s.symbol, name: s.name, id: s.id })))
       setSelectedStocks(currentStocks)
     }
   }, [isOpen, currentStocks])
@@ -70,7 +72,12 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
   }
 
   const removeStock = (stock: Stock) => {
-    setSelectedStocks(selectedStocks.filter(s => s.symbol !== stock.symbol))
+    console.log('🗑️ Attempting to remove stock:', stock)
+    console.log('🗑️ Current selectedStocks before removal:', selectedStocks)
+    const newSelectedStocks = selectedStocks.filter(s => s.symbol !== stock.symbol)
+    console.log('🗑️ New selectedStocks after removal:', newSelectedStocks)
+    console.log('🗑️ Successfully removed?', newSelectedStocks.length < selectedStocks.length)
+    setSelectedStocks(newSelectedStocks)
   }
 
   const handleSave = async () => {
