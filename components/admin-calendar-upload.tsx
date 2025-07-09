@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import AdminEconomicEvents from '@/components/admin-economic-events';
-import { FileText, Camera, Clipboard } from 'lucide-react';
+import { FileText, Camera, Clipboard, Image } from 'lucide-react';
 
 // Allow any authenticated user to upload earnings calendar
 // You can restrict this to specific UIDs later if needed
@@ -16,8 +16,12 @@ export function AdminCalendarUpload() {
   const { user, firebaseUser } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPasting, setIsPasting] = useState(false);
   const [previewEvents, setPreviewEvents] = useState<any[]>([]);
   const [pastedText, setPastedText] = useState('');
+  const [pastedImage, setPastedImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pasteAreaRef = useRef<HTMLDivElement>(null);
 
   // Allow any authenticated user to upload earnings calendar
 
@@ -111,9 +115,83 @@ export function AdminCalendarUpload() {
     }
   };
 
+  const handleScreenshotPaste = async (imageBlob: Blob) => {
+    try {
+      setIsPasting(true);
+      const formData = new FormData();
+      formData.append('file', imageBlob, 'screenshot.png');
+
+      const response = await fetch('/api/ai-calendar-events', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${await firebaseUser?.getIdToken()}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to process pasted screenshot');
+      }
+
+      setPreviewEvents(data.events || []);
+      toast.success(`Found ${data.events?.length || 0} earnings events`);
+    } catch (error) {
+      console.error('Screenshot paste error:', error);
+      toast.error('Failed to process pasted screenshot');
+    } finally {
+      setIsPasting(false);
+    }
+  };
+
+  const handlePasteAreaClick = () => {
+    pasteAreaRef.current?.focus();
+  };
+
+  const handlePasteAreaKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'v' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleClipboardPaste();
+    }
+  };
+
+  const handleClipboardPaste = async () => {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+      
+      for (const clipboardItem of clipboardItems) {
+        for (const type of clipboardItem.types) {
+          if (type.startsWith('image/')) {
+            const blob = await clipboardItem.getType(type);
+            setPastedImage(URL.createObjectURL(blob));
+            await handleScreenshotPaste(blob);
+            return;
+          }
+        }
+      }
+      
+      // If no image found, try to get text
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setPastedText(text);
+        toast.info('Text pasted. Click "Extract Earnings" to process.');
+      } else {
+        toast.error('No image or text found in clipboard');
+      }
+    } catch (error) {
+      console.error('Clipboard paste error:', error);
+      toast.error('Failed to access clipboard. Try uploading a file instead.');
+    }
+  };
+
   const handleClear = () => {
     setPastedText('');
+    setPastedImage(null);
     setPreviewEvents([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
@@ -154,6 +232,7 @@ export function AdminCalendarUpload() {
               </p>
               <div className="space-y-4">
                 <Input
+                  ref={fileInputRef}
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
@@ -164,6 +243,62 @@ export function AdminCalendarUpload() {
                   <div className="text-sm text-muted-foreground flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                     Processing screenshot with AI...
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Screenshot Paste Section */}
+            <Card className="p-6">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Image className="h-5 w-5" />
+                Paste Screenshot (Ctrl+V)
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Copy a screenshot to your clipboard, then paste it here (Ctrl+V or Cmd+V) to automatically extract earnings data
+              </p>
+              <div className="space-y-4">
+                <div
+                  ref={pasteAreaRef}
+                  tabIndex={0}
+                  onClick={handlePasteAreaClick}
+                  onKeyDown={handlePasteAreaKeyDown}
+                  onPaste={handleClipboardPaste}
+                  className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                >
+                  {pastedImage ? (
+                    <div className="space-y-4">
+                      <img 
+                        src={pastedImage} 
+                        alt="Pasted screenshot" 
+                        className="max-w-full max-h-64 mx-auto rounded-lg shadow-lg"
+                      />
+                      <div className="text-sm text-muted-foreground">
+                        Screenshot pasted successfully! Processing...
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Image className="h-12 w-12 mx-auto text-gray-400" />
+                      <p className="text-lg font-medium">Paste Screenshot Here</p>
+                      <p className="text-sm text-muted-foreground">
+                        Copy a screenshot to clipboard, then press Ctrl+V (or Cmd+V on Mac)
+                      </p>
+                      <Button 
+                        onClick={handleClipboardPaste}
+                        variant="outline"
+                        className="mt-2"
+                      >
+                        <Clipboard className="h-4 w-4 mr-2" />
+                        Paste from Clipboard
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {isPasting && (
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    Processing pasted screenshot with AI...
                   </div>
                 )}
               </div>
