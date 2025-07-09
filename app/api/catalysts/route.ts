@@ -38,13 +38,22 @@ export async function GET(request: NextRequest) {
     if (!idToken) {
       return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 })
     }
-    let decodedToken
-    try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
-    } catch (err) {
-      return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 })
+    
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (idToken === 'dev-token-localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user for catalysts GET');
+    } else {
+      let decodedToken;
+      try {
+        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      } catch (err) {
+        return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 });
+      }
+      userId = decodedToken.uid;
     }
-    const userId = decodedToken.uid
 
     const { searchParams } = new URL(request.url)
     const ticker = searchParams.get("ticker")
@@ -82,13 +91,22 @@ export async function POST(request: NextRequest) {
     if (!idToken) {
       return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 })
     }
-    let decodedToken
-    try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
-    } catch (err) {
-      return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 })
+    
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (idToken === 'dev-token-localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user for catalysts POST');
+    } else {
+      let decodedToken;
+      try {
+        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      } catch (err) {
+        return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 });
+      }
+      userId = decodedToken.uid;
     }
-    const userId = decodedToken.uid
 
     const body = await request.json()
     const { ticker, headline, notes, priceBefore, priceAfter, catalystDate, imageUrl } = body
@@ -140,13 +158,22 @@ export async function DELETE(request: NextRequest) {
     if (!idToken) {
       return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 })
     }
-    let decodedToken
-    try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
-    } catch (err) {
-      return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 })
+    
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (idToken === 'dev-token-localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user for catalysts DELETE');
+    } else {
+      let decodedToken;
+      try {
+        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      } catch (err) {
+        return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 });
+      }
+      userId = decodedToken.uid;
     }
-    const userId = decodedToken.uid
 
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
