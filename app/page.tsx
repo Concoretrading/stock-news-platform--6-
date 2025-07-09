@@ -6,17 +6,21 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { TrendingUp, Upload, Calendar, Settings, ChevronLeft, ChevronRight } from "lucide-react"
-import { AppHeader } from "@/components/app-header"
-import { StockCard } from "@/components/stock-card"
-import { StockSelector } from "@/components/stock-selector"
-import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
-import { StockManualNewsForm } from "@/components/stock-manual-news-form"
+import { TrendingUp, ChevronLeft, ChevronRight, Settings, Upload, Calendar } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
-
+import { StockCard } from "@/components/stock-card"
+import { StockSelector } from "@/components/stock-selector"
+import { AppHeader } from "@/components/app-header"
+import { OnboardingPopup } from "@/components/onboarding-popup"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 interface Stock {
   id?: string
@@ -39,6 +43,7 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(0)
   const [showPastInstructions, setShowPastInstructions] = useState(false)
   const [showFutureInstructions, setShowFutureInstructions] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const [isShowingDefaults, setIsShowingDefaults] = useState(false) // Track if showing UI-only defaults
   const { user, loading } = useAuth()
   const { toast } = useToast()
@@ -47,6 +52,13 @@ export default function HomePage() {
   // Carousel settings - show 8 stocks per page (2 rows of 4), max 10 total
   const stocksPerPage = 8
   const maxStocks = 10
+
+  // Show onboarding for new users
+  useEffect(() => {
+    if (isShowingDefaults && !loading) {
+      setShowOnboarding(true)
+    }
+  }, [isShowingDefaults, loading])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -267,8 +279,11 @@ export default function HomePage() {
         {/* Three Aspects of Time Section */}
         <div className="mb-8">
           <div className="text-center mb-8">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              We as traders need to master all three aspects of time.
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-2">
+              We as traders need to master
+            </h2>
+            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+              All three aspects of time
             </h2>
             <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
           </div>
@@ -283,7 +298,10 @@ export default function HomePage() {
               </CardHeader>
               <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  • Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history as long as it's a stock in your watch list.
+                  • Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history
+                </p>
+                <p className="text-center text-sm font-medium text-amber-600 dark:text-amber-400">
+                  as long as its a stock in your watch list
                 </p>
                 <Dialog open={showPastInstructions} onOpenChange={setShowPastInstructions}>
                   <DialogTrigger asChild>
@@ -362,6 +380,12 @@ export default function HomePage() {
             isShowingDefaults={isShowingDefaults}
           />
         )}
+
+        {/* Onboarding Popup */}
+        <OnboardingPopup
+          isVisible={showOnboarding}
+          onClose={() => setShowOnboarding(false)}
+        />
       </div>
     </div>
   )

@@ -1,90 +1,88 @@
 "use client";
-import { useState, useRef } from "react";
-import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer";
-import { Camera, TestTube } from "lucide-react";
+import { useState } from "react"
+import { Camera } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/components/auth-provider"
+import { fetchWithAuth } from "@/lib/fetchWithAuth"
 
-export default function ScreenshotButton({ onCatalystAdded }: { onCatalystAdded?: () => void }) {
-  const [showAnalyzer, setShowAnalyzer] = useState(false);
-  const [externalFile, setExternalFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+interface ScreenshotButtonProps {
+  onCatalystAdded?: () => void
+  className?: string
+}
 
-  // Simple mobile detection
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+export default function ScreenshotButton({ onCatalystAdded, className = "" }: ScreenshotButtonProps) {
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+  const { user } = useAuth()
 
-  const handleButtonClick = () => {
-    if (isMobile) {
-      fileInputRef.current?.click();
-    } else {
-      setShowAnalyzer(true);
+  const handleScreenshotUpload = async (file: File) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to upload screenshots",
+        variant: "destructive",
+      })
+      return
     }
-  };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log('📁 File selected via camera button:', file.name, file.type);
-      setExternalFile(file);
-      setShowAnalyzer(true);
+    setIsLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await fetchWithAuth('/api/analyze-screenshot', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast({
+          title: "Screenshot Analyzed",
+          description: result.message || "Screenshot processed successfully",
+        })
+        if (onCatalystAdded) {
+          onCatalystAdded()
+        }
+      } else {
+        throw new Error(result.error || 'Failed to analyze screenshot')
+      }
+    } catch (error) {
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to process screenshot",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
-  };
-
-  const handleTestClick = () => {
-    console.log('🧪 Test button clicked - forcing analyzer open');
-    setShowAnalyzer(true);
-  };
+  }
 
   return (
-    <>
-      {/* Floating Screenshot Button */}
-      <button
-        onClick={handleButtonClick}
-        className="fixed bottom-6 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
-        aria-label="Open Screenshot Analyzer"
+    <div className={`fixed bottom-6 right-6 ${className}`}>
+      <Button
+        size="lg"
+        className="h-14 w-14 rounded-full shadow-lg bg-green-600 hover:bg-green-700 text-white"
+        onClick={() => document.getElementById('screenshot-upload')?.click()}
+        disabled={isLoading}
+        title="Upload Screenshot"
       >
         <Camera className="h-6 w-6" />
-      </button>
-      
-      {/* Test Button for debugging */}
-      <button
-        onClick={handleTestClick}
-        className="fixed bottom-20 right-6 z-50 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg p-3 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-green-400"
-        aria-label="Test Screenshot Analyzer"
-      >
-        <TestTube className="h-5 w-5" />
-      </button>
-      
-      {/* Hidden file input for mobile photo picker */}
+      </Button>
       <input
+        id="screenshot-upload"
         type="file"
         accept="image/*"
-        ref={fileInputRef}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) {
+            handleScreenshotUpload(file)
+          }
+        }}
         className="hidden"
-        onChange={handleFileChange}
       />
-      {/* Screenshot Analyzer Modal */}
-      {showAnalyzer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 max-w-2xl w-full relative">
-            <button
-              onClick={() => { setShowAnalyzer(false); setExternalFile(null); }}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-900 dark:hover:text-white"
-              aria-label="Close"
-            >
-              ×
-            </button>
-            <ScreenshotAnalyzer
-              externalFile={externalFile}
-              onExternalFileHandled={() => setExternalFile(null)}
-              onCatalystAdded={() => {
-                console.log('🎉 Catalyst added - closing analyzer');
-                setShowAnalyzer(false);
-                setExternalFile(null);
-                onCatalystAdded?.();
-              }}
-            />
-          </div>
-        </div>
-      )}
-    </>
-  );
+    </div>
+  )
 } 
