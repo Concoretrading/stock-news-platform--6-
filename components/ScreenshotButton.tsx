@@ -72,10 +72,8 @@ export default function ScreenshotButton({ onCatalystAdded, className = "" }: Sc
         {isLoading ? (
           <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
         ) : (
-          <div className="flex items-center justify-center w-8 h-8 relative">
+          <div className="flex items-center justify-center w-8 h-8">
             <Camera className="w-full h-full text-white" style={{ strokeWidth: 2 }} />
-            {/* Debug indicator - small dot to verify button is working */}
-            <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full"></div>
           </div>
         )}
       </Button>
