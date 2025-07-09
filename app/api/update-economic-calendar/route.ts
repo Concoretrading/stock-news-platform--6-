@@ -13,48 +13,62 @@ const getEconomicEventsForWeeks = () => {
   const formatDate = (date: Date) => {
     return date.toISOString().split('T')[0];
   };
-  
-  // Generate events for current week and next week
+
+  // Generate events for current week and next week based on REAL market data
   const events = [];
   
-  // Current Week Events
-  const currentMonday = new Date(currentWeekStart);
+  // Current Week Events (July 7-11, 2025)
   const currentTuesday = new Date(currentWeekStart);
-  currentTuesday.setDate(currentMonday.getDate() + 1);
+  currentTuesday.setDate(currentWeekStart.getDate() + 1);
   const currentWednesday = new Date(currentWeekStart);
-  currentWednesday.setDate(currentMonday.getDate() + 2);
+  currentWednesday.setDate(currentWeekStart.getDate() + 2);
   const currentThursday = new Date(currentWeekStart);
-  currentThursday.setDate(currentMonday.getDate() + 3);
+  currentThursday.setDate(currentWeekStart.getDate() + 3);
   const currentFriday = new Date(currentWeekStart);
-  currentFriday.setDate(currentMonday.getDate() + 4);
+  currentFriday.setDate(currentWeekStart.getDate() + 4);
   
-  // Next Week Events  
-  const nextMonday = new Date(nextWeekStart);
+  // Next Week Events (July 14-18, 2025)
   const nextTuesday = new Date(nextWeekStart);
-  nextTuesday.setDate(nextMonday.getDate() + 1);
+  nextTuesday.setDate(nextWeekStart.getDate() + 1);
   const nextWednesday = new Date(nextWeekStart);
-  nextWednesday.setDate(nextMonday.getDate() + 2);
+  nextWednesday.setDate(nextWeekStart.getDate() + 2);
   const nextThursday = new Date(nextWeekStart);
-  nextThursday.setDate(nextMonday.getDate() + 3);
+  nextThursday.setDate(nextWeekStart.getDate() + 3);
   const nextFriday = new Date(nextWeekStart);
-  nextFriday.setDate(nextMonday.getDate() + 4);
+  nextFriday.setDate(nextWeekStart.getDate() + 4);
   
-  // Common weekly economic events pattern
+  // REAL ECONOMIC EVENTS - Based on actual market data
   return [
-    // Current Week
+    // Current Week (July 7-11, 2025)
     {
       date: formatDate(currentTuesday),
-      ticker: 'CPI',
-      company_name: 'Consumer Price Index (CPI)',
-      event_type: 'Monthly Inflation Data (8:30 AM ET) - Major Market Mover',
+      ticker: 'NFIB',
+      company_name: 'NFIB Small Business Optimism Index',
+      event_type: 'Small Business Confidence (6:00 AM ET) - Economic Sentiment',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(currentTuesday),
+      ticker: 'CREDIT',
+      company_name: 'Consumer Credit',
+      event_type: 'Monthly Consumer Borrowing (3:00 PM ET) - Credit Markets',
       confirmed: true,
       auto_generated: true
     },
     {
       date: formatDate(currentWednesday),
-      ticker: 'PPI',
-      company_name: 'Producer Price Index (PPI)', 
-      event_type: 'Producer Inflation MoM & YoY (8:30 AM ET) - Inflation Pipeline',
+      ticker: 'WHOLESALE',
+      company_name: 'Wholesale Inventories',
+      event_type: 'Business Inventory Levels (10:00 AM ET) - Supply Chain Health',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(currentWednesday),
+      ticker: 'FOMC',
+      company_name: 'Fed FOMC Meeting Minutes',
+      event_type: 'Federal Reserve Policy Minutes (2:00 PM ET) - MAJOR MARKET MOVER',
       confirmed: true,
       auto_generated: true
     },
@@ -67,28 +81,68 @@ const getEconomicEventsForWeeks = () => {
       auto_generated: true
     },
     {
+      date: formatDate(currentThursday),
+      ticker: 'FED',
+      company_name: 'Fed Speakers: Musalem & Daly',
+      event_type: 'Federal Reserve Officials Speeches (10:00 AM & 2:30 PM ET)',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
       date: formatDate(currentFriday),
-      ticker: 'RETAIL',
-      company_name: 'Retail Sales',
-      event_type: 'Monthly Consumer Spending (8:30 AM ET) - Economic Strength',
+      ticker: 'BUDGET',
+      company_name: 'Monthly U.S. Federal Budget',
+      event_type: 'Government Fiscal Balance (2:00 PM ET) - Fiscal Health',
       confirmed: true,
       auto_generated: true
     },
     
-    // Next Week
+    // Next Week (July 14-18, 2025)
     {
       date: formatDate(nextTuesday),
-      ticker: 'HOUSING',
-      company_name: 'Existing Home Sales',
-      event_type: 'Monthly Housing Market Data (10:00 AM ET) - Real Estate Health',
+      ticker: 'CPI',
+      company_name: 'Consumer Price Index (CPI)',
+      event_type: 'Monthly Inflation Data (8:30 AM ET) - MAJOR MARKET MOVER',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextTuesday),
+      ticker: 'EMPIRE',
+      company_name: 'Empire State Manufacturing Survey',
+      event_type: 'NY Manufacturing Activity (8:30 AM ET) - Regional Economic Health',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextTuesday),
+      ticker: 'INDPROD',
+      company_name: 'Industrial Production',
+      event_type: 'Manufacturing Output (9:15 AM ET) - Factory Production',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextTuesday),
+      ticker: 'FED',
+      company_name: 'Fed Speakers: Collins & Logan',
+      event_type: 'Federal Reserve Officials Speeches (2:45 PM & 6:45 PM ET)',
       confirmed: true,
       auto_generated: true
     },
     {
       date: formatDate(nextWednesday),
-      ticker: 'PMI',
-      company_name: 'Flash PMI Manufacturing',
-      event_type: 'Manufacturing Activity Preliminary (9:45 AM ET) - Factory Health',
+      ticker: 'PPI',
+      company_name: 'Producer Price Index (PPI)',
+      event_type: 'Producer Inflation MoM & YoY (8:30 AM ET) - Inflation Pipeline',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextWednesday),
+      ticker: 'BEIGE',
+      company_name: 'Fed Beige Book',
+      event_type: 'Federal Reserve Economic Conditions Report (2:00 PM ET) - MAJOR MARKET MOVER',
       confirmed: true,
       auto_generated: true
     },
@@ -96,7 +150,47 @@ const getEconomicEventsForWeeks = () => {
       date: formatDate(nextThursday),
       ticker: 'CLAIMS',
       company_name: 'Initial Jobless Claims',
-      event_type: 'Weekly Unemployment Claims (8:30 AM ET) - Labor Market Health', 
+      event_type: 'Weekly Unemployment Claims (8:30 AM ET) - Labor Market Health',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextThursday),
+      ticker: 'RETAIL',
+      company_name: 'Retail Sales',
+      event_type: 'Monthly Consumer Spending (8:30 AM ET) - MAJOR ECONOMIC INDICATOR',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextThursday),
+      ticker: 'PHILLY',
+      company_name: 'Philadelphia Fed Manufacturing Survey',
+      event_type: 'Regional Manufacturing Index (8:30 AM ET) - Economic Activity',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextThursday),
+      ticker: 'INVENTORY',
+      company_name: 'Business Inventories',
+      event_type: 'Corporate Inventory Levels (10:00 AM ET) - Supply Chain Data',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextFriday),
+      ticker: 'HOUSING',
+      company_name: 'Housing Starts',
+      event_type: 'New Home Construction (8:30 AM ET) - MAJOR HOUSING INDICATOR',
+      confirmed: true,
+      auto_generated: true
+    },
+    {
+      date: formatDate(nextFriday),
+      ticker: 'PERMITS',
+      company_name: 'Building Permits',
+      event_type: 'Future Construction Activity (8:30 AM ET) - Housing Pipeline',
       confirmed: true,
       auto_generated: true
     },
