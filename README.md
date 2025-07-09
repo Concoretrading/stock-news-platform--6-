@@ -1,6 +1,22 @@
-# ConcoreNews - Professional Stock Analysis Platform
+# ConcoreNews Stock Platform
 
-A modern, AI-powered stock news analysis platform that allows users to upload screenshots of news articles and automatically extract, categorize, and track stock-related information.
+A comprehensive stock news and catalyst tracking platform with AI-powered analysis.
+
+## Environment Setup
+
+**IMPORTANT**: For screenshot functionality to work, you need to set up environment variables properly:
+
+1. Copy `env.local` to `.env.local`:
+   ```bash
+   cp env.local .env.local
+   ```
+
+2. Ensure the Google Vision API credentials file exists:
+   ```bash
+   ls concorenews-firebase-adminsdk.json
+   ```
+
+3. The screenshot analyzer requires the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to be set in `.env.local`
 
 ## 🚀 Features
 
