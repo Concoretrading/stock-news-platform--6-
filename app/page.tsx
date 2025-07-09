@@ -79,61 +79,13 @@ export default function HomePage() {
       const userStocks = result.data
       console.log('🔍 User stocks from API:', userStocks)
       
-      if (userStocks.length === 0) {
-        console.log('🔍 No stocks found, adding default stocks...')
-        // If no stocks, add the standard set of 10
-        const defaultStocks = [
-          { symbol: "NVDA", name: "NVIDIA Corporation" },
-          { symbol: "TSLA", name: "Tesla Inc." },
-          { symbol: "META", name: "Meta Platforms Inc." },
-          { symbol: "AMZN", name: "Amazon.com Inc." },
-          { symbol: "AVGO", name: "Broadcom Inc." },
-          { symbol: "MSFT", name: "Microsoft Corporation" },
-          { symbol: "GOOGL", name: "Alphabet Inc." },
-          { symbol: "AAPL", name: "Apple Inc." },
-          { symbol: "NFLX", name: "Netflix Inc." },
-          { symbol: "MSTR", name: "MicroStrategy Inc." },
-        ]
-        
-        console.log('🔍 Adding default stocks:', defaultStocks)
-        for (const stock of defaultStocks) {
-          console.log(`🔍 Adding stock: ${stock.symbol}`)
-          const addResponse = await fetchWithAuth('/api/watchlist', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              ticker: stock.symbol,
-              companyName: stock.name,
-            }),
-          })
-          const addResult = await addResponse.json()
-          console.log(`🔍 Add result for ${stock.symbol}:`, addResult)
-        }
-        
-        console.log('🔍 Default stocks added, reloading...')
-        // Reload after adding defaults
-        const reloadResponse = await fetchWithAuth('/api/watchlist')
-        const reloadResult = await reloadResponse.json()
-        console.log('🔍 Reloaded stocks after adding defaults:', reloadResult)
-        
-        if (reloadResult.success) {
-          const updatedStocks = reloadResult.data
-          setWatchlist(updatedStocks.slice(0, maxStocks).map((stock: any) => ({
-            id: stock.id,
-            symbol: stock.ticker,
-            name: stock.companyName
-          })))
-        }
-      } else {
-        console.log('🔍 Found existing stocks, using them')
-        setWatchlist(userStocks.slice(0, maxStocks).map((stock: any) => ({
-          id: stock.id,
-          symbol: stock.ticker,
-          name: stock.companyName
-        })))
-      }
+      // Use whatever stocks the user has - no automatic additions
+      console.log('🔍 Using user\'s actual stocks, count:', userStocks.length)
+      setWatchlist(userStocks.slice(0, maxStocks).map((stock: any) => ({
+        id: stock.id,
+        symbol: stock.ticker,
+        name: stock.companyName
+      })))
     } catch (error) {
       console.error('❌ Error loading watchlist:', error)
       toast({
