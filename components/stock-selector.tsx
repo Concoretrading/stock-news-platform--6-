@@ -103,6 +103,8 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
   }
 
   const handleSave = async () => {
+    if (loading) return // Prevent multiple simultaneous saves
+    
     setLoading(true)
     console.log('🔴 Starting save process...')
     
@@ -118,12 +120,17 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       const currentStocks = currentResult.data
       console.log('🔴 Current stocks:', currentStocks.length, currentStocks.map((s: any) => s.ticker))
       
+      // Deduplicate selectedStocks to prevent frontend duplicates
+      const uniqueSelectedStocks = selectedStocks.filter((stock, index, self) => 
+        index === self.findIndex(s => s.symbol === stock.symbol)
+      )
+      
       // Find stocks to remove and add
       const currentTickers = currentStocks.map((s: any) => s.ticker)
-      const selectedTickers = selectedStocks.map(s => s.symbol)
+      const selectedTickers = uniqueSelectedStocks.map(s => s.symbol)
       
       const stocksToRemove = currentStocks.filter((s: any) => !selectedTickers.includes(s.ticker))
-      const stocksToAdd = selectedStocks.filter(s => !currentTickers.includes(s.symbol))
+      const stocksToAdd = uniqueSelectedStocks.filter(s => !currentTickers.includes(s.symbol))
       
       console.log('🔴 Stocks to remove:', stocksToRemove.length, stocksToRemove.map((s: any) => s.ticker))
       console.log('🔴 Stocks to add:', stocksToAdd.length, stocksToAdd.map((s: any) => s.symbol))
@@ -163,6 +170,10 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           const addResult = await addResponse.json()
           if (!addResult.success) {
             console.error(`❌ Failed to add ${stock.symbol}:`, addResult.error)
+            // Don't throw error for duplicates, just log and continue
+            if (!addResult.error?.includes('already in watchlist')) {
+              console.error(`❌ Unexpected error adding ${stock.symbol}:`, addResult.error)
+            }
           } else {
             console.log(`✅ Successfully added ${stock.symbol}`)
           }
@@ -181,8 +192,14 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           symbol: stock.ticker,
           name: stock.companyName
         }))
-        onUpdateWatchlist(updatedStocks)
-        console.log('🔴 Final updated watchlist:', updatedStocks.length, updatedStocks.map((s: Stock) => s.symbol))
+        
+        // Deduplicate the final result as well
+        const uniqueUpdatedStocks = updatedStocks.filter((stock: Stock, index: number, self: Stock[]) => 
+          index === self.findIndex(s => s.symbol === stock.symbol)
+        )
+        
+        onUpdateWatchlist(uniqueUpdatedStocks)
+        console.log('🔴 Final updated watchlist:', uniqueUpdatedStocks.length, uniqueUpdatedStocks.map((s: Stock) => s.symbol))
       }
       
       toast({
