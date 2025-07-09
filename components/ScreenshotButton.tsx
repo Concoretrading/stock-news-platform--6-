@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer";
-import { Camera } from "lucide-react";
+import { Camera, TestTube } from "lucide-react";
 
 export default function ScreenshotButton({ onCatalystAdded }: { onCatalystAdded?: () => void }) {
   const [showAnalyzer, setShowAnalyzer] = useState(false);
@@ -22,9 +22,15 @@ export default function ScreenshotButton({ onCatalystAdded }: { onCatalystAdded?
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log('📁 File selected via camera button:', file.name, file.type);
       setExternalFile(file);
       setShowAnalyzer(true);
     }
+  };
+
+  const handleTestClick = () => {
+    console.log('🧪 Test button clicked - forcing analyzer open');
+    setShowAnalyzer(true);
   };
 
   return (
@@ -37,6 +43,16 @@ export default function ScreenshotButton({ onCatalystAdded }: { onCatalystAdded?
       >
         <Camera className="h-6 w-6" />
       </button>
+      
+      {/* Test Button for debugging */}
+      <button
+        onClick={handleTestClick}
+        className="fixed bottom-20 right-6 z-50 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg p-3 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-green-400"
+        aria-label="Test Screenshot Analyzer"
+      >
+        <TestTube className="h-5 w-5" />
+      </button>
+      
       {/* Hidden file input for mobile photo picker */}
       <input
         type="file"
@@ -60,6 +76,7 @@ export default function ScreenshotButton({ onCatalystAdded }: { onCatalystAdded?
               externalFile={externalFile}
               onExternalFileHandled={() => setExternalFile(null)}
               onCatalystAdded={() => {
+                console.log('🎉 Catalyst added - closing analyzer');
                 setShowAnalyzer(false);
                 setExternalFile(null);
                 onCatalystAdded?.();

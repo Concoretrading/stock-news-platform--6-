@@ -147,6 +147,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
   // Global drag and drop handlers with better debugging
   useEffect(() => {
+    console.log('🚀 Setting up drag/drop event listeners...')
+    console.log('🔐 User authenticated:', !!user)
+    
     const handleDragEnter = (e: DragEvent) => {
       e.preventDefault()
       e.stopPropagation()
@@ -179,11 +182,13 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       console.log('🎯 Drop detected!')
       console.log('DataTransfer types:', e.dataTransfer?.types)
       console.log('DataTransfer items:', e.dataTransfer?.items)
+      console.log('DataTransfer files:', e.dataTransfer?.files)
       
       dragCounterRef.current = 0
       setIsDragging(false)
 
       if (!user) {
+        console.log('❌ User not authenticated')
         toast({
           title: "Authentication Required", 
           description: "Please log in to process news articles",
@@ -194,15 +199,23 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
       // PRIORITY 1: Check for image files first (screenshots should be processed as images)
       const files = e.dataTransfer?.files
+      console.log('📁 Files dropped:', files?.length || 0)
       if (files && files.length > 0) {
+        console.log('📁 File details:', Array.from(files).map(f => ({ name: f.name, type: f.type, size: f.size })))
         const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+        console.log('🖼️ Image files found:', imageFiles.length)
         if (imageFiles.length > 0) {
           console.log('🖼️ Image files dropped, processing as screenshots')
           for (const file of imageFiles) {
+            console.log('🔄 Processing file:', file.name, file.type)
             await processScreenshot(file)
           }
           return
+        } else {
+          console.log('❌ No image files found in dropped files')
         }
+      } else {
+        console.log('❌ No files detected in drop event')
       }
 
       // PRIORITY 2: Try multiple ways to get text content
