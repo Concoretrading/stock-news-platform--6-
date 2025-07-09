@@ -50,23 +50,36 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         const startDate = format(calendarStart, 'yyyy-MM-dd');
         const endDate = format(calendarEnd, 'yyyy-MM-dd');
         
-        const q = query(
+        // Query for both economic events (date field) and earnings events (earningsDate field)
+        const economicEventsQuery = query(
           eventsRef,
           where('date', '>=', startDate),
           where('date', '<=', endDate)
         );
 
-        const querySnapshot = await getDocs(q);
+        const earningsEventsQuery = query(
+          eventsRef,
+          where('earningsDate', '>=', new Date(startDate)),
+          where('earningsDate', '<=', new Date(endDate))
+        );
+
+        // Fetch both types of events
+        const [economicSnapshot, earningsSnapshot] = await Promise.all([
+          getDocs(economicEventsQuery),
+          getDocs(earningsEventsQuery)
+        ]);
+
         const newEvents: Record<string, CalendarEvent[]> = {};
 
-        querySnapshot.forEach((doc) => {
+        // Process economic events (CPI, PPI, etc.)
+        economicSnapshot.forEach((doc) => {
           const data = doc.data();
           const event: CalendarEvent = {
             id: doc.id,
             date: data.date,
-            ticker: data.ticker || data.stockTicker || 'N/A',
-            company_name: data.company_name || data.companyName || 'Unknown',
-            event_type: data.event_type || data.earningsType || 'Event',
+            ticker: data.ticker || 'ECO',
+            company_name: data.company_name || 'Economic Data',
+            event_type: data.event_type || 'Economic Event',
             confirmed: data.confirmed !== false,
             auto_generated: data.auto_generated || false,
             created_at: data.created_at
@@ -77,6 +90,40 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             newEvents[dateKey] = [];
           }
           newEvents[dateKey].push(event);
+        });
+
+        // Process earnings events (company earnings)
+        earningsSnapshot.forEach((doc) => {
+          const data = doc.data();
+          const earningsDate = data.earningsDate;
+          let dateString: string;
+          
+          // Handle different date formats
+          if (earningsDate instanceof Date) {
+            dateString = format(earningsDate, 'yyyy-MM-dd');
+          } else if (typeof earningsDate === 'string') {
+            dateString = earningsDate.split('T')[0]; // Handle ISO string
+          } else if (earningsDate?.toDate) {
+            dateString = format(earningsDate.toDate(), 'yyyy-MM-dd'); // Handle Firestore Timestamp
+          } else {
+            return; // Skip invalid dates
+          }
+
+          const event: CalendarEvent = {
+            id: doc.id,
+            date: dateString,
+            ticker: data.stockTicker || 'EARN',
+            company_name: data.companyName || 'Company Earnings',
+            event_type: data.earningsType || 'Earnings',
+            confirmed: data.isConfirmed !== false,
+            auto_generated: false,
+            created_at: data.created_at || data.createdAt
+          };
+          
+          if (!newEvents[dateString]) {
+            newEvents[dateString] = [];
+          }
+          newEvents[dateString].push(event);
         });
 
         setEvents(newEvents);
