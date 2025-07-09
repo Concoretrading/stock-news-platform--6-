@@ -19,6 +19,11 @@ interface Stock {
   companyName?: string
 }
 
+interface TickerItem {
+  ticker: string
+  name: string
+}
+
 interface StockSelectorProps {
   isOpen: boolean
   onClose: () => void
@@ -40,20 +45,20 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
   }, [isOpen, currentStocks])
 
   const availableStocks = tickers.filter(ticker => 
-    ticker.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticker.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ticker.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const isSelected = (stock: Stock) => {
-    return selectedStocks.some(s => s.symbol === stock.symbol)
+  const isSelected = (tickerItem: TickerItem) => {
+    return selectedStocks.some(s => s.symbol === tickerItem.ticker)
   }
 
-  const toggleStock = (stock: Stock) => {
-    if (isSelected(stock)) {
-      setSelectedStocks(selectedStocks.filter(s => s.symbol !== stock.symbol))
+  const toggleStock = (tickerItem: TickerItem) => {
+    if (isSelected(tickerItem)) {
+      setSelectedStocks(selectedStocks.filter(s => s.symbol !== tickerItem.ticker))
     } else {
       if (selectedStocks.length < maxStocks) {
-        setSelectedStocks([...selectedStocks, stock])
+        setSelectedStocks([...selectedStocks, { symbol: tickerItem.ticker, name: tickerItem.name }])
       } else {
         toast({
           title: "Maximum stocks reached",
@@ -194,10 +199,10 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
             <div className="flex-1 border rounded-lg p-4 overflow-y-auto">
               <div className="grid grid-cols-1 gap-2">
                 {availableStocks.slice(0, 50).map((stock) => (
-                  <Card key={stock.symbol} className="p-3 cursor-pointer hover:bg-gray-50">
+                  <Card key={stock.ticker} className="p-3 cursor-pointer hover:bg-gray-50">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="font-medium">{stock.symbol}</span>
+                        <span className="font-medium">{stock.ticker}</span>
                         <p className="text-sm text-muted-foreground">{stock.name}</p>
                       </div>
                       <Button

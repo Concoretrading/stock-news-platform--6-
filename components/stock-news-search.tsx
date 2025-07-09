@@ -8,13 +8,16 @@ import { NewsImage } from "./stock-news-history"
 
 interface Catalyst {
   id: string
-  date: string
   title: string
   description?: string
+  priceBefore?: number
+  priceAfter?: number
+  source?: string
   imageUrl?: string
-  isManual?: boolean
-  createdAt?: string
+  date: string
+  createdAt: string
   stockTickers?: string[]
+  isManual?: boolean
 }
 
 export function StockNewsSearch({ ticker }: { ticker?: string }) {
