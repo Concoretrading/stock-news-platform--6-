@@ -17,6 +17,8 @@ let vision: ImageAnnotatorClient | null = null;
 function getVisionClient() {
   if (!vision) {
     try {
+      console.log('🔄 Initializing Google Vision API client...');
+      
       // Try reading credentials file directly
       const fs = require('fs');
       const path = require('path');
@@ -24,26 +26,38 @@ function getVisionClient() {
       
       if (fs.existsSync(credentialsPath)) {
         const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
+        console.log('📁 Using credentials file:', credentialsPath);
+        console.log('🔧 Project ID:', credentials.project_id);
+        
         vision = new ImageAnnotatorClient({
           credentials: credentials,
           projectId: credentials.project_id
         });
         console.log('✅ Google Vision API initialized with credentials file');
       } else {
+        console.log('❌ Credentials file not found at:', credentialsPath);
+        
         // Fall back to environment variable
         const credentialsEnvPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
         if (credentialsEnvPath) {
+          console.log('🔧 Using GOOGLE_APPLICATION_CREDENTIALS env var:', credentialsEnvPath);
           vision = new ImageAnnotatorClient({
             keyFilename: credentialsEnvPath
           });
+          console.log('✅ Google Vision API initialized with environment variable');
         } else {
-          // Fall back to default credentials
-          vision = new ImageAnnotatorClient();
+          console.log('❌ GOOGLE_APPLICATION_CREDENTIALS not set');
+          throw new Error('Google Vision API credentials not found. Please check your setup.');
         }
       }
+      
+      // Test the client with a simple call to verify it works
+      console.log('🧪 Testing Vision API client...');
+      
     } catch (error) {
-      console.error('Failed to initialize Vision client:', error);
-      throw new Error('Google Vision API is not properly configured');
+      console.error('❌ Failed to initialize Vision client:', error);
+      console.error('📋 Error details:', error instanceof Error ? error.message : 'Unknown error');
+      throw new Error(`Google Vision API is not properly configured: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
   return vision;
@@ -235,23 +249,30 @@ function extractPrice(text: string): number | null {
 
 export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, imageType: string): Promise<AnalyzeScreenshotResult> {
   try {
-    console.log('Starting screenshot analysis for user:', userId);
+    console.log('🔄 Starting screenshot analysis for user:', userId);
     
     const db = await getDatabase();
     const storage = await getStorageInstance();
+    
+    console.log('🔧 Initializing Vision API client...');
     const visionClient = getVisionClient();
+    console.log('✅ Vision API client ready');
     
     // Get user's watchlist
+    console.log('🔍 Fetching user watchlist...');
     const userWatchlistTickers = await getWatchlistTickers(userId);
-    console.log('User watchlist:', userWatchlistTickers);
+    console.log('📋 User watchlist:', userWatchlistTickers);
     
     // Analyze image with Google Vision API
+    console.log('👁️ Analyzing image with Google Vision API...');
     const [result] = await visionClient.textDetection({
       image: { content: imageBuffer }
     });
+    console.log('📝 Vision API analysis complete');
     
     const detectedText = result.textAnnotations?.[0]?.description || '';
-    console.log('Detected text:', detectedText);
+    console.log('📄 Detected text length:', detectedText.length);
+    console.log('📄 Detected text preview:', detectedText.substring(0, 200));
     
     if (!detectedText) {
       throw new Error('No text detected in the image');
@@ -263,19 +284,20 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     const date = extractDate(detectedText);
     const price = extractPrice(detectedText);
     
-    console.log('Extracted tickers:', extractedTickers);
-    console.log('Headline:', headline);
-    console.log('Date:', date);
-    console.log('Price:', price);
+    console.log('🎯 Extracted tickers:', extractedTickers);
+    console.log('📰 Headline:', headline);
+    console.log('📅 Date:', date);
+    console.log('💰 Price:', price);
     
     // Filter tickers to only include those in user's watchlist
     const matchedTickers = extractedTickers.filter(ticker => 
       userWatchlistTickers.includes(ticker.toUpperCase())
     );
     
-    console.log('Matched tickers in watchlist:', matchedTickers);
+    console.log('✅ Matched tickers in watchlist:', matchedTickers);
     
     // Upload image to storage for user reference
+    console.log('☁️ Uploading image to Firebase Storage...');
     const timestamp = Date.now();
     const imageStoragePath = `screenshots/${userId}/${timestamp}_screenshot.jpg`;
     const bucket = storage.bucket();
@@ -291,9 +313,10 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     await file.makePublic();
     const imageUrl = `https://storage.googleapis.com/${bucket.name}/${imageStoragePath}`;
     
-    console.log('Image uploaded to:', imageUrl);
+    console.log('🔗 Image uploaded to:', imageUrl);
     
     // Create catalyst entries for matched tickers
+    console.log('💾 Creating catalyst entries...');
     const newsEntryResults: NewsEntryResult[] = [];
     
     for (const ticker of matchedTickers) {
@@ -312,6 +335,7 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
           source: 'Screenshot Analysis',
         };
         
+        console.log(`💾 Saving catalyst for ${ticker}:`, catalystData);
         const docRef = await db.collection('catalysts').add(catalystData);
         
         newsEntryResults.push({
@@ -320,9 +344,9 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
           id: docRef.id,
         });
         
-        console.log(`Created catalyst entry for ${ticker}:`, docRef.id);
+        console.log(`✅ Created catalyst entry for ${ticker}:`, docRef.id);
       } catch (error) {
-        console.error(`Error creating catalyst for ${ticker}:`, error);
+        console.error(`❌ Error creating catalyst for ${ticker}:`, error);
         newsEntryResults.push({
           ticker: ticker.toUpperCase(),
           success: false,
@@ -335,6 +359,8 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     const message = successCount > 0 
       ? `Successfully created ${successCount} catalyst entries`
       : 'No matching stocks found in your watchlist';
+    
+    console.log('🎉 Screenshot analysis complete:', message);
     
     return {
       matches: matchedTickers,
@@ -349,7 +375,8 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     };
     
   } catch (error) {
-    console.error('Error analyzing screenshot:', error);
+    console.error('❌ Error analyzing screenshot:', error);
+    console.error('📋 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     throw error;
   }
 } 
