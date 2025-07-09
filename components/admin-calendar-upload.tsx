@@ -3,7 +3,10 @@ import { useAuth } from '@/components/auth-provider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import AdminEconomicEvents from '@/components/admin-economic-events';
+import { FileText, Camera } from 'lucide-react';
 
 // Allow any authenticated user to upload earnings calendar
 // You can restrict this to specific UIDs later if needed
@@ -70,33 +73,72 @@ export function AdminCalendarUpload() {
   };
 
   return (
-    <Card className="p-4">
-      <h2 className="text-xl font-bold mb-4">Upload Earnings Calendar</h2>
-      <div className="space-y-4">
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={handleFileUpload}
-          disabled={isUploading}
-        />
-        {isUploading && (
-          <div className="text-sm text-muted-foreground">
-            Processing screenshot...
-          </div>
-        )}
-        {previewEvents.length > 0 && (
-          <div className="mt-4">
-            <h3 className="font-semibold mb-2">Detected Events:</h3>
-            <div className="max-h-60 overflow-y-auto space-y-2">
-              {previewEvents.map((event, i) => (
-                <div key={i} className="text-sm">
-                  {event.companyName} ({event.stockTicker}) - {new Date(event.earningsDate).toLocaleDateString()}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold mb-2">Admin Calendar Management</h1>
+        <p className="text-muted-foreground">
+          Manage your economic events and earnings calendar data
+        </p>
       </div>
-    </Card>
+
+      <Tabs defaultValue="economic-events" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="economic-events" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Economic Events
+          </TabsTrigger>
+          <TabsTrigger value="earnings-screenshots" className="flex items-center gap-2">
+            <Camera className="h-4 w-4" />
+            Earnings Screenshots
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="economic-events">
+          <AdminEconomicEvents />
+        </TabsContent>
+
+        <TabsContent value="earnings-screenshots">
+          <Card className="p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Camera className="h-5 w-5" />
+              Upload Earnings Calendar Screenshots
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Upload screenshots from EarningsHub or other earnings calendars to automatically extract company earnings data
+            </p>
+            <div className="space-y-4">
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+                className="file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+              />
+              {isUploading && (
+                <div className="text-sm text-muted-foreground flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  Processing screenshot with AI...
+                </div>
+              )}
+              {previewEvents.length > 0 && (
+                <div className="mt-4">
+                  <h3 className="font-semibold mb-2">Detected Earnings Events ({previewEvents.length}):</h3>
+                  <div className="max-h-60 overflow-y-auto space-y-2 bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                    {previewEvents.map((event, i) => (
+                      <div key={i} className="text-sm border-b border-gray-200 dark:border-gray-700 pb-2 last:border-b-0">
+                        <div className="font-medium">{event.companyName} ({event.stockTicker})</div>
+                        <div className="text-gray-600 dark:text-gray-400">
+                          {new Date(event.earningsDate).toLocaleDateString()} - {event.earningsType}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 } 
