@@ -124,7 +124,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
         )}
         
         {filteredEntries.map(entry => (
-          <Card key={entry.id} className="hover:shadow-md transition-shadow">
+          <Card key={entry.id} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
