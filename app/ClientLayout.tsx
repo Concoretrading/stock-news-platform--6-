@@ -8,7 +8,6 @@ import { NewsPasteButton } from "@/components/news-paste-button"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
-import { getCurrentUser } from '@/lib/firebase-services'
 
 interface ClientLayoutProps {
   children: React.ReactNode
@@ -20,6 +19,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   const [showPastePrompt, setShowPastePrompt] = useState(false)
   const [showInstructions, setShowInstructions] = useState(true)
   const { toast } = useToast()
+  const { user } = useAuth()
   const dragCounterRef = useRef(0)
 
   // Hide instructions after 5 seconds
@@ -60,22 +60,29 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
   }
 
   const processScreenshot = async (file: File) => {
+    console.log('🔄 Starting screenshot processing...')
     setProcessingArticle(true)
     try {
       const formData = new FormData()
       formData.append("image", file)
+      console.log('📤 Sending request to /api/analyze-screenshot')
 
       const response = await fetchWithAuth("/api/analyze-screenshot", {
         method: "POST",
         body: formData,
       })
 
+      console.log('📥 Response status:', response.status)
+
       if (!response.ok) {
         const errorData = await response.json()
+        console.error('❌ API Error:', errorData)
         throw new Error(errorData.error || `HTTP ${response.status}`)
       }
 
       const data = await response.json()
+      console.log('✅ Screenshot analysis result:', data)
+      
       const successCount = data.newsEntryResults?.filter((r: any) => r.success).length || 0
       const tickers = data.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || []
       
@@ -87,6 +94,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         variant: successCount > 0 ? 'default' : 'destructive',
       })
     } catch (error) {
+      console.error('❌ Screenshot processing error:', error)
       toast({
         title: "Screenshot Analysis Failed",
         description: error instanceof Error ? error.message : "Unable to analyze the screenshot. Please try again.",
@@ -106,8 +114,14 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         return
       }
 
-      const user = getCurrentUser()
-      if (!user) return
+      if (!user) {
+        toast({
+          title: "Authentication Required", 
+          description: "Please log in to process news articles",
+          variant: "destructive",
+        })
+        return
+      }
 
       const clipboardData = e.clipboardData || (window as any).clipboardData
       const pastedText = clipboardData?.getData('text/plain') || ''
@@ -129,7 +143,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
     document.addEventListener('paste', handlePaste)
     return () => document.removeEventListener('paste', handlePaste)
-  }, [])
+  }, [user, toast])
 
   // Global drag and drop handlers with better debugging
   useEffect(() => {
@@ -169,7 +183,6 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
       dragCounterRef.current = 0
       setIsDragging(false)
 
-      const user = getCurrentUser()
       if (!user) {
         toast({
           title: "Authentication Required", 
@@ -264,7 +277,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
         element.removeEventListener('drop', handleDrop as any)
       })
     }
-  }, [toast])
+  }, [user, toast])
 
   // Service worker cleanup
   useEffect(() => {
@@ -342,9 +355,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm flex items-center justify-center">
             <div className="bg-white dark:bg-gray-900 p-8 rounded-xl shadow-2xl text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <h3 className="text-lg font-semibold">Processing News Article...</h3>
+              <h3 className="text-lg font-semibold">Processing Content...</h3>
               <p className="text-gray-600 dark:text-gray-300 mt-2">
-                Extracting stock tickers and creating catalyst entries
+                Analyzing screenshot or article and creating catalyst entries
               </p>
             </div>
           </div>
