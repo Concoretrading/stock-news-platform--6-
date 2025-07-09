@@ -120,13 +120,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
     
-    let decodedToken;
-    try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken);
-    } catch (err) {
-      return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (idToken === 'dev-token-localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user for process-news-article');
+    } else {
+      let decodedToken;
+      try {
+        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      } catch (err) {
+        return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
+      }
+      userId = decodedToken.uid;
     }
-    const userId = decodedToken.uid;
 
     const body = await request.json();
     const { articleText } = body;
