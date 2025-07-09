@@ -567,79 +567,67 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         });
 
         try {
-          // Try to fetch real earnings events with simple query (no complex indexes)
-          const simpleEarningsQuery = query(
+          // Try to fetch real events with simple query (no complex indexes)
+          const simpleQuery = query(
             eventsRef,
             limit(50) // Simple query without complex where clauses
           );
           
-          const earningsSnapshot = await getDocs(simpleEarningsQuery);
+          const snapshot = await getDocs(simpleQuery);
           
-          earningsSnapshot.forEach((doc) => {
+          snapshot.forEach((doc) => {
             const data = doc.data();
             let dateString: string;
             
-            // Handle earnings events
-            if (data.earningsDate) {
-              const earningsDate = data.earningsDate;
-              if (earningsDate instanceof Date) {
-                dateString = format(earningsDate, 'yyyy-MM-dd');
-              } else if (typeof earningsDate === 'string') {
-                dateString = earningsDate.split('T')[0];
-              } else if (earningsDate?.toDate) {
-                dateString = format(earningsDate.toDate(), 'yyyy-MM-dd');
-              } else {
-                return;
-              }
-              
-              // Only include events in current view range
-              if (dateString >= startDate && dateString <= endDate) {
-                const event: CalendarEvent = {
-                  id: doc.id,
-                  date: dateString,
-                  ticker: data.stockTicker || 'EARN',
-                  company_name: data.companyName || 'Company Earnings',
-                  event_type: data.earningsType || 'Earnings',
-                  confirmed: data.isConfirmed !== false,
-                  auto_generated: false,
-                  created_at: data.created_at || data.createdAt
-                };
+            if (type === 'earnings') {
+              // Handle earnings events from earnings_calendar collection
+              if (data.earningsDate) {
+                const earningsDate = data.earningsDate;
+                if (earningsDate instanceof Date) {
+                  dateString = format(earningsDate, 'yyyy-MM-dd');
+                } else if (typeof earningsDate === 'string') {
+                  dateString = earningsDate.split('T')[0];
+                } else if (earningsDate?.toDate) {
+                  dateString = format(earningsDate.toDate(), 'yyyy-MM-dd');
+                } else {
+                  return;
+                }
                 
-                // Apply type filtering to Firebase earnings events
-                const shouldInclude = type === 'all' || 
-                  (type === 'earnings' && event.event_type.toLowerCase().includes('earnings')) ||
-                  (type === 'events' && !event.event_type.toLowerCase().includes('earnings'));
-                
-                if (shouldInclude) {
+                // Only include events in current view range
+                if (dateString >= startDate && dateString <= endDate) {
+                  const event: CalendarEvent = {
+                    id: doc.id,
+                    date: dateString,
+                    ticker: data.stockTicker || 'EARN',
+                    company_name: data.companyName || 'Company Earnings',
+                    event_type: data.earningsType || 'Earnings',
+                    confirmed: data.isConfirmed !== false,
+                    auto_generated: false,
+                    created_at: data.created_at || data.createdAt
+                  };
+                  
                   if (!newEvents[dateString]) {
                     newEvents[dateString] = [];
                   }
                   newEvents[dateString].push(event);
                 }
               }
-            }
-            
-            // Handle economic events with simple date field
-            if (data.date && typeof data.date === 'string') {
-              const dateString = data.date;
-              if (dateString >= startDate && dateString <= endDate) {
-                const event: CalendarEvent = {
-                  id: doc.id,
-                  date: dateString,
-                  ticker: data.ticker || 'ECO',
-                  company_name: data.company_name || 'Economic Data',
-                  event_type: data.event_type || 'Economic Event',
-                  confirmed: data.confirmed !== false,
-                  auto_generated: data.auto_generated || false,
-                  created_at: data.created_at
-                };
-                
-                // Apply type filtering to Firebase economic events
-                const shouldInclude = type === 'all' || 
-                  (type === 'earnings' && event.event_type.toLowerCase().includes('earnings')) ||
-                  (type === 'events' && !event.event_type.toLowerCase().includes('earnings'));
-                
-                if (shouldInclude) {
+            } else {
+              // Handle economic events from economic_events collection
+              if (data.date && typeof data.date === 'string') {
+                const dateString = data.date;
+                if (dateString >= startDate && dateString <= endDate) {
+                  const event: CalendarEvent = {
+                    id: doc.id,
+                    date: dateString,
+                    ticker: data.ticker || 'ECO',
+                    company_name: data.company_name || 'Economic Data',
+                    event_type: data.event_type || 'Economic Event',
+                    confirmed: data.confirmed !== false,
+                    auto_generated: data.auto_generated || false,
+                    created_at: data.created_at
+                  };
+                  
                   if (!newEvents[dateString]) {
                     newEvents[dateString] = [];
                   }
