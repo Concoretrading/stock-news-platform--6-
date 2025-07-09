@@ -156,78 +156,120 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col bg-card">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Edit Your Watchlist ({selectedStocks.length}/{maxStocks})</DialogTitle>
         </DialogHeader>
         
-        <div className="flex gap-6 h-full">
+        <div className="flex gap-6 flex-1 min-h-0">
           {/* Selected Stocks Panel */}
-          <div className="w-1/3 flex flex-col">
-            <h3 className="text-lg font-semibold mb-2">Selected Stocks</h3>
-            <div className="flex-1 border rounded-lg p-4 overflow-y-auto">
+          <div className="w-1/3 flex flex-col min-h-0">
+            <h3 className="text-lg font-semibold mb-2 flex-shrink-0">Selected Stocks</h3>
+            <div className="flex-1 border border-border rounded-lg p-4 overflow-y-auto bg-muted/20">
               <div className="space-y-2">
-                {selectedStocks.map((stock) => (
-                  <div key={stock.symbol} className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                    <div>
-                      <span className="font-medium">{stock.symbol}</span>
-                      <p className="text-sm text-muted-foreground">{stock.name}</p>
+                {selectedStocks.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No stocks selected yet.<br />
+                    Browse and add stocks from the right panel.
+                  </p>
+                ) : (
+                  selectedStocks.map((stock) => (
+                    <div key={stock.symbol} className="flex items-center justify-between p-3 bg-muted/50 dark:bg-muted rounded-lg border border-border">
+                      <div className="flex-1">
+                        <span className="font-medium text-sm text-foreground">{stock.symbol}</span>
+                        <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeStock(stock)}
+                        className="ml-2 h-8 w-8 p-0 hover:bg-destructive/20 text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeStock(stock)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
           
           {/* Available Stocks Panel */}
-          <div className="w-2/3 flex flex-col">
-            <div className="mb-4">
+          <div className="w-2/3 flex flex-col min-h-0">
+            <div className="mb-4 flex-shrink-0">
               <Input
-                placeholder="Search stocks..."
+                placeholder="Search stocks... (e.g. AAPL, Apple, Tesla)"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                className="text-sm"
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Showing {availableStocks.slice(0, 100).length} of {availableStocks.length} stocks
+              </p>
             </div>
             
-            <div className="flex-1 border rounded-lg p-4 overflow-y-auto">
+            <div className="flex-1 border border-border rounded-lg p-4 overflow-y-auto bg-muted/10">
               <div className="grid grid-cols-1 gap-2">
-                {availableStocks.slice(0, 50).map((stock) => (
-                  <Card key={stock.ticker} className="p-3 cursor-pointer hover:bg-gray-50">
+                {availableStocks.slice(0, 100).map((stock) => (
+                  <Card key={stock.ticker} className="p-3 cursor-pointer hover:bg-muted/70 dark:hover:bg-muted/40 transition-colors border-border/50">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <span className="font-medium">{stock.ticker}</span>
-                        <p className="text-sm text-muted-foreground">{stock.name}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">{stock.ticker}</span>
+                          {isSelected(stock) && (
+                            <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
+                              ✓ Selected
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
                       </div>
                       <Button
-                        variant={isSelected(stock) ? "secondary" : "outline"}
+                        variant={isSelected(stock) ? "destructive" : "default"}
                         size="sm"
                         onClick={() => toggleStock(stock)}
                         disabled={!isSelected(stock) && selectedStocks.length >= maxStocks}
+                        className="ml-3 h-8 text-xs"
                       >
-                        {isSelected(stock) ? "Remove" : <Plus className="h-4 w-4" />}
+                        {isSelected(stock) ? "Remove" : "Add"}
                       </Button>
                     </div>
                   </Card>
                 ))}
+                {availableStocks.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground">No stocks found matching "{searchTerm}"</p>
+                    <p className="text-sm text-muted-foreground mt-1">Try searching for ticker symbols like AAPL, MSFT, TSLA</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
         
-        <div className="flex justify-end gap-2 mt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
-          </Button>
+        <div className="flex justify-between items-center gap-4 mt-4 pt-4 border-t border-border flex-shrink-0">
+          <div className="text-sm text-muted-foreground">
+            {selectedStocks.length} of {maxStocks} stocks selected
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={onClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSave} 
+              disabled={loading}
+              className="min-w-[120px]"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
