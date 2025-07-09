@@ -59,17 +59,15 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   }, [ticker, toast])
 
   useEffect(() => {
+    // Only include user-entered entries
+    const userEntries = allEntries.filter(entry => entry.isManual)
     if (!searchQuery.trim()) {
-      setFilteredEntries(allEntries)
+      setFilteredEntries(userEntries)
     } else {
       const q = searchQuery.toLowerCase().trim()
-      const filtered = allEntries.filter(entry => {
-        const titleMatch = entry.title && entry.title.toLowerCase().includes(q)
+      const filtered = userEntries.filter(entry => {
         const descriptionMatch = entry.description && entry.description.toLowerCase().includes(q)
-        const tickerMatch = entry.stockTickers && entry.stockTickers.some(t => t.toLowerCase().includes(q))
-        const sourceMatch = entry.source && entry.source.toLowerCase().includes(q)
-        
-        return titleMatch || descriptionMatch || tickerMatch || sourceMatch
+        return descriptionMatch
       })
       setFilteredEntries(filtered)
     }
