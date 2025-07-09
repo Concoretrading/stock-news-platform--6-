@@ -726,97 +726,97 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
     return (
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] sm:max-h-[80vh] p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <CalendarIcon className="h-6 w-6 text-primary" />
+            <DialogTitle className="flex items-center gap-2 sm:gap-3">
+              <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
               <div>
-                <h2 className="text-2xl font-bold">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h2>
-                <p className="text-muted-foreground text-sm">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h2>
+                <p className="text-muted-foreground text-xs sm:text-sm">
                   {selectedDayEvents.length} {selectedDayEvents.length === 1 ? 'event' : 'events'} scheduled
                 </p>
               </div>
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="max-h-[500px] mt-4">
+          <ScrollArea className="max-h-[60vh] sm:max-h-[500px] mt-3 sm:mt-4">
             {selectedDayEvents.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <CalendarIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h3 className="font-medium mb-2">No events scheduled</h3>
-                <p className="text-sm">This day is clear of major market events.</p>
+              <div className="text-center py-8 sm:py-12 text-muted-foreground">
+                <CalendarIcon className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                <h3 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">No events scheduled</h3>
+                <p className="text-xs sm:text-sm">This day is clear of major market events.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {selectedDayEvents.map((event, index) => (
-                  <Card key={`${event.date}-${index}`} className="p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start gap-4">
+                  <Card key={`${event.date}-${index}`} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start gap-3 sm:gap-4">
                       <div className={cn(
-                        "p-2 rounded-lg flex items-center justify-center shrink-0",
+                        "p-1.5 sm:p-2 rounded-lg flex items-center justify-center shrink-0",
                         getEventColor(event.ticker, event.event_type)
                       )}>
                         {getEventIcon(event.ticker, event.event_type)}
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="outline" className="font-mono font-bold">
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 flex-wrap">
+                          <Badge variant="outline" className="font-mono font-bold text-xs sm:text-sm">
                             {event.ticker}
                           </Badge>
                           {event.auto_generated && (
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="secondary" className="text-[10px] sm:text-xs">
                               Auto
                             </Badge>
                           )}
                           {!event.confirmed && (
-                            <Badge variant="destructive" className="text-xs">
+                            <Badge variant="destructive" className="text-[10px] sm:text-xs">
                               Unconfirmed
                             </Badge>
                           )}
                         </div>
                         
-                        <h4 className="font-semibold text-lg mb-1">{event.company_name}</h4>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
+                        <h4 className="font-semibold text-sm sm:text-base md:text-lg mb-1">{event.company_name}</h4>
+                        <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">
                           {event.event_type}
                         </p>
                         
                         {event.ticker === 'MARKET' && (
-                          <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <div className="flex items-center gap-2 text-red-800">
-                              <AlertTriangle className="h-4 w-4" />
-                              <span className="font-medium text-sm">Market Closed</span>
+                          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-red-800">
+                              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="font-medium text-xs sm:text-sm">Market Closed</span>
                             </div>
-                            <p className="text-red-700 text-xs mt-1">No trading activity today</p>
+                            <p className="text-red-700 text-[10px] sm:text-xs mt-1">No trading activity today</p>
                           </div>
                         )}
                         
                         {event.ticker === 'WITCHING' && (
-                          <div className="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                            <div className="flex items-center gap-2 text-purple-800">
-                              <Zap className="h-4 w-4" />
-                              <span className="font-medium text-sm">High Volatility Expected</span>
+                          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-purple-800">
+                              <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="font-medium text-xs sm:text-sm">High Volatility Expected</span>
                             </div>
-                            <p className="text-purple-700 text-xs mt-1">Options expiration may cause increased market activity</p>
+                            <p className="text-purple-700 text-[10px] sm:text-xs mt-1">Options expiration may cause increased market activity</p>
                           </div>
                         )}
                         
                         {(event.ticker === 'FOMC' || event.ticker === 'BEIGE' || event.ticker === 'MINUTES') && (
-                          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <div className="flex items-center gap-2 text-blue-800">
-                              <Building2 className="h-4 w-4" />
-                              <span className="font-medium text-sm">Federal Reserve Event</span>
+                          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-blue-800">
+                              <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="font-medium text-xs sm:text-sm">Federal Reserve Event</span>
                             </div>
-                            <p className="text-blue-700 text-xs mt-1">Potential market-moving monetary policy announcement</p>
+                            <p className="text-blue-700 text-[10px] sm:text-xs mt-1">Potential market-moving monetary policy announcement</p>
                           </div>
                         )}
                         
                         {['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(event.ticker) && (
-                          <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="flex items-center gap-2 text-green-800">
-                              <DollarSign className="h-4 w-4" />
-                              <span className="font-medium text-sm">Economic Data Release</span>
+                          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-green-50 border border-green-200 rounded-lg">
+                            <div className="flex items-center gap-1.5 sm:gap-2 text-green-800">
+                              <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                              <span className="font-medium text-xs sm:text-sm">Economic Data Release</span>
                             </div>
-                            <p className="text-green-700 text-xs mt-1">Monitor for market reaction to economic indicators</p>
+                            <p className="text-green-700 text-[10px] sm:text-xs mt-1">Monitor for market reaction to economic indicators</p>
                           </div>
                         )}
                       </div>
@@ -845,27 +845,27 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   return (
     <div className="space-y-6">
       {/* Calendar Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold">{format(currentDate, 'MMMM yyyy')}</h2>
-          <p className="text-muted-foreground text-sm">Click any day to view events</p>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">{format(currentDate, 'MMMM yyyy')}</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm">Click any day to view events</p>
         </div>
         
-        <div className="flex items-center gap-2 justify-center sm:justify-end">
+        <div className="flex items-center gap-1 sm:gap-2 justify-center sm:justify-end">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-            className="touch-manipulation"
+            className="touch-manipulation h-8 sm:h-9 px-2 sm:px-3"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
           
           <Button
             variant="outline"
             size="sm"
             onClick={() => setCurrentDate(new Date())}
-            className="touch-manipulation"
+            className="touch-manipulation h-8 sm:h-9 px-2 sm:px-3 text-xs sm:text-sm"
           >
             Today
           </Button>
@@ -874,27 +874,27 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             variant="outline"
             size="sm"
             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-            className="touch-manipulation"
+            className="touch-manipulation h-8 sm:h-9 px-2 sm:px-3"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </div>
 
       {/* Calendar Grid */}
       <Card>
-        <CardContent className="p-3 sm:p-6">
+        <CardContent className="p-2 sm:p-6">
           {/* Day Headers */}
-          <div className="grid grid-cols-7 gap-1 mb-4">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 sm:mb-4">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-2 sm:p-3 text-center font-medium text-muted-foreground text-xs sm:text-sm">
+              <div key={day} className="p-1 sm:p-3 text-center font-medium text-muted-foreground text-[10px] sm:text-sm">
                 {day}
               </div>
             ))}
           </div>
           
           {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
             {calendarDays.map((day) => {
               const dateKey = format(day, 'yyyy-MM-dd');
               const dayEvents = events[dateKey] || [];
@@ -906,10 +906,10 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                 <div
                   key={dateKey}
                   className={cn(
-                    "relative min-h-[80px] sm:min-h-[120px] p-1 sm:p-2 border rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
+                    "relative min-h-[60px] sm:min-h-[80px] md:min-h-[120px] p-0.5 sm:p-1 md:p-2 border rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
                     "hover:bg-accent hover:shadow-sm",
                     !isCurrentMonth && "opacity-40 bg-muted/20",
-                    isDayToday && "ring-2 ring-primary bg-primary/5",
+                    isDayToday && "ring-1 sm:ring-2 ring-primary bg-primary/5",
                     isDayPast && "bg-muted/10"
                   )}
                   onClick={() => handleDateClick(day)}
@@ -917,24 +917,24 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   {/* Cross overlay for past dates */}
                   {isDayPast && dayEvents.length > 0 && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                      <X className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/50 stroke-[1.5]" />
+                      <X className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-muted-foreground/50 stroke-[1.5]" />
                     </div>
                   )}
                   
                   <div className={cn(
-                    "text-xs sm:text-sm font-medium mb-1 sm:mb-2",
+                    "text-[10px] sm:text-xs md:text-sm font-medium mb-0.5 sm:mb-1 md:mb-2",
                     isDayToday && "text-primary font-bold",
                     isDayPast && "text-muted-foreground"
                   )}>
                     {format(day, 'd')}
                   </div>
                   
-                  <div className="space-y-1">
-                    {dayEvents.slice(0, 2).map((event, index) => (
+                  <div className="space-y-0.5 sm:space-y-1">
+                    {dayEvents.slice(0, 1).map((event, index) => (
                       <div
                         key={`${event.date}-${index}`}
                         className={cn(
-                          "text-xs px-1 sm:px-2 py-1 rounded-md border truncate",
+                          "text-[8px] sm:text-xs px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 rounded border truncate",
                           getEventColor(event.ticker, event.event_type),
                           isDayPast && "opacity-60"
                         )}
@@ -944,12 +944,12 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                       </div>
                     ))}
                     
-                    {dayEvents.length > 2 && (
+                    {dayEvents.length > 1 && (
                       <div className={cn(
-                        "text-xs text-muted-foreground px-1 sm:px-2 py-1",
+                        "text-[8px] sm:text-xs text-muted-foreground px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1",
                         isDayPast && "opacity-60"
                       )}>
-                        +{dayEvents.length - 2} more
+                        +{dayEvents.length - 1} more
                       </div>
                     )}
                   </div>
@@ -960,48 +960,48 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         </CardContent>
       </Card>
 
-      {/* Event Legend */}
+      {/* Event Legend - Mobile Optimized */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base sm:text-lg">Event Types</CardTitle>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm sm:text-base md:text-lg">Event Types</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-slate-100 text-slate-800">
-                <TrendingUp className="h-3 w-3" />
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="p-0.5 sm:p-1 rounded bg-slate-100 text-slate-800">
+                <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
-              <span className="text-xs sm:text-sm">Earnings</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">Earnings</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-green-100 text-green-800">
-                <DollarSign className="h-3 w-3" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="p-0.5 sm:p-1 rounded bg-green-100 text-green-800">
+                <DollarSign className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
-              <span className="text-xs sm:text-sm">Economic Data</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">Economic Data</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-blue-100 text-blue-800">
-                <Building2 className="h-3 w-3" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="p-0.5 sm:p-1 rounded bg-blue-100 text-blue-800">
+                <Building2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
-              <span className="text-xs sm:text-sm">Fed Events</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">Fed Events</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-purple-100 text-purple-800">
-                <Zap className="h-3 w-3" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="p-0.5 sm:p-1 rounded bg-purple-100 text-purple-800">
+                <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
-              <span className="text-xs sm:text-sm">Options Expiration</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">Options Expiration</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-orange-100 text-orange-800">
-                <TrendingUp className="h-3 w-3" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="p-0.5 sm:p-1 rounded bg-orange-100 text-orange-800">
+                <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
-              <span className="text-xs sm:text-sm">VIX Events</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">VIX Events</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-red-100 text-red-800">
-                <AlertTriangle className="h-3 w-3" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="p-0.5 sm:p-1 rounded bg-red-100 text-red-800">
+                <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
-              <span className="text-xs sm:text-sm">Market Closed</span>
+              <span className="text-[10px] sm:text-xs md:text-sm">Market Closed</span>
             </div>
           </div>
         </CardContent>
