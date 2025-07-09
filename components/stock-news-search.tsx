@@ -75,13 +75,14 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
     }
   }, [searchQuery, allEntries])
 
-  const highlightMatch = (text: string, query: string) => {
-    if (!query.trim()) return text
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  const highlightMatch = (text: string | undefined | null, query: string) => {
+    if (!text) return "";
+    if (!query.trim()) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     return text.split(regex).map((part, i) =>
       regex.test(part) ? <mark key={i} className="bg-yellow-200 px-1 rounded font-medium">{part}</mark> : part
-    )
-  }
+    );
+  };
 
   if (loading) {
     return (
@@ -129,9 +130,9 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">
-                  {searchQuery ? highlightMatch(entry.title, searchQuery) : entry.title}
+                  {searchQuery ? highlightMatch(entry.title ?? "", searchQuery) : (entry.title ?? "")}
                 </CardTitle>
-                <Badge variant="secondary">{entry.date}</Badge>
+                <Badge variant="secondary">{entry.date ?? "No date"}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -140,7 +141,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                   <div className="flex flex-wrap gap-1">
                     {entry.stockTickers.map((ticker, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
-                        {searchQuery ? highlightMatch(ticker, searchQuery) : ticker}
+                        {searchQuery ? highlightMatch(ticker ?? "", searchQuery) : (ticker ?? "")}
                       </Badge>
                     ))}
                   </div>
@@ -149,13 +150,13 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
               
               {entry.description && (
                 <div className="mb-3 text-sm text-muted-foreground">
-                  {searchQuery ? highlightMatch(entry.description, searchQuery) : entry.description}
+                  {searchQuery ? highlightMatch(entry.description ?? "", searchQuery) : (entry.description ?? "")}
                 </div>
               )}
               
               {entry.source && (
                 <div className="text-xs text-muted-foreground mb-3">
-                  Source: {searchQuery ? highlightMatch(entry.source, searchQuery) : entry.source}
+                  Source: {searchQuery ? highlightMatch(entry.source ?? "", searchQuery) : (entry.source ?? "")}
                 </div>
               )}
               
