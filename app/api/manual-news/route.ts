@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       stockTickers: [stockSymbol.toUpperCase()],
       title: headline,
       description: newsBody || null,
-      date: new Date(date).toISOString().split('T')[0],
+      date: date, // Keep the date exactly as provided (YYYY-MM-DD format) to prevent timezone shifts
       imageUrl: imagePath || null,
       isManual: true,
       createdAt: new Date().toISOString(),

@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, TrendingDown, ArrowLeft, Calendar, Search, Plus, Bell } from "lucide-react"
+import { ArrowLeft, Calendar, Search, Plus, Bell } from "lucide-react"
 import Link from "next/link"
 import { StockNewsHistory } from "@/components/stock-news-history"
 import { StockManualNewsForm } from "@/components/stock-manual-news-form"
@@ -14,63 +12,17 @@ import { StockAlertTab } from "@/components/stock-alert-tab"
 import ScreenshotButton from '@/components/ScreenshotButton'
 import { StockNewsSearch } from "@/components/stock-news-search"
 
-interface StockData {
-  symbol: string
-  name: string
-  price: number
-  change: number
-  changePercent: number
-  volume: string
-  marketCap: string
-  peRatio: number
-}
-
 export default function StockPage() {
   const params = useParams()
   const ticker = params.ticker as string
-  const [stockData, setStockData] = useState<StockData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
   const [refreshKey, setRefreshKey] = useState(0)
   const [activeTab, setActiveTab] = useState("history")
 
-  // Removed URL fragment handling to prevent render loops and flashing
-
   useEffect(() => {
-    // Mock stock data - in real app, fetch from API
-    const mockData: StockData = {
-      symbol: ticker.toUpperCase(),
-      name: getStockName(ticker.toUpperCase()),
-      price: Math.random() * 500 + 50,
-      change: (Math.random() - 0.5) * 20,
-      changePercent: (Math.random() - 0.5) * 5,
-      volume: "2.5M",
-      marketCap: "2.8T",
-      peRatio: 28.5,
-    }
-
-    setStockData(mockData)
+    // Simple loading simulation
     setLoading(false)
   }, [ticker])
-
-  const handleTabError = (error: Error, errorInfo: any) => {
-    console.error('Tab component error:', error, errorInfo)
-    // Don't crash the entire page, just show error in tab
-  }
-
-  const renderTabContent = (tabName: string, content: React.ReactNode) => {
-    try {
-      return content
-    } catch (error) {
-      console.error(`Error in ${tabName} tab:`, error)
-      return (
-        <div className="p-4 text-center text-red-600">
-          <p>Error loading {tabName}. Please try refreshing the page.</p>
-          <pre className="text-sm mt-2">{String(error)}</pre>
-        </div>
-      )
-    }
-  }
 
   const getStockName = (symbol: string): string => {
     const names: { [key: string]: string } = {
@@ -90,13 +42,27 @@ export default function StockPage() {
     return names[symbol] || `${symbol} Corporation`
   }
 
+  const renderTabContent = (tabName: string, content: React.ReactNode) => {
+    try {
+      return content
+    } catch (error) {
+      console.error(`Error in ${tabName} tab:`, error)
+      return (
+        <div className="p-4 text-center text-red-600">
+          <p>Error loading {tabName}. Please try refreshing the page.</p>
+          <pre className="text-sm mt-2">{String(error)}</pre>
+        </div>
+      )
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/4"></div>
-            <div className="h-32 bg-muted rounded"></div>
+            <div className="h-16 bg-muted rounded w-1/2"></div>
             <div className="h-96 bg-muted rounded"></div>
           </div>
         </div>
@@ -104,24 +70,8 @@ export default function StockPage() {
     )
   }
 
-  // console.log('stockData.price value:', stockData.price, typeof stockData.price);
-  // console.log('stockData.change value:', stockData.change, typeof stockData.change);
-  // console.log('stockData.changePercent value:', stockData.changePercent, typeof stockData.changePercent);
-
-  // Add error boundary to prevent white screen crashes
-  if (!stockData) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-red-600">
-            <p>Error loading stock data for {ticker}. Please try refreshing the page.</p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const isPositive = stockData.change >= 0
+  const stockSymbol = ticker.toUpperCase()
+  const stockName = getStockName(stockSymbol)
 
   try {
     return (
@@ -129,63 +79,17 @@ export default function StockPage() {
         <div className="container mx-auto px-4 py-8">
           {/* Back Button */}
           <Link href="/">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="mb-6">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
             </Button>
           </Link>
 
-          {/* Stock Header */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div>
-                    <h1 className="text-3xl font-bold">{stockData.symbol}</h1>
-                    <p className="text-muted-foreground">{stockData.name}</p>
-                  </div>
-                  {isPositive ? (
-                    <TrendingUp className="h-8 w-8 text-green-600" />
-                  ) : (
-                    <TrendingDown className="h-8 w-8 text-red-600" />
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Price</p>
-                  <p className="text-2xl font-bold">{typeof stockData.price === 'number' && !isNaN(stockData.price) ? stockData.price.toFixed(2) : 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Change</p>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={isPositive ? "default" : "destructive"}>
-                      {isPositive ? "+" : ""}
-                      {typeof stockData.change === 'number' && !isNaN(stockData.change) ? stockData.change.toFixed(2) : 'N/A'}
-                    </Badge>
-                    <span className={`text-sm ${isPositive ? "text-green-600" : "text-red-600"}`}>
-                      {isPositive ? "+" : ""}
-                      {typeof stockData.changePercent === 'number' && !isNaN(stockData.changePercent) ? stockData.changePercent.toFixed(2) : 'N/A'}%
-                    </span>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Volume</p>
-                  <p className="font-semibold">{stockData.volume}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Market Cap</p>
-                  <p className="font-semibold">{stockData.marketCap}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">P/E Ratio</p>
-                  <p className="font-semibold">{stockData.peRatio}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Clean Stock Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2">{stockSymbol}</h1>
+            <p className="text-xl text-muted-foreground">{stockName}</p>
+          </div>
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -209,15 +113,15 @@ export default function StockPage() {
             </TabsList>
 
             <TabsContent value="history">
-              {renderTabContent("history", <StockNewsHistory ticker={stockData.symbol} refreshKey={refreshKey} />)}
+              {renderTabContent("history", <StockNewsHistory ticker={stockSymbol} refreshKey={refreshKey} />)}
             </TabsContent>
 
             <TabsContent value="search">
-              {renderTabContent("search", <StockNewsSearch ticker={stockData.symbol} />)}
+              {renderTabContent("search", <StockNewsSearch ticker={stockSymbol} />)}
             </TabsContent>
 
             <TabsContent value="add-news">
-              {renderTabContent("add-news", <StockManualNewsForm ticker={stockData.symbol} />)}
+              {renderTabContent("add-news", <StockManualNewsForm ticker={stockSymbol} />)}
             </TabsContent>
 
             <TabsContent value="alerts">

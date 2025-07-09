@@ -391,7 +391,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
           <ArrowTrendingDownIcon className="h-4 w-4" />
         )}
         <span className="font-medium text-xs">
-          {isPositive ? "+" : ""}{change.toFixed(2)} ({percentage > 0 ? "+" : ""}{percentage.toFixed(1)}%)
+          {percentage > 0 ? "+" : ""}{percentage.toFixed(1)}%
         </span>
       </div>
     )
