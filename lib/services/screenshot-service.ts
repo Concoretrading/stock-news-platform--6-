@@ -126,7 +126,7 @@ export async function getWatchlistTickers(userId: string): Promise<string[]> {
 }
 
 // Extract stock tickers from text
-function extractTickersFromText(text: string): string[] {
+function extractTickersFromText(text: string, userWatchlistTickers: string[] = []): string[] {
   // Look for patterns like $AAPL, TSLA, etc.
   const patterns = [
     /\$([A-Z]{1,5})\b/g,  // $AAPL format
@@ -140,8 +140,29 @@ function extractTickersFromText(text: string): string[] {
     if (matches) {
       matches.forEach(match => {
         const ticker = match.replace('$', '').toUpperCase();
+        
+        // First check if it's in user's watchlist (highest priority)
+        if (userWatchlistTickers.includes(ticker)) {
+          found.add(ticker);
+          return;
+        }
+        
+        // Then check common tickers as fallback
         if (COMMON_TICKERS.includes(ticker)) {
           found.add(ticker);
+          return;
+        }
+        
+        // Finally, include any valid-looking ticker (2-5 uppercase letters)
+        // but exclude common English words that might be false positives
+        const excludeWords = ['THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'CAN', 'HER', 'WAS', 'ONE', 'OUR', 'HAD', 'HAS', 'HAVE', 'WILL', 'NEW', 'OLD', 'GET', 'SET', 'PUT', 'USE', 'WAY', 'MAY', 'SAY', 'SEE', 'HIM', 'TWO', 'HOW', 'ITS', 'WHO', 'OIL', 'SIT', 'NOW', 'TOP', 'LET', 'RUN', 'OFF', 'END', 'WHY', 'TOO', 'BAD', 'BIG', 'FAR', 'FEW', 'LOT', 'MAN', 'ACT', 'GOT', 'BAD', 'BOY', 'DID', 'GOD', 'ASK', 'YES', 'TRY', 'OWN', 'AGO', 'EAR', 'EYE', 'ARM', 'LAW', 'SUN', 'TAX', 'AIR', 'WIN', 'CUT', 'RED', 'JOB', 'AGE', 'ADD', 'KEY', 'PER', 'ANY', 'CAR', 'BAR', 'BOX', 'BED', 'EAT', 'FUN', 'GUN', 'HAT', 'ICE', 'MAP', 'NET', 'PEN', 'SEX', 'SKY', 'SUN', 'WAR', 'WEB', 'WIN', 'ART', 'BIT', 'COP', 'DOG', 'DUE', 'FAN', 'FIT', 'GAS', 'HIT', 'HOT', 'LAY', 'LEG', 'LIP', 'MIX', 'MOM', 'POP', 'RAW', 'RUN', 'SAD', 'SEA', 'SIX', 'TAB', 'TEA', 'TEN', 'TIP', 'TOP', 'TOY', 'VIA', 'WET', 'ZIP'];
+        
+        if (ticker.length >= 2 && ticker.length <= 5 && !excludeWords.includes(ticker)) {
+          // Additional validation: check if it looks like a stock ticker
+          // Stock tickers usually don't have common patterns like consecutive vowels
+          if (!/[AEIOU]{3,}/.test(ticker) && !/[^A-Z]/.test(ticker)) {
+            found.add(ticker);
+          }
         }
       });
     }
@@ -221,8 +242,8 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     const visionClient = getVisionClient();
     
     // Get user's watchlist
-    const watchlistTickers = await getWatchlistTickers(userId);
-    console.log('User watchlist:', watchlistTickers);
+    const userWatchlistTickers = await getWatchlistTickers(userId);
+    console.log('User watchlist:', userWatchlistTickers);
     
     // Analyze image with Google Vision API
     const [result] = await visionClient.textDetection({
@@ -237,7 +258,7 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     }
     
     // Extract information from text
-    const extractedTickers = extractTickersFromText(detectedText);
+    const extractedTickers = extractTickersFromText(detectedText, userWatchlistTickers);
     const headline = extractHeadline(detectedText);
     const date = extractDate(detectedText);
     const price = extractPrice(detectedText);
@@ -249,7 +270,7 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     
     // Filter tickers to only include those in user's watchlist
     const matchedTickers = extractedTickers.filter(ticker => 
-      watchlistTickers.includes(ticker.toUpperCase())
+      userWatchlistTickers.includes(ticker.toUpperCase())
     );
     
     console.log('Matched tickers in watchlist:', matchedTickers);
