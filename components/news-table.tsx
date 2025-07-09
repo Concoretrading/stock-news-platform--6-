@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
-import AddCatalystForm from "./add-catalyst-form"
+import { AddCatalystForm } from "./add-catalyst-form"
 import { CatalystManager } from "./catalyst-manager"
 import { useToast } from "@/hooks/use-toast"
 import { Edit, Trash2, Undo2, Download } from "lucide-react"
@@ -683,9 +683,12 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
                             <div className="pt-2">
                               {showAddForm === weekKey ? (
                                 <AddCatalystForm
-                                  selectedStockSymbol={ticker}
-                                  onSuccess={handleCatalystAdded}
-                                  onCancel={() => setShowAddForm(null)}
+                                  isOpen={true}
+                                  onClose={() => setShowAddForm(null)}
+                                  onSuccess={() => {
+                                    handleCatalystAdded()
+                                    setShowAddForm(null)
+                                  }}
                                 />
                               ) : (
                                 <Button

@@ -1,223 +1,268 @@
 "use client"
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Plus, Upload, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { uploadImageToStorage, getUserStocks, saveNewsCatalyst } from '@/lib/firebase-services';
-import { getAuth } from 'firebase/auth';
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { uploadImageToStorage, saveNewsCatalyst } from '@/lib/firebase-services';
+import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import { useToast } from "@/hooks/use-toast"
 
-interface Stock {
-  id: string;
-  ticker: string;
+interface CatalystFormData {
+  ticker: string
+  headline: string
+  description: string
+  date: string
+  priceBefore: string
+  priceAfter: string
+  source: string
+  imageFile?: File
 }
 
-interface FormData {
-  headline: string;
-  date: string;
-  priceBefore: string;
-  priceAfter: string;
-  notes: string;
-  image: File | null;
+interface CatalystFormProps {
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: () => void
 }
 
-interface AddCatalystFormProps {
-  selectedStockSymbol: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-  userWatchlist?: string[];
-}
-
-function AddCatalystForm({ 
-  selectedStockSymbol, 
-  onSuccess, 
-  onCancel, 
-  userWatchlist = []
-}: AddCatalystFormProps) {
-  const [formData, setFormData] = useState<FormData>({
+export function AddCatalystForm({ isOpen, onClose, onSuccess }: CatalystFormProps) {
+  const [formData, setFormData] = useState<CatalystFormData>({
+    ticker: '',
     headline: '',
+    description: '',
     date: new Date().toISOString().split('T')[0],
     priceBefore: '',
     priceAfter: '',
-    notes: '',
-    image: null,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
+    source: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [userStocks, setUserStocks] = useState<string[]>([])
+  const { toast } = useToast()
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setFormData((prev) => ({ ...prev, image: file }));
-  };
+  useEffect(() => {
+    if (isOpen) {
+      loadUserStocks()
+    }
+  }, [isOpen])
 
-  const removeImage = () => {
-    setFormData((prev) => ({ ...prev, image: null }));
-  };
+  const loadUserStocks = async () => {
+    try {
+      const response = await fetchWithAuth('/api/watchlist')
+      const result = await response.json()
+      
+      if (result.success) {
+        const stockTickers = result.data.map((stock: any) => stock.ticker.toUpperCase())
+        setUserStocks(stockTickers)
+      } else {
+        // Fallback to empty array if API call fails
+        setUserStocks([])
+      }
+    } catch (error) {
+      console.error('Error loading user stocks:', error)
+      setUserStocks([])
+    }
+  }
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-    const user = getAuth().currentUser;
-    if (!user) {
-      toast({ title: 'Not Authenticated', description: 'You must be logged in to add catalysts.', variant: 'destructive' });
-      setIsSubmitting(false);
-      return;
+  const handleInputChange = (field: keyof CatalystFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setFormData(prev => ({ ...prev, imageFile: file }))
     }
-    const watchlist = userWatchlist && userWatchlist.length > 0
-      ? userWatchlist.map(t => t.toUpperCase())
-      : (await getUserStocks()).map((stock: any) => (stock.ticker || stock.id || '').toUpperCase());
-    const inWatchlist = watchlist.includes(selectedStockSymbol.toUpperCase());
-    if (!inWatchlist) {
-      toast({ title: 'Not in Watchlist', description: `Please add ${selectedStockSymbol.toUpperCase()} to your watchlist first.`, variant: 'destructive' });
-      setIsSubmitting(false);
-      return;
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.ticker || !formData.headline || !formData.date) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      })
+      return
     }
-    let imagePath = '';
-    if (formData.image) {
-      const filePath = `users/${user.uid}/stocks/${selectedStockSymbol}/catalysts/${Date.now()}_${formData.image.name}`;
-      await uploadImageToStorage(formData.image, filePath);
-      imagePath = filePath;
+
+    try {
+      setLoading(true)
+      
+      let imageUrl: string | undefined = undefined
+      if (formData.imageFile) {
+        const filePath = `users/temp/${Date.now()}_${formData.imageFile.name}`
+        imageUrl = await uploadImageToStorage(formData.imageFile, filePath)
+      }
+
+      const catalystData = {
+        headline: formData.headline,
+        body: formData.description,
+        date: formData.date,
+        imageUrl: imageUrl,
+        priceBefore: formData.priceBefore ? Number(formData.priceBefore) : undefined,
+        priceAfter: formData.priceAfter ? Number(formData.priceAfter) : undefined,
+        source: formData.source || 'Manual Entry',
+      }
+
+      const result = await saveNewsCatalyst(formData.ticker.toUpperCase(), catalystData)
+      
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "News catalyst added successfully",
+        })
+        
+        // Reset form
+        setFormData({
+          ticker: '',
+          headline: '',
+          description: '',
+          date: new Date().toISOString().split('T')[0],
+          priceBefore: '',
+          priceAfter: '',
+          source: '',
+        })
+        
+        onSuccess()
+        onClose()
+      } else {
+        throw new Error(result.error || 'Failed to save catalyst')
+      }
+      
+    } catch (error) {
+      console.error('Error saving catalyst:', error)
+      toast({
+        title: "Error",
+        description: "Failed to save news catalyst",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
     }
-    const catalystData = {
-      headline: formData.headline,
-      body: formData.notes,
-      date: formData.date,
-      imageUrl: imagePath,
-      priceBefore: formData.priceBefore === '' ? undefined : Number(formData.priceBefore),
-      priceAfter: formData.priceAfter === '' ? undefined : Number(formData.priceAfter),
-    };
-    const catalystId = await saveNewsCatalyst(selectedStockSymbol, catalystData);
-    if (catalystId) {
-      toast({ title: 'Catalyst saved successfully!' });
-      setFormData({
-        headline: '',
-        date: new Date().toISOString().split('T')[0],
-        priceBefore: '',
-        priceAfter: '',
-        notes: '',
-        image: null,
-      });
-      onSuccess?.();
-    } else {
-      toast({ title: 'Failed to save catalyst. Please try again.', variant: 'destructive' });
-    }
-    setIsSubmitting(false);
-  };
+  }
+
+  if (!isOpen) return null
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center space-x-2">
-          <Plus className="h-5 w-5" />
-          <span>Add News Catalyst for {selectedStockSymbol}</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <CardHeader>
+          <CardTitle>Add News Catalyst</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="ticker">Stock Ticker *</Label>
+                <Select value={formData.ticker} onValueChange={(value) => handleInputChange('ticker', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a stock" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userStocks.map(ticker => (
+                      <SelectItem key={ticker} value={ticker}>
+                        {ticker}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="date">Date *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleInputChange('date', e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="headline">Headline *</Label>
               <Input
                 id="headline"
                 value={formData.headline}
-                onChange={(e) => setFormData((prev) => ({ ...prev, headline: e.target.value }))}
+                onChange={(e) => handleInputChange('headline', e.target.value)}
                 placeholder="Enter news headline"
                 required
               />
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="date">Date *</Label>
-              <Input
-                id="date"
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData((prev) => ({ ...prev, date: e.target.value }))}
-                required
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Enter additional details"
+                rows={4}
               />
             </div>
-          </div>
-          {/* Image Upload Section */}
-          <div className="space-y-2">
-            <Label>Add Image</Label>
-            {!formData.image ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-                <p className="text-sm text-gray-600 mb-2">Upload an image for this news catalyst</p>
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById("image-upload")?.click()}
-                >
-                  Choose Image
-                </Button>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="priceBefore">Price Before</Label>
+                <Input
+                  id="priceBefore"
+                  type="number"
+                  step="0.01"
+                  value={formData.priceBefore}
+                  onChange={(e) => handleInputChange('priceBefore', e.target.value)}
+                  placeholder="0.00"
+                />
               </div>
-            ) : (
-              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                <span className="text-sm">{formData.image.name}</span>
-                <Button type="button" variant="ghost" size="sm" onClick={removeImage}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Price Tracking (Optional)</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="priceBefore" className="text-xs text-muted-foreground">Price Before</Label>
-                  <Input
-                    id="priceBefore"
-                    type="number"
-                    step="0.01"
-                    value={formData.priceBefore}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, priceBefore: e.target.value }))}
-                    placeholder="e.g., 150.25"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="priceAfter" className="text-xs text-muted-foreground">Price After</Label>
-                  <Input
-                    id="priceAfter"
-                    type="number"
-                    step="0.01"
-                    value={formData.priceAfter}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, priceAfter: e.target.value }))}
-                    placeholder="e.g., 155.50"
-                  />
-                </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="priceAfter">Price After</Label>
+                <Input
+                  id="priceAfter"
+                  type="number"
+                  step="0.01"
+                  value={formData.priceAfter}
+                  onChange={(e) => handleInputChange('priceAfter', e.target.value)}
+                  placeholder="0.00"
+                />
               </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              value={formData.notes}
-              onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-              placeholder="Additional notes about this news catalyst..."
-              rows={4}
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting} className="w-full">
-              {isSubmitting ? "Adding Catalyst..." : "Add News Catalyst"}
-            </Button>
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel} className="w-full">
+
+            <div className="space-y-2">
+              <Label htmlFor="source">Source</Label>
+              <Input
+                id="source"
+                value={formData.source}
+                onChange={(e) => handleInputChange('source', e.target.value)}
+                placeholder="Enter news source"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Image (optional)</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-            )}
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  );
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : 'Save Catalyst'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
-
-export default AddCatalystForm;

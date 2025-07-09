@@ -12,7 +12,7 @@ import { fetchWithAuth } from "@/lib/fetchWithAuth"
 import { getDownloadURL, ref as storageRef } from "firebase/storage"
 import { storage } from "@/lib/firebase"
 import { getFirestore, collection, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, deleteDoc, updateDoc } from "firebase/firestore"
-import AddCatalystForm from "./add-catalyst-form"
+import { AddCatalystForm } from "./add-catalyst-form"
 import { deleteCatalyst, getUserStocks } from "@/lib/firebase-services"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import {
@@ -63,8 +63,14 @@ function getWeekOfMonth(date: Date) {
   return Math.ceil(day / 7)
 }
 
-export function NewsImage({ imagePath }: { imagePath: string }) {
+export function NewsImage({ imagePath, source }: { imagePath: string; source?: string }) {
   const [url, setUrl] = useState<string | null>(null)
+  
+  // Don't display if no image path
+  if (!imagePath) {
+    return null
+  }
+  
   useEffect(() => {
     let isMounted = true
     if (imagePath) {
@@ -74,8 +80,9 @@ export function NewsImage({ imagePath }: { imagePath: string }) {
     }
     return () => { isMounted = false }
   }, [imagePath])
+  
   if (!url) return null
-  return <img src={url} alt="Screenshot" className="mt-2 max-h-32 rounded" />
+  return <img src={url} alt="News Image" className="mt-2 max-h-32 rounded" />
 }
 
 export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { ticker?: string, searchQuery?: string, refreshKey?: number }) {
@@ -709,9 +716,12 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                             <div className="pt-2">
                               {showAddForm === weekKey ? (
                                 <AddCatalystForm
-                                  selectedStockSymbol={ticker}
-                                  onSuccess={handleCatalystAdded}
-                                  onCancel={() => setShowAddForm(null)}
+                                  isOpen={true}
+                                  onClose={() => setShowAddForm(false)}
+                                  onSuccess={() => {
+                                    loadCatalysts()
+                                    setShowAddForm(false)
+                                  }}
                                 />
                               ) : (
                                 <Button

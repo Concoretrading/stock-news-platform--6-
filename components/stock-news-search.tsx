@@ -96,7 +96,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                 {entry.stockTickers && entry.stockTickers.join(", ")}
               </div>
               <div>{entry.description}</div>
-              {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} />}
+              {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} source={entry.source} />}
             </CardContent>
           </Card>
         ))}

@@ -15,7 +15,7 @@ import { ScreenshotAnalyzer } from "@/components/screenshot-analyzer"
 import { StockManualNewsForm } from "@/components/stock-manual-news-form"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
-import { getUserStocks, addStockToWatchlist } from "@/lib/firebase-services"
+import { fetchWithAuth } from "@/lib/fetchWithAuth"
 
 
 interface Stock {
@@ -66,8 +66,18 @@ export default function HomePage() {
       console.log('🔍 Loading user watchlist...')
       console.log('🔍 Current user:', user)
       
-      const userStocks = await getUserStocks() as unknown as FirebaseStock[]
-      console.log('🔍 User stocks from Firebase:', userStocks)
+      // Use API endpoint instead of direct Firebase SDK
+      const response = await fetchWithAuth('/api/watchlist')
+      const result = await response.json()
+      
+      console.log('🔍 API response:', result)
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load watchlist')
+      }
+      
+      const userStocks = result.data
+      console.log('🔍 User stocks from API:', userStocks)
       
       if (userStocks.length === 0) {
         console.log('🔍 No stocks found, adding default stocks...')
@@ -88,23 +98,37 @@ export default function HomePage() {
         console.log('🔍 Adding default stocks:', defaultStocks)
         for (const stock of defaultStocks) {
           console.log(`🔍 Adding stock: ${stock.symbol}`)
-          const result = await addStockToWatchlist(stock.symbol, stock.name)
-          console.log(`🔍 Add result for ${stock.symbol}:`, result)
+          const addResponse = await fetchWithAuth('/api/watchlist', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              ticker: stock.symbol,
+              companyName: stock.name,
+            }),
+          })
+          const addResult = await addResponse.json()
+          console.log(`🔍 Add result for ${stock.symbol}:`, addResult)
         }
         
         console.log('🔍 Default stocks added, reloading...')
         // Reload after adding defaults
-        const updatedStocks = await getUserStocks() as unknown as FirebaseStock[]
-        console.log('🔍 Updated stocks after adding defaults:', updatedStocks)
+        const reloadResponse = await fetchWithAuth('/api/watchlist')
+        const reloadResult = await reloadResponse.json()
+        console.log('🔍 Reloaded stocks after adding defaults:', reloadResult)
         
-        setWatchlist(updatedStocks.slice(0, maxStocks).map(stock => ({
-          id: stock.id,
-          symbol: stock.ticker,
-          name: stock.companyName
-        })))
+        if (reloadResult.success) {
+          const updatedStocks = reloadResult.data
+          setWatchlist(updatedStocks.slice(0, maxStocks).map((stock: any) => ({
+            id: stock.id,
+            symbol: stock.ticker,
+            name: stock.companyName
+          })))
+        }
       } else {
         console.log('🔍 Found existing stocks, using them')
-        setWatchlist(userStocks.slice(0, maxStocks).map(stock => ({
+        setWatchlist(userStocks.slice(0, maxStocks).map((stock: any) => ({
           id: stock.id,
           symbol: stock.ticker,
           name: stock.companyName

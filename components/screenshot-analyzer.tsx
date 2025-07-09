@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useRef } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -277,7 +277,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
   }
 
   // Handle external file drop
-  React.useEffect(() => {
+  useEffect(() => {
     if (externalFile) {
       handleFileSelect([externalFile])
       if (onExternalFileHandled) {
@@ -304,6 +304,12 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Screenshot Analyzer</h2>
+          <p className="text-muted-foreground mb-4">
+            Drop or paste trading screenshots to extract news catalysts
+          </p>
+        </div>
         {/* Professional Notice: Drag and drop anywhere */}
         <div className="border-2 border-blue-500 bg-blue-50 p-12 text-center rounded-xl flex flex-col items-center justify-center space-y-6">
           <Camera className="h-16 w-16 mx-auto text-blue-400" />

@@ -18,6 +18,7 @@ interface Catalyst {
   userId: string;
   priceBefore?: number;
   priceAfter?: number;
+  source?: string;
 }
 
 export async function getCatalystsForUser(userId: string, ticker?: string): Promise<Catalyst[]> {

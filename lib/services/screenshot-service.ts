@@ -104,11 +104,17 @@ const COMMON_TICKERS = [
 export async function getWatchlistTickers(userId: string): Promise<string[]> {
   try {
     const db = await getDatabase();
+    
+    console.log('🔍 Fetching watchlist tickers for user:', userId);
+    
     const stocksSnap = await db.collection('stocks')
       .where('userId', '==', userId)
       .get();
 
-    return stocksSnap.docs.map(doc => doc.data().ticker);
+    const tickers = stocksSnap.docs.map(doc => doc.data().ticker);
+    console.log('🔍 Found watchlist tickers:', tickers);
+    
+    return tickers;
   } catch (error) {
     console.error('Error fetching watchlist tickers:', error);
     // Return empty array during build time when Firebase isn't available
@@ -248,7 +254,7 @@ export async function analyzeScreenshot(userId: string, imageBuffer: Buffer, ima
     
     console.log('Matched tickers in watchlist:', matchedTickers);
     
-    // Upload image to storage
+    // Upload image to storage for user reference
     const timestamp = Date.now();
     const imageStoragePath = `screenshots/${userId}/${timestamp}_screenshot.jpg`;
     const bucket = storage.bucket();
