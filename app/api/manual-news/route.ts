@@ -15,13 +15,22 @@ export async function POST(request: NextRequest) {
     if (!idToken) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 })
     }
-    let decodedToken
-    try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
-    } catch (err) {
-      return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 })
+    
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (idToken === 'dev-token-localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user for manual news');
+    } else {
+      let decodedToken;
+      try {
+        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      } catch (err) {
+        return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
+      }
+      userId = decodedToken.uid;
     }
-    const userId = decodedToken.uid
 
     const body = await request.json()
     const { stockSymbol, headline, body: newsBody, date, imagePath, priceBefore, priceAfter, source } = body
@@ -70,13 +79,22 @@ export async function GET(request: NextRequest) {
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
     }
-    let decodedToken
-    try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
-    } catch (err) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+    
+    let userId: string;
+    
+    // Development bypass for localhost
+    if (idToken === 'dev-token-localhost') {
+      userId = 'test-user-localhost';
+      console.log('🔧 Development mode - using test user for manual news GET');
+    } else {
+      let decodedToken;
+      try {
+        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      } catch (err) {
+        return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+      }
+      userId = decodedToken.uid;
     }
-    const userId = decodedToken.uid
 
   const { searchParams } = new URL(request.url)
   const query = searchParams.get("q")

@@ -27,6 +27,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Development bypass for localhost testing
+    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+      console.log('🔧 Development mode - creating test user for localhost');
+      const testUser = {
+        uid: 'test-user-localhost',
+        email: 'test@localhost.dev',
+        displayName: 'Test User (Development)',
+        firebaseUser: null
+      };
+      setUser(testUser);
+      setFirebaseUser(null);
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
         setUser({
@@ -47,6 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      // In development mode, just clear the user
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        setUser(null);
+        setFirebaseUser(null);
+        return;
+      }
       await firebaseSignOut(auth);
     } catch (error) {
       console.error('Error signing out:', error);
