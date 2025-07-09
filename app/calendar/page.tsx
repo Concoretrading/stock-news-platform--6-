@@ -27,6 +27,7 @@ export default function CalendarPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('events');
   const [expandedMonth, setExpandedMonth] = useState<number | null>(null);
+  const [expandedDay, setExpandedDay] = useState<number | null>(null);
   const [expandedWeek, setExpandedWeek] = useState<number | null>(null);
   const isMobile = useIsMobile();
 
@@ -104,21 +105,25 @@ export default function CalendarPage() {
                   </button>
                   {expandedMonth === i && (
                     <div className="pl-4 pt-2 flex flex-col gap-1">
-                      {weeks.map((w) => (
-                        <div key={w}>
-                          <button
-                            className={`w-full text-left px-3 py-2 rounded font-medium text-sm ${expandedWeek === w ? 'bg-primary/20' : 'bg-muted/50'}`}
-                            onClick={() => setExpandedWeek(expandedWeek === w ? null : w)}
-                          >
-                            Week {w}
-                          </button>
-                          {expandedWeek === w && (
-                            <div className="pl-4 pt-1">
-                              <EarningsCalendar type="earnings" />
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                      {/* Show days for the selected month */}
+                      {Array.from({ length: 31 }, (_, dayIndex) => {
+                        const day = dayIndex + 1;
+                        return (
+                          <div key={day}>
+                            <button
+                              className={`w-full text-left px-3 py-2 rounded-md text-sm ${expandedDay === day ? 'bg-primary/5' : 'bg-muted/50'}`}
+                              onClick={() => setExpandedDay(expandedDay === day ? null : day)}
+                            >
+                              Day {day}
+                            </button>
+                            {expandedDay === day && (
+                              <div className="pl-4 pt-1">
+                                <EarningsCalendar type="earnings" />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -135,39 +140,25 @@ export default function CalendarPage() {
                     {m.label}
                   </button>
                   {expandedMonth === i && (
-                    <div className="pl-4 pt-2 flex flex-col gap-1">
-                      {weeks.map((w) => (
-                        <div key={w}>
-                          <button
-                            className={`w-full text-left px-3 py-2 rounded font-medium text-sm ${expandedWeek === w ? 'bg-primary/20' : 'bg-muted/50'}`}
-                            onClick={() => setExpandedWeek(expandedWeek === w ? null : w)}
-                          >
-                            Week {w}
-                          </button>
-                          {expandedWeek === w && (
-                            <div className="pl-4 pt-1">
-                              <div className="text-center py-8">
-                                <div className="w-full py-6 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-xl shadow-sm">
-                                  <div className="max-w-sm mx-auto">
-                                    <div className="mb-4">
-                                      <Star className="h-10 w-10 mx-auto text-amber-500 mb-3" />
-                                    </div>
-                                    <p className="text-amber-800 font-semibold text-base mb-2 leading-relaxed">
-                                      This section here will be an absolute game changer for everyone in the family
-                                    </p>
-                                    <p className="text-amber-700 text-sm mb-3 leading-relaxed">
-                                      allowing you to draw from the past the future and give you the most for the present.
-                                    </p>
-                                    <div className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-full">
-                                      <span className="text-amber-700 font-medium text-sm">Coming soon</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
+                    <div className="pl-4 pt-2">
+                      <div className="text-center py-8">
+                        <div className="w-full py-6 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-xl shadow-sm">
+                          <div className="max-w-sm mx-auto">
+                            <div className="mb-4">
+                              <Star className="h-10 w-10 mx-auto text-amber-500 mb-3" />
                             </div>
-                          )}
+                            <p className="text-amber-800 font-semibold text-base mb-2 leading-relaxed">
+                              This section here will be an absolute game changer for everyone in the family
+                            </p>
+                            <p className="text-amber-700 text-sm mb-3 leading-relaxed">
+                              allowing you to draw from the past the future and give you the most for the present.
+                            </p>
+                            <div className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-full">
+                              <span className="text-amber-700 font-medium text-sm">Coming soon</span>
+                            </div>
+                          </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
                   )}
                 </div>
