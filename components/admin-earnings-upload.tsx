@@ -148,18 +148,42 @@ export function AdminEarningsUpload() {
         >
           <div className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center">
-              <Clipboard className="h-8 w-8 text-white" />
+              <Calendar className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-amber-800 mb-2">Copy & Paste Earnings Screenshot</h3>
-              <p className="text-amber-600 text-sm">
-                Copy a screenshot to your clipboard and press <kbd className="px-2 py-1 bg-amber-100 rounded text-xs">Ctrl+V</kbd> or <kbd className="px-2 py-1 bg-amber-100 rounded text-xs">Cmd+V</kbd>
-              </p>
+              <h3 className="text-xl font-semibold text-amber-800 mb-2">📅 Earnings Calendar Screenshot Upload</h3>
+              <div className="space-y-3 text-left max-w-2xl mx-auto">
+                <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                  <h4 className="font-semibold text-amber-800 mb-2 flex items-center gap-2">
+                    <Database className="h-4 w-4" />
+                    How to Import Real Earnings Data:
+                  </h4>
+                  <ol className="text-sm text-amber-700 space-y-2 list-decimal list-inside">
+                    <li>Visit <a href="https://earningshub.com/earnings-calendar/this-month" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">EarningsHub Calendar</a></li>
+                    <li>Take a screenshot of the earnings calendar (full page recommended)</li>
+                    <li>Copy the screenshot to your clipboard</li>
+                    <li>Paste it here using <kbd className="px-2 py-1 bg-amber-100 rounded text-xs">Ctrl+V</kbd> or <kbd className="px-2 py-1 bg-amber-100 rounded text-xs">Cmd+V</kbd></li>
+                    <li>AI will extract all earnings events and populate your calendar</li>
+                  </ol>
+                </div>
+                <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-700 flex items-center gap-2">
+                    <Star className="h-4 w-4" />
+                    <strong>Pro Tip:</strong> This will import real earnings dates for all major companies automatically!
+                  </p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700 flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    <strong>What gets extracted:</strong> Company names, stock tickers, dates, earnings timing (BMO/AMC)
+                  </p>
+                </div>
+              </div>
             </div>
             {isUploading && (
               <div className="text-sm text-amber-600 flex items-center justify-center gap-2">
                 <div className="animate-spin h-4 w-4 border-2 border-amber-600 border-t-transparent rounded-full"></div>
-                Processing earnings screenshot...
+                🤖 AI analyzing earnings calendar screenshot...
               </div>
             )}
           </div>

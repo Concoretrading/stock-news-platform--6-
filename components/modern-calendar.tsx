@@ -285,19 +285,83 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             confirmed: true,
             auto_generated: true
           },
-          // EARNINGS EVENTS (Major Tech)
+          // EARNINGS EVENTS (Major Tech & Blue Chips - Q4 2024 Results)
+          // JANUARY 2025 - Q4 2024 Earnings Season
           {
-            id: 'sample-24', 
-            date: format(today, 'yyyy-MM-dd'),
-            ticker: 'AAPL',
-            company_name: 'Apple Inc.',
+            id: 'earnings-1', 
+            date: '2025-01-14',
+            ticker: 'JPM',
+            company_name: 'JPMorgan Chase & Co.',
             event_type: 'Earnings Report',
             confirmed: true,
             auto_generated: false
           },
           {
-            id: 'sample-25',
-            date: `${currentMonthKey}-25`,
+            id: 'earnings-2',
+            date: '2025-01-15',
+            ticker: 'C',
+            company_name: 'Citigroup Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-3',
+            date: '2025-01-16',
+            ticker: 'BAC',
+            company_name: 'Bank of America Corp.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-4',
+            date: '2025-01-17',
+            ticker: 'WFC',
+            company_name: 'Wells Fargo & Company',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-5',
+            date: '2025-01-21',
+            ticker: 'NFLX',
+            company_name: 'Netflix Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-6',
+            date: '2025-01-22',
+            ticker: 'JNJ',
+            company_name: 'Johnson & Johnson',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-7',
+            date: '2025-01-28',
+            ticker: 'AAPL',
+            company_name: 'Apple Inc.',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-8',
+            date: '2025-01-29',
+            ticker: 'MSFT',
+            company_name: 'Microsoft Corporation',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-9',
+            date: '2025-01-30',
             ticker: 'TSLA',
             company_name: 'Tesla Inc.',
             event_type: 'Earnings Call',
@@ -305,37 +369,174 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: false
           },
           {
-            id: 'sample-26',
-            date: `${currentMonthKey}-14`,
-            ticker: 'NVDA',
-            company_name: 'NVIDIA Corporation',
+            id: 'earnings-10',
+            date: '2025-01-31',
+            ticker: 'META',
+            company_name: 'Meta Platforms Inc.',
             event_type: 'Earnings Report',
             confirmed: true,
             auto_generated: false
           },
+          // FEBRUARY 2025 - Continued Q4 2024 Earnings
           {
-            id: 'sample-27',
-            date: `${currentMonthKey}-26`,
-            ticker: 'MSFT',
-            company_name: 'Microsoft Corporation',
+            id: 'earnings-11',
+            date: '2025-02-03',
+            ticker: 'GOOGL',
+            company_name: 'Alphabet Inc.',
             event_type: 'Earnings Call',
             confirmed: true,
             auto_generated: false
           },
           {
-            id: 'sample-28',
-            date: `${currentMonthKey}-07`,
-            ticker: 'GOOGL',
-            company_name: 'Alphabet Inc.',
+            id: 'earnings-12',
+            date: '2025-02-04',
+            ticker: 'AMZN',
+            company_name: 'Amazon.com Inc.',
             event_type: 'Earnings Report',
             confirmed: true,
             auto_generated: false
           },
           {
-            id: 'sample-29',
-            date: `${currentMonthKey}-09`,
-            ticker: 'META',
-            company_name: 'Meta Platforms',
+            id: 'earnings-13',
+            date: '2025-02-05',
+            ticker: 'NVDA',
+            company_name: 'NVIDIA Corporation',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-14',
+            date: '2025-02-06',
+            ticker: 'V',
+            company_name: 'Visa Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-15',
+            date: '2025-02-11',
+            ticker: 'PFE',
+            company_name: 'Pfizer Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-16',
+            date: '2025-02-12',
+            ticker: 'KO',
+            company_name: 'The Coca-Cola Company',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-17',
+            date: '2025-02-13',
+            ticker: 'DIS',
+            company_name: 'The Walt Disney Company',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-18',
+            date: '2025-02-18',
+            ticker: 'WMT',
+            company_name: 'Walmart Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-19',
+            date: '2025-02-19',
+            ticker: 'HD',
+            company_name: 'The Home Depot Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-20',
+            date: '2025-02-25',
+            ticker: 'PYPL',
+            company_name: 'PayPal Holdings Inc.',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          // MARCH 2025 - Late Q4 2024 & Early Q1 2025 Guidance
+          {
+            id: 'earnings-21',
+            date: '2025-03-04',
+            ticker: 'CRM',
+            company_name: 'Salesforce Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-22',
+            date: '2025-03-06',
+            ticker: 'ORCL',
+            company_name: 'Oracle Corporation',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-23',
+            date: '2025-03-11',
+            ticker: 'ADBE',
+            company_name: 'Adobe Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-24',
+            date: '2025-03-13',
+            ticker: 'INTC',
+            company_name: 'Intel Corporation',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-25',
+            date: '2025-03-18',
+            ticker: 'BA',
+            company_name: 'The Boeing Company',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-26',
+            date: '2025-03-20',
+            ticker: 'NKE',
+            company_name: 'Nike Inc.',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-27',
+            date: '2025-03-25',
+            ticker: 'AMD',
+            company_name: 'Advanced Micro Devices Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'earnings-28',
+            date: '2025-03-27',
+            ticker: 'SBUX',
+            company_name: 'Starbucks Corporation',
             event_type: 'Earnings Call',
             confirmed: true,
             auto_generated: false

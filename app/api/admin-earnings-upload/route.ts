@@ -191,12 +191,19 @@ function parseDate(dateStr: string): Date {
 }
 
 function findNearestDate(text: string, logoVertices: IVertex[]): string | null {
-  // Common date patterns for earnings calendars
+  // Enhanced date patterns for earnings calendars
   const datePatterns = [
+    // Calendar formats like "Dec 15", "January 20"
     /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\b/gi,
-    /\b\d{1,2}\/\d{1,2}\b/g,
-    /\b\d{1,2}-\d{1,2}\b/g,
-    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}\b/gi
+    /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}\b/gi,
+    // Numeric formats like "12/15", "1/20"
+    /\b\d{1,2}\/\d{1,2}(?:\/\d{2,4})?\b/g,
+    // Dash formats like "12-15", "1-20"
+    /\b\d{1,2}-\d{1,2}(?:-\d{2,4})?\b/g,
+    // Calendar specific formats like "Mon 15", "Tue 20"
+    /\b(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+\d{1,2}\b/gi,
+    // ISO format dates
+    /\b\d{4}-\d{1,2}-\d{1,2}\b/g
   ];
   
   const dates: string[] = [];
@@ -209,9 +216,73 @@ function findNearestDate(text: string, logoVertices: IVertex[]): string | null {
   
   if (dates.length === 0) return null;
   
-  // For simplicity, return the first date found
-  // In a more sophisticated implementation, you'd calculate spatial proximity
+  // For calendar screenshots, return the first valid date found
   return dates[0];
+}
+
+function parseCalendarText(detectedText: string): Array<{company: string, ticker: string, date: string, timing?: string}> {
+  console.log('Parsing calendar text for structured earnings data...');
+  
+  const lines = detectedText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const calendarEvents: Array<{company: string, ticker: string, date: string, timing?: string}> = [];
+  
+  // Look for calendar table patterns
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Skip header lines and dates-only lines
+    if (line.match(/^(Sun|Mon|Tue|Wed|Thu|Fri|Sat)/i) || 
+        line.match(/^\d+$/) || 
+        line.length < 3) {
+      continue;
+    }
+    
+    // Look for company names in the text
+    for (const [company, ticker] of Object.entries(companyToTicker)) {
+      // Check if this line contains a company name or ticker
+      const hasCompany = line.toLowerCase().includes(company.toLowerCase()) || 
+                        line.toLowerCase().includes(ticker.toLowerCase());
+      
+      if (hasCompany) {
+        // Look for dates in nearby lines (within 3 lines)
+        let foundDate = null;
+        let foundTiming = null;
+        
+        for (let j = Math.max(0, i - 3); j <= Math.min(lines.length - 1, i + 3); j++) {
+          const nearbyLine = lines[j];
+          
+          // Check for dates in nearby lines
+          const dateMatch = nearbyLine.match(/\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}\b/i) ||
+                           nearbyLine.match(/\b\d{1,2}\/\d{1,2}\b/) ||
+                           nearbyLine.match(/\b\d{1,2}-\d{1,2}\b/);
+          
+          if (dateMatch) {
+            foundDate = dateMatch[0];
+          }
+          
+          // Check for timing information
+          if (nearbyLine.toLowerCase().includes('bmo') || nearbyLine.toLowerCase().includes('before market')) {
+            foundTiming = 'BMO';
+          } else if (nearbyLine.toLowerCase().includes('amc') || nearbyLine.toLowerCase().includes('after market')) {
+            foundTiming = 'AMC';
+          }
+        }
+        
+        if (foundDate) {
+          calendarEvents.push({
+            company,
+            ticker,
+            date: foundDate,
+            timing: foundTiming || 'BMO' // Default to BMO
+          });
+          
+          console.log(`Found calendar event: ${company} (${ticker}) on ${foundDate} ${foundTiming || 'BMO'}`);
+        }
+      }
+    }
+  }
+  
+  return calendarEvents;
 }
 
 export async function POST(request: NextRequest) {
@@ -317,9 +388,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // If no logos detected, try to extract company names from text
+    // Enhanced calendar parsing: Try structured calendar text extraction
+    console.log('Attempting enhanced calendar parsing...');
+    const calendarEvents = parseCalendarText(detectedText);
+    
+    // Add calendar events to the main events array
+    for (const calEvent of calendarEvents) {
+      // Check if this event already exists (avoid duplicates)
+      const exists = events.some(e => e.stockTicker === calEvent.ticker && e.earningsDate === parseDate(calEvent.date).toISOString().split('T')[0]);
+      
+      if (!exists) {
+        events.push({
+          companyName: calEvent.company,
+          stockTicker: calEvent.ticker,
+          earningsDate: parseDate(calEvent.date).toISOString().split('T')[0],
+          earningsType: calEvent.timing || 'BMO',
+          isConfirmed: true,
+          estimatedEPS: null,
+          estimatedRevenue: null,
+          source: 'admin_upload_calendar',
+          detectedFromCalendar: true,
+          detectedDate: calEvent.date
+        });
+      }
+    }
+
+    // Fallback: If still no events detected, try simple text extraction
     if (events.length === 0) {
-      console.log('No logos detected, trying text extraction...');
+      console.log('No structured events detected, trying simple text extraction...');
       
       // Look for company names mentioned in text
       const textLines = detectedText.split('\n');
@@ -345,7 +441,7 @@ export async function POST(request: NextRequest) {
             isConfirmed: true,
             estimatedEPS: null,
             estimatedRevenue: null,
-            source: 'admin_upload',
+            source: 'admin_upload_fallback',
             detectedFromText: true,
             detectedLine: match.line
           });
@@ -353,13 +449,30 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`Processed ${events.length} earnings events`);
+    // Remove duplicate events (same ticker and date)
+    const uniqueEvents = [];
+    const seen = new Set();
+    
+    for (const event of events) {
+      const key = `${event.stockTicker}-${event.earningsDate}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueEvents.push(event);
+      }
+    }
+
+    console.log(`Processed ${uniqueEvents.length} unique earnings events from ${events.length} total detections`);
+
+    // Sort events by date
+    uniqueEvents.sort((a, b) => new Date(a.earningsDate).getTime() - new Date(b.earningsDate).getTime());
 
     return NextResponse.json({
       success: true,
-      events: events.slice(0, 10), // Limit to 10 events to avoid overwhelming UI
-      extractedText: detectedText.substring(0, 500), // Include text snippet for debugging
-      message: `Processed earnings screenshot - found ${events.length} events using Google Vision API`
+      events: uniqueEvents.slice(0, 20), // Increased limit for calendar screenshots
+      extractedText: detectedText.substring(0, 1000), // More text for debugging
+      logoCount: logos.length,
+      calendarEventCount: calendarEvents?.length || 0,
+      message: `📅 Processed earnings calendar screenshot - found ${uniqueEvents.length} unique events (${logos.length} logo detections + ${calendarEvents?.length || 0} calendar text extractions)`
     });
 
   } catch (error) {
