@@ -64,17 +64,21 @@ export default function ScreenshotButton({ onCatalystAdded, className = "" }: Sc
     <div className={`fixed bottom-6 right-6 ${className}`}>
       <Button
         size="lg"
-        className="h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white"
+        className="h-14 w-14 rounded-full shadow-lg bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center"
         onClick={() => document.getElementById('screenshot-upload')?.click()}
         disabled={isLoading}
         title="Upload Screenshot"
       >
-        <Camera className="h-6 w-6" />
+        {isLoading ? (
+          <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <Camera className="h-6 w-6 text-white" />
+        )}
       </Button>
       <input
         id="screenshot-upload"
         type="file"
-        accept="image/*"
+        accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
         onChange={(e) => {
           const file = e.target.files?.[0]
           if (file) {
