@@ -771,6 +771,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                   <StockManualNewsForm 
                                     ticker={ticker === "all" ? "AAPL" : ticker} 
                                     onSuccess={handleCatalystAdded}
+                                    defaultDate={format(week.start, "yyyy-MM-dd")}
                                   />
                                 </div>
                               ) : (

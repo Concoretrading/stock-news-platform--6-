@@ -17,15 +17,17 @@ import { useAuth } from "@/components/auth-provider"
 export function StockManualNewsForm({ 
   ticker, 
   onSuccess, 
-  onClose 
+  onClose,
+  defaultDate
 }: { 
   ticker: string
   onSuccess?: () => void
   onClose?: () => void
+  defaultDate?: string
 }) {
   const [formData, setFormData] = useState({
     headline: "",
-    date: new Date().toISOString().split("T")[0],
+    date: defaultDate || new Date().toISOString().split("T")[0],
     source: "",
     priceBefore: "",
     priceAfter: "",
@@ -98,7 +100,7 @@ export function StockManualNewsForm({
         // Reset form
         setFormData({
           headline: "",
-          date: new Date().toISOString().split("T")[0],
+          date: defaultDate || new Date().toISOString().split("T")[0],
           source: "",
           priceBefore: "",
           priceAfter: "",
