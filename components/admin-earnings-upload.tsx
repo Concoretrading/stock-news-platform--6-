@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Upload, Star, Save, Eye, Clipboard } from 'lucide-react';
+import { Upload, Star, Save, Eye, Clipboard, Calendar, Database, AlertTriangle } from 'lucide-react';
 
 export function AdminEarningsUpload() {
   const { user, firebaseUser } = useAuth();
@@ -166,11 +166,11 @@ export function AdminEarningsUpload() {
         </div>
 
         {/* Alternative File Upload */}
-        <div className="bg-white rounded-lg p-4 border border-amber-200">
+        <div className="bg-card rounded-lg p-4 border border-amber-200 dark:border-amber-800">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Upload className="h-4 w-4 text-amber-600" />
-              <span className="text-sm font-medium text-amber-800">Or upload a file</span>
+              <span className="text-sm font-medium text-amber-800 dark:text-amber-200">Or upload a file</span>
             </div>
             <Input
               type="file"
@@ -183,45 +183,45 @@ export function AdminEarningsUpload() {
         </div>
 
         {uploadedImage && (
-          <div className="bg-white rounded-lg p-4 border border-amber-200">
-            <h4 className="font-medium text-amber-800 mb-3 flex items-center gap-2">
+          <div className="bg-card rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+            <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-3 flex items-center gap-2">
               <Eye className="h-4 w-4" />
               Uploaded Image Preview
             </h4>
             <img 
               src={uploadedImage} 
               alt="Earnings Screenshot" 
-              className="max-w-full h-auto rounded-lg border border-gray-200"
+              className="max-w-full h-auto rounded-lg border border-gray-200 dark:border-gray-700"
               style={{ maxHeight: '300px' }}
             />
           </div>
         )}
 
         {previewEvents.length > 0 && (
-          <div className="bg-white rounded-lg p-4 border border-amber-200">
-            <h4 className="font-medium text-amber-800 mb-3">Detected Earnings Events:</h4>
+          <div className="bg-card rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+            <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-3">Detected Earnings Events:</h4>
             <div className="max-h-60 overflow-y-auto space-y-2">
               {previewEvents.map((event, i) => (
-                <div key={i} className="text-sm p-2 bg-amber-50 rounded border border-amber-100">
+                <div key={i} className="text-sm p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-100 dark:border-amber-800">
                   <div className="flex justify-between items-start">
                     <div>
                       <span className="font-medium">{event.companyName}</span> 
                       <span className="text-amber-600"> ({event.stockTicker})</span>
-                      <span className="text-gray-600"> - {new Date(event.earningsDate).toLocaleDateString()}</span>
+                      <span className="text-gray-600 dark:text-gray-400"> - {new Date(event.earningsDate).toLocaleDateString()}</span>
                       {event.earningsType && (
-                        <span className="ml-2 px-2 py-1 bg-amber-200 text-amber-800 rounded text-xs">
+                        <span className="ml-2 px-2 py-1 bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 rounded text-xs">
                           {event.earningsType}
                         </span>
                       )}
                     </div>
                   </div>
                   {event.detectedLogoName && (
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       Logo: {event.detectedLogoName}
                     </div>
                   )}
                   {event.detectedFromText && (
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                       From text: "{event.detectedLine}"
                     </div>
                   )}
@@ -229,7 +229,7 @@ export function AdminEarningsUpload() {
               ))}
             </div>
             
-            <div className="mt-4 pt-4 border-t border-amber-200">
+            <div className="mt-4 pt-4 border-t border-amber-200 dark:border-amber-800">
               <Button 
                 onClick={handleSaveEarnings}
                 disabled={isSaving}
@@ -261,6 +261,36 @@ export function AdminEarningsUpload() {
             <li>Events appear on calendar with logos, BMO/AMC timing, and conference call links</li>
             <li>All users can click logos to see earnings details</li>
           </ol>
+        </div>
+
+        <div className="bg-card rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="h-4 w-4 text-amber-600" />
+            <span className="font-medium text-amber-800 dark:text-amber-200">Market Data Setup</span>
+          </div>
+          <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+            Connect market data sources for real-time earnings information.
+          </p>
+        </div>
+
+        <div className="bg-card rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+          <div className="flex items-center gap-2 mb-2">
+            <Database className="h-4 w-4 text-amber-600" />
+            <span className="font-medium text-amber-800 dark:text-amber-200">Database Integration</span>
+          </div>
+          <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+            Sync with financial databases for comprehensive earnings data.
+          </p>
+        </div>
+
+        <div className="bg-card rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <span className="font-medium text-amber-800 dark:text-amber-200">Alert Configuration</span>
+          </div>
+          <p className="text-sm text-amber-700 dark:text-amber-300 mb-3">
+            Set up automated alerts for earnings announcements and calendar updates.
+          </p>
         </div>
       </CardContent>
     </Card>

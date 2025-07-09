@@ -148,7 +148,7 @@ export function StockAlertSettings({ ticker, stockName }: StockAlertSettingsProp
   }
 
   return (
-    <Card className="bg-white border-gray-200">
+    <Card className="bg-card border-border">
       <CardHeader>
         <CardTitle className="text-black flex items-center gap-2">
           <Settings className="h-5 w-5" />
@@ -158,7 +158,7 @@ export function StockAlertSettings({ ticker, stockName }: StockAlertSettingsProp
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Auto-Create Alerts */}
-        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="flex items-center justify-between p-4 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/20">
           <div>
             <Label className="text-blue-900 font-medium">Automatic Alert Creation</Label>
             <p className="text-sm text-blue-700">
@@ -252,7 +252,7 @@ export function StockAlertSettings({ ticker, stockName }: StockAlertSettingsProp
         </div>
 
         {/* Stock-Specific Examples */}
-        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="p-4 bg-muted/50 rounded-lg border border-border">
           <h4 className="font-medium text-black mb-2">Visual for {ticker}:</h4>
           <div className="text-sm text-gray-700 space-y-1">
             <p>
