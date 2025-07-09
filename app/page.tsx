@@ -42,8 +42,8 @@ export default function HomePage() {
   const { toast } = useToast()
   const router = useRouter()
 
-  // Carousel settings - show 4 stocks per page, max 20 total
-  const stocksPerPage = 4
+  // Carousel settings - show 16 stocks per page (2 rows of 8), max 20 total
+  const stocksPerPage = 16
   const maxStocks = 20
 
   // Redirect to login if not authenticated
@@ -206,15 +206,15 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             {isLoadingStocks ? (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-                {Array.from({ length: stocksPerPage }).map((_, i) => (
+              <div className="grid grid-cols-4 lg:grid-cols-8 gap-4 max-w-full mx-auto">
+                {Array.from({ length: 16 }).map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="h-32 bg-muted rounded-lg"></div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              <div className="grid grid-cols-4 lg:grid-cols-8 gap-4 max-w-full mx-auto">
                 {visibleStocks.map((stock) => (
                   <div key={stock.symbol} className="transform transition-transform hover:scale-105">
                     <StockCard 
