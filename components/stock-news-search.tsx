@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { NewsImage } from "./stock-news-history"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
@@ -23,11 +24,13 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   const [allEntries, setAllEntries] = useState<Catalyst[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredEntries, setFilteredEntries] = useState<Catalyst[]>([])
+  const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
   useEffect(() => {
     async function fetchCatalysts() {
       try {
+        setLoading(true)
         let url = '/api/catalysts'
         if (ticker) {
           url += `?ticker=${ticker.toUpperCase()}`
@@ -41,11 +44,14 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
         } else {
           console.error('Failed to fetch catalysts:', result.error)
           setAllEntries([])
+          toast({ title: "Error", description: "Failed to fetch news data", variant: "destructive" })
         }
       } catch (error) {
         console.error('Error fetching catalysts:', error)
-        toast({ title: "Error", description: "Failed to fetch news" })
+        toast({ title: "Error", description: "Failed to fetch news", variant: "destructive" })
         setAllEntries([])
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -53,46 +59,106 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   }, [ticker, toast])
 
   useEffect(() => {
-    if (!searchQuery) {
+    if (!searchQuery.trim()) {
       setFilteredEntries(allEntries)
     } else {
-      const q = searchQuery.toLowerCase()
-      setFilteredEntries(
-        allEntries.filter(entry =>
-          (entry.title && entry.title.toLowerCase().includes(q)) ||
-          (entry.description && entry.description.toLowerCase().includes(q)) ||
-          (entry.stockTickers && entry.stockTickers.some(t => t.toLowerCase().includes(q)))
-        )
-      )
+      const q = searchQuery.toLowerCase().trim()
+      const filtered = allEntries.filter(entry => {
+        const titleMatch = entry.title && entry.title.toLowerCase().includes(q)
+        const descriptionMatch = entry.description && entry.description.toLowerCase().includes(q)
+        const tickerMatch = entry.stockTickers && entry.stockTickers.some(t => t.toLowerCase().includes(q))
+        const sourceMatch = entry.source && entry.source.toLowerCase().includes(q)
+        
+        return titleMatch || descriptionMatch || tickerMatch || sourceMatch
+      })
+      setFilteredEntries(filtered)
     }
   }, [searchQuery, allEntries])
 
-  return (
-    <div>
-      <input
-        type="text"
-        className="w-full border rounded px-3 py-2 mb-4"
-        placeholder="Type keywords to search..."
-        value={searchQuery}
-        onChange={e => setSearchQuery(e.target.value)}
-      />
+  const highlightMatch = (text: string, query: string) => {
+    if (!query.trim()) return text
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+    return text.split(regex).map((part, i) =>
+      regex.test(part) ? <mark key={i} className="bg-yellow-200 px-1 rounded font-medium">{part}</mark> : part
+    )
+  }
+
+  if (loading) {
+    return (
       <div className="space-y-4">
-        {filteredEntries.length === 0 && (
-          <div className="text-muted-foreground text-center">No entries found.</div>
+        <div className="animate-pulse">
+          <div className="h-10 bg-muted rounded mb-4"></div>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-32 bg-muted rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Input
+          type="text"
+          placeholder="Search catalysts by title, description, ticker, or source..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="w-full"
+        />
+        {searchQuery && (
+          <p className="text-sm text-muted-foreground mt-2">
+            Found {filteredEntries.length} result{filteredEntries.length !== 1 ? 's' : ''} for "{searchQuery}"
+          </p>
         )}
+      </div>
+      
+      <div className="space-y-4">
+        {filteredEntries.length === 0 && !loading && (
+          <div className="text-center py-8">
+            <div className="text-muted-foreground">
+              {searchQuery ? `No catalysts found matching "${searchQuery}"` : "No catalysts found."}
+            </div>
+          </div>
+        )}
+        
         {filteredEntries.map(entry => (
-          <Card key={entry.id}>
+          <Card key={entry.id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>{entry.title}</CardTitle>
-                <Badge>{entry.date}</Badge>
+                <CardTitle className="text-lg">
+                  {searchQuery ? highlightMatch(entry.title, searchQuery) : entry.title}
+                </CardTitle>
+                <Badge variant="secondary">{entry.date}</Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="mb-2 text-sm text-muted-foreground">
-                {entry.stockTickers && entry.stockTickers.join(", ")}
-              </div>
-              <div>{entry.description}</div>
+              {entry.stockTickers && entry.stockTickers.length > 0 && (
+                <div className="mb-3">
+                  <div className="flex flex-wrap gap-1">
+                    {entry.stockTickers.map((ticker, index) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {searchQuery ? highlightMatch(ticker, searchQuery) : ticker}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {entry.description && (
+                <div className="mb-3 text-sm text-muted-foreground">
+                  {searchQuery ? highlightMatch(entry.description, searchQuery) : entry.description}
+                </div>
+              )}
+              
+              {entry.source && (
+                <div className="text-xs text-muted-foreground mb-3">
+                  Source: {searchQuery ? highlightMatch(entry.source, searchQuery) : entry.source}
+                </div>
+              )}
+              
               {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} source={entry.source} />}
             </CardContent>
           </Card>
