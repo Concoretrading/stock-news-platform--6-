@@ -77,8 +77,18 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
     try {
       setLoading(true)
       
-      // Get current stocks from API
-      const currentResponse = await fetchWithAuth('/api/watchlist')
+      console.log('Starting save operation...')
+      console.log('Selected stocks:', selectedStocks)
+      console.log('Current stocks:', currentStocks)
+      
+      // Get current stocks from API with timeout
+      const currentResponse = await Promise.race([
+        fetchWithAuth('/api/watchlist'),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 10000)
+        )
+      ]) as Response
+      
       const currentResult = await currentResponse.json()
       
       if (!currentResult.success) {
@@ -86,6 +96,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       }
       
       const currentStocks = currentResult.data
+      console.log('Current stocks from API:', currentStocks)
       
       // Find stocks to add and remove
       const currentSymbols = currentStocks.map((stock: any) => stock.ticker)
@@ -94,37 +105,85 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       const stocksToAdd = selectedStocks.filter(stock => !currentSymbols.includes(stock.symbol))
       const stocksToRemove = currentStocks.filter((stock: any) => !selectedSymbols.includes(stock.ticker))
       
-      // Add new stocks
-      for (const stock of stocksToAdd) {
-        const addResponse = await fetchWithAuth('/api/watchlist', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            ticker: stock.symbol,
-            companyName: stock.name,
-          }),
+      console.log('Stocks to add:', stocksToAdd)
+      console.log('Stocks to remove:', stocksToRemove)
+      
+      // Track failures
+      const failures: string[] = []
+      
+      // Remove stocks first (in parallel with timeout protection)
+      if (stocksToRemove.length > 0) {
+        const removePromises = stocksToRemove.map(async (stock: any) => {
+          try {
+            const removeResponse = await Promise.race([
+              fetchWithAuth(`/api/watchlist?id=${stock.id}`, {
+                method: 'DELETE',
+              }),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Remove timeout')), 8000)
+              )
+            ]) as Response
+            
+            const removeResult = await removeResponse.json()
+            if (!removeResult.success) {
+              console.error(`Failed to remove ${stock.ticker}:`, removeResult.error)
+              failures.push(`Remove ${stock.ticker}: ${removeResult.error}`)
+            } else {
+              console.log(`Successfully removed ${stock.ticker}`)
+            }
+          } catch (error) {
+            console.error(`Error removing ${stock.ticker}:`, error)
+            failures.push(`Remove ${stock.ticker}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          }
         })
-        const addResult = await addResponse.json()
-        if (!addResult.success) {
-          console.error(`Failed to add ${stock.symbol}:`, addResult.error)
-        }
+        
+        await Promise.allSettled(removePromises)
       }
       
-      // Remove stocks
-      for (const stock of stocksToRemove) {
-        const removeResponse = await fetchWithAuth(`/api/watchlist?id=${stock.id}`, {
-          method: 'DELETE',
+      // Add new stocks (in parallel with timeout protection)
+      if (stocksToAdd.length > 0) {
+        const addPromises = stocksToAdd.map(async (stock) => {
+          try {
+            const addResponse = await Promise.race([
+              fetchWithAuth('/api/watchlist', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  ticker: stock.symbol,
+                  companyName: stock.name,
+                }),
+              }),
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Add timeout')), 8000)
+              )
+            ]) as Response
+            
+            const addResult = await addResponse.json()
+            if (!addResult.success) {
+              console.error(`Failed to add ${stock.symbol}:`, addResult.error)
+              failures.push(`Add ${stock.symbol}: ${addResult.error}`)
+            } else {
+              console.log(`Successfully added ${stock.symbol}`)
+            }
+          } catch (error) {
+            console.error(`Error adding ${stock.symbol}:`, error)
+            failures.push(`Add ${stock.symbol}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          }
         })
-        const removeResult = await removeResponse.json()
-        if (!removeResult.success) {
-          console.error(`Failed to remove ${stock.ticker}:`, removeResult.error)
-        }
+        
+        await Promise.allSettled(addPromises)
       }
       
-      // Get updated stocks
-      const updatedResponse = await fetchWithAuth('/api/watchlist')
+      // Get updated stocks with timeout
+      const updatedResponse = await Promise.race([
+        fetchWithAuth('/api/watchlist'),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Update fetch timeout')), 10000)
+        )
+      ]) as Response
+      
       const updatedResult = await updatedResponse.json()
       
       if (updatedResult.success) {
@@ -134,19 +193,35 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           name: stock.companyName
         }))
         onUpdateWatchlist(updatedStocks)
+        console.log('Updated watchlist:', updatedStocks)
       }
       
-      toast({
-        title: "Success",
-        description: "Watchlist updated successfully",
-      })
+      // Show appropriate toast message
+      if (failures.length === 0) {
+        toast({
+          title: "Success",
+          description: "Watchlist updated successfully",
+        })
+      } else if (failures.length < (stocksToAdd.length + stocksToRemove.length)) {
+        toast({
+          title: "Partial Success",
+          description: `Some operations failed: ${failures.join(', ')}`,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: `All operations failed: ${failures.join(', ')}`,
+          variant: "destructive",
+        })
+      }
       
       onClose()
     } catch (error) {
       console.error('Error updating watchlist:', error)
       toast({
         title: "Error",
-        description: "Failed to update watchlist",
+        description: `Failed to update watchlist: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       })
     } finally {
