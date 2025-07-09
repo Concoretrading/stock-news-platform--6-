@@ -147,14 +147,21 @@ export default function CalendarPage() {
                           {expandedWeek === w && (
                             <div className="pl-4 pt-1">
                               <div className="text-center py-8">
-                                <div className="w-full py-6 px-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                                  <p className="text-amber-800 font-medium mb-2">
-                                    This section here will be an absolute game changer for everyone in the family
-                                  </p>
-                                  <p className="text-amber-700 text-sm mb-3">
-                                    allowing you to draw from the past the future and give you the most for the present.
-                                  </p>
-                                  <span className="text-amber-600 font-semibold">Coming soon</span>
+                                <div className="w-full py-6 px-4 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-xl shadow-sm">
+                                  <div className="max-w-sm mx-auto">
+                                    <div className="mb-4">
+                                      <Star className="h-10 w-10 mx-auto text-amber-500 mb-3" />
+                                    </div>
+                                    <p className="text-amber-800 font-semibold text-base mb-2 leading-relaxed">
+                                      This section here will be an absolute game changer for everyone in the family
+                                    </p>
+                                    <p className="text-amber-700 text-sm mb-3 leading-relaxed">
+                                      allowing you to draw from the past the future and give you the most for the present.
+                                    </p>
+                                    <div className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-100 border border-amber-300 rounded-full">
+                                      <span className="text-amber-700 font-medium text-sm">Coming soon</span>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -209,22 +216,29 @@ export default function CalendarPage() {
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                 <Star className="h-4 w-4 sm:h-5 sm:w-5" />
-                Elite Earnings
+                Elite
               </CardTitle>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                Premium earnings events with enhanced data and analysis
+                Premium features and enhanced analysis
               </p>
             </CardHeader>
             <CardContent className="pt-0">
-              <div className="text-center py-8">
-                <div className="w-full py-6 px-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
-                  <p className="text-amber-800 font-medium mb-2">
-                    This section here will be an absolute game changer for everyone in the family
-                  </p>
-                  <p className="text-amber-700 text-sm mb-3">
-                    allowing you to draw from the past the future and give you the most for the present.
-                  </p>
-                  <span className="text-amber-600 font-semibold">Coming soon</span>
+              <div className="text-center py-12">
+                <div className="w-full py-8 px-6 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-xl shadow-sm">
+                  <div className="max-w-md mx-auto">
+                    <div className="mb-6">
+                      <Star className="h-12 w-12 mx-auto text-amber-500 mb-4" />
+                    </div>
+                    <p className="text-amber-800 font-semibold text-lg mb-3 leading-relaxed">
+                      This section here will be an absolute game changer for everyone in the family
+                    </p>
+                    <p className="text-amber-700 text-base mb-4 leading-relaxed">
+                      allowing you to draw from the past the future and give you the most for the present.
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-100 border border-amber-300 rounded-full">
+                      <span className="text-amber-700 font-medium">Coming soon</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
