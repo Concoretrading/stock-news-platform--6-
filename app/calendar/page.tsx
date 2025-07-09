@@ -66,14 +66,14 @@ export default function CalendarPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
                   <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-                  All Market Events
+                  Economic Events
                 </CardTitle>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Complete view of market holidays, economic data, Fed meetings, options expiration, and earnings events
+                  Fed meetings, economic data releases, market holidays, and options expiration events
                 </p>
               </CardHeader>
               <CardContent className="pt-0">
-                <ModernCalendar type="all" />
+                <ModernCalendar type="events" />
               </CardContent>
             </TabsContent>
 
