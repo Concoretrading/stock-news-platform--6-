@@ -719,8 +719,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                   isOpen={true}
                                   onClose={() => setShowAddForm(null)}
                                   onSuccess={() => {
-                                    loadCatalysts()
-                                    setShowAddForm(null)
+                                    handleCatalystAdded()
                                   }}
                                 />
                               ) : (
