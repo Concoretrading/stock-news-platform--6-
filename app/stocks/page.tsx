@@ -102,9 +102,11 @@ export default function StocksPage() {
 
       {showStockSelector && (
         <StockSelector
-          currentStocks={selectedStocks}
-          onUpdate={handleStocksUpdate}
+          isOpen={true}
           onClose={() => setShowStockSelector(false)}
+          onUpdateWatchlist={(stocks) => handleStocksUpdate(stocks.map(stock => ({ ticker: stock.symbol, name: stock.name })))}
+          currentStocks={selectedStocks.map(stock => ({ symbol: stock.ticker, name: stock.name }))}
+          maxStocks={10}
         />
       )}
     </div>
