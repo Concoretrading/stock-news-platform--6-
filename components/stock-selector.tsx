@@ -40,8 +40,8 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
 
   useEffect(() => {
     if (isOpen) {
-      console.log('📋 Stock selector opened, loading current stocks:', currentStocks)
-      console.log('📋 Current stocks structure:', currentStocks.map(s => ({ symbol: s.symbol, name: s.name, id: s.id })))
+      console.log('🔴 STOCK SELECTOR OPENED')
+      console.log('🔴 Props currentStocks:', currentStocks.length, currentStocks.map(s => s.symbol))
       setSelectedStocks(currentStocks)
     }
   }, [isOpen, currentStocks])
@@ -72,21 +72,30 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
   }
 
   const removeStock = (stock: Stock) => {
-    console.log('🗑️ Attempting to remove stock:', stock)
-    console.log('🗑️ Current selectedStocks before removal:', selectedStocks)
+    console.log('🔴 REMOVE ATTEMPT:', stock.symbol)
+    console.log('🔴 Before removal - selectedStocks count:', selectedStocks.length)
+    console.log('🔴 Before removal - selectedStocks:', selectedStocks.map(s => s.symbol))
+    
     const newSelectedStocks = selectedStocks.filter(s => s.symbol !== stock.symbol)
-    console.log('🗑️ New selectedStocks after removal:', newSelectedStocks)
-    console.log('🗑️ Successfully removed?', newSelectedStocks.length < selectedStocks.length)
+    
+    console.log('🔴 After filter - newSelectedStocks count:', newSelectedStocks.length)
+    console.log('🔴 After filter - newSelectedStocks:', newSelectedStocks.map(s => s.symbol))
+    console.log('🔴 Successfully filtered?', newSelectedStocks.length < selectedStocks.length)
+    
     setSelectedStocks(newSelectedStocks)
+    
+    // Log after state update (this will show in next render)
+    setTimeout(() => {
+      console.log('🔴 State after update - selectedStocks count:', selectedStocks.length)
+    }, 100)
   }
 
   const handleSave = async () => {
     try {
       setLoading(true)
       
-      console.log('Starting save operation...')
-      console.log('Selected stocks:', selectedStocks)
-      console.log('Current stocks from props:', currentStocks)
+      console.log('🔴 SAVE STARTED')
+      console.log('🔴 Selected stocks for save:', selectedStocks.length, selectedStocks.map(s => s.symbol))
       
       // Get current stocks from API with timeout
       const currentResponse = await Promise.race([
@@ -103,7 +112,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       }
       
       const currentApiStocks = currentResult.data
-      console.log('Current stocks from API:', currentApiStocks)
+      console.log('🔴 Current API stocks:', currentApiStocks.length, currentApiStocks.map((s: any) => s.ticker))
       
       // Find stocks to add and remove
       const currentSymbols = currentApiStocks.map((stock: any) => stock.ticker)
@@ -112,8 +121,9 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       const stocksToAdd = selectedStocks.filter(stock => !currentSymbols.includes(stock.symbol))
       const stocksToRemove = currentApiStocks.filter((stock: any) => !selectedSymbols.includes(stock.ticker))
       
-      console.log('Stocks to add:', stocksToAdd)
-      console.log('Stocks to remove:', stocksToRemove)
+      console.log('🔴 SAVE PLAN:')
+      console.log('🔴 - Stocks to ADD:', stocksToAdd.map((s: Stock) => s.symbol))
+      console.log('🔴 - Stocks to REMOVE:', stocksToRemove.map((s: any) => s.ticker))
       
       // Track failures
       const failures: string[] = []
@@ -133,13 +143,13 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
             
             const removeResult = await removeResponse.json()
             if (!removeResult.success) {
-              console.error(`Failed to remove ${stock.ticker}:`, removeResult.error)
+              console.error(`❌ Failed to remove ${stock.ticker}:`, removeResult.error)
               failures.push(`Remove ${stock.ticker}: ${removeResult.error}`)
             } else {
-              console.log(`Successfully removed ${stock.ticker}`)
+              console.log(`✅ Successfully removed ${stock.ticker}`)
             }
           } catch (error) {
-            console.error(`Error removing ${stock.ticker}:`, error)
+            console.error(`❌ Error removing ${stock.ticker}:`, error)
             failures.push(`Remove ${stock.ticker}: ${error instanceof Error ? error.message : 'Unknown error'}`)
           }
         })
@@ -169,13 +179,13 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
             
             const addResult = await addResponse.json()
             if (!addResult.success) {
-              console.error(`Failed to add ${stock.symbol}:`, addResult.error)
+              console.error(`❌ Failed to add ${stock.symbol}:`, addResult.error)
               failures.push(`Add ${stock.symbol}: ${addResult.error}`)
             } else {
-              console.log(`Successfully added ${stock.symbol}`)
+              console.log(`✅ Successfully added ${stock.symbol}`)
             }
           } catch (error) {
-            console.error(`Error adding ${stock.symbol}:`, error)
+            console.error(`❌ Error adding ${stock.symbol}:`, error)
             failures.push(`Add ${stock.symbol}: ${error instanceof Error ? error.message : 'Unknown error'}`)
           }
         })
@@ -200,7 +210,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           name: stock.companyName
         }))
         onUpdateWatchlist(updatedStocks)
-        console.log('Updated watchlist:', updatedStocks)
+        console.log('🔴 Final updated watchlist:', updatedStocks.length, updatedStocks.map((s: Stock) => s.symbol))
       }
       
       // Show appropriate toast message
@@ -225,7 +235,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
       
       onClose()
     } catch (error) {
-      console.error('Error updating watchlist:', error)
+      console.error('❌ Error updating watchlist:', error)
       toast({
         title: "Error",
         description: `Failed to update watchlist: ${error instanceof Error ? error.message : 'Unknown error'}`,
