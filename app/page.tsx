@@ -79,13 +79,31 @@ export default function HomePage() {
       const userStocks = result.data
       console.log('🔍 User stocks from API:', userStocks)
       
-      // Use whatever stocks the user has - no automatic additions
-      console.log('🔍 Using user\'s actual stocks, count:', userStocks.length)
-      setWatchlist(userStocks.slice(0, maxStocks).map((stock: any) => ({
-        id: stock.id,
-        symbol: stock.ticker,
-        name: stock.companyName
-      })))
+      if (userStocks.length === 0) {
+        // New user with no stocks - show default stocks in UI only (not saved to database)
+        console.log('🔍 New user - showing default stocks in UI only')
+        const defaultStocks = [
+          { symbol: "AAPL", name: "Apple Inc." },
+          { symbol: "MSFT", name: "Microsoft Corporation" },
+          { symbol: "GOOGL", name: "Alphabet Inc." },
+          { symbol: "AMZN", name: "Amazon.com Inc." },
+          { symbol: "META", name: "Meta Platforms Inc." },
+          { symbol: "TSLA", name: "Tesla Inc." },
+          { symbol: "NVDA", name: "NVIDIA Corporation" },
+          { symbol: "NFLX", name: "Netflix Inc." },
+          { symbol: "AMD", name: "Advanced Micro Devices Inc." },
+          { symbol: "INTC", name: "Intel Corporation" },
+        ]
+        setWatchlist(defaultStocks)
+      } else {
+        // Existing user - use their saved stocks from database
+        console.log('🔍 Existing user - using saved stocks from database')
+        setWatchlist(userStocks.slice(0, maxStocks).map((stock: any) => ({
+          id: stock.id,
+          symbol: stock.ticker,
+          name: stock.companyName
+        })))
+      }
     } catch (error) {
       console.error('❌ Error loading watchlist:', error)
       toast({
