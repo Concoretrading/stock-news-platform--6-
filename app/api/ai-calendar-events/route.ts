@@ -54,31 +54,32 @@ async function handleFileUpload(request: NextRequest, db: any) {
     const base64Image = Buffer.from(bytes).toString('base64')
 
     // Call Google Vision API to extract text
-    const visionResponse = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_VISION_API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        requests: [{
-          image: {
-            content: base64Image
-          },
-          features: [{
-            type: 'TEXT_DETECTION'
+    const visionResponse = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_VISION_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requests: [{
+            image: {
+              content: base64Image
+            },
+            features: [{
+              type: 'TEXT_DETECTION'
+            }]
           }]
-        }]
+        })
       })
-    })
 
     const visionData = await visionResponse.json()
     
-    if (!visionResponse.ok) {
-      console.error('Vision API Error:', visionData)
-      return NextResponse.json({ error: 'Failed to process image' }, { status: 500 })
+    if (!visionResponse.ok || visionData.error) {
+      console.error('Vision API Error:', visionData.error || visionData)
+      return NextResponse.json({ error: 'Failed to process image', visionError: visionData.error, visionData: visionData }, { status: 500 })
     }
 
-    const extractedText = visionData.responses[0]?.fullTextAnnotation?.text || ''
+    const extractedText = visionData.responses?.[0]?.fullTextAnnotation?.text || ''
     
     // Process the extracted text to find earnings events
     const events = await processEarningsText(extractedText, db)
@@ -90,7 +91,7 @@ async function handleFileUpload(request: NextRequest, db: any) {
     })
   } catch (error) {
     console.error('File upload error:', error)
-    return NextResponse.json({ error: 'Failed to process file' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to process file', details: error instanceof Error ? error.message : error }, { status: 500 })
   }
 }
 
