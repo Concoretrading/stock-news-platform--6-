@@ -1,41 +1,64 @@
-// cleanup-watchlist.js
-const admin = require('firebase-admin');
-const path = require('path');
+// Simple script to clean up duplicate GOOG entries
+// Run with: node scripts/cleanup-watchlist.js
 
-// Update this path to your service account JSON file
-const serviceAccount = require(path.resolve(__dirname, '../lib/firebase-admin-service-account.json'));
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
-
-async function trimWatchlists() {
-  const stocksSnapshot = await db.collection('stocks').get();
-  const userStocksMap = {};
-
-  // Group stocks by userId
-  stocksSnapshot.forEach(doc => {
-    const data = doc.data();
-    if (!userStocksMap[data.userId]) userStocksMap[data.userId] = [];
-    userStocksMap[data.userId].push({ id: doc.id, createdAt: data.createdAt });
+async function cleanup() {
+  console.log('🧹 Starting manual cleanup...');
+  
+  const response = await fetch('http://localhost:3002/api/watchlist', {
+    headers: {
+      'Authorization': 'Bearer dev-token-localhost'
+    }
   });
-
-  // For each user, trim to 10 stocks
-  for (const userId in userStocksMap) {
-    const stocks = userStocksMap[userId];
-    if (stocks.length > 10) {
-      // Sort by createdAt descending (most recent first)
-      stocks.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-      const toDelete = stocks.slice(10);
+  
+  const result = await response.json();
+  if (!result.success) {
+    console.error('❌ Failed to get watchlist:', result.error);
+    return;
+  }
+  
+  console.log(`📊 Current watchlist has ${result.data.length} entries`);
+  
+  // Group by ticker
+  const byTicker = {};
+  result.data.forEach(stock => {
+    if (!byTicker[stock.ticker]) {
+      byTicker[stock.ticker] = [];
+    }
+    byTicker[stock.ticker].push(stock);
+  });
+  
+  // Find duplicates
+  let duplicatesRemoved = 0;
+  for (const [ticker, stocks] of Object.entries(byTicker)) {
+    if (stocks.length > 1) {
+      console.log(`🔍 Found ${stocks.length} duplicate ${ticker} entries`);
+      
+      // Keep the newest, remove the rest
+      stocks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const toDelete = stocks.slice(1);
+      
       for (const stock of toDelete) {
-        await db.collection('stocks').doc(stock.id).delete();
-        console.log(`Deleted stock ${stock.id} for user ${userId}`);
+        console.log(`🗑️ Deleting ${ticker}: ${stock.id}`);
+        
+        const deleteResponse = await fetch(`http://localhost:3002/api/watchlist?id=${stock.id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer dev-token-localhost'
+          }
+        });
+        
+        const deleteResult = await deleteResponse.json();
+        if (deleteResult.success) {
+          duplicatesRemoved++;
+          console.log(`✅ Deleted ${ticker} duplicate`);
+        } else {
+          console.error(`❌ Failed to delete ${ticker}:`, deleteResult.error);
+        }
       }
     }
   }
-  console.log('Watchlist cleanup complete!');
+  
+  console.log(`🎉 Cleanup complete! Removed ${duplicatesRemoved} duplicates`);
 }
 
-trimWatchlists().catch(console.error); 
+cleanup().catch(console.error); 

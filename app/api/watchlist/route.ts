@@ -74,7 +74,56 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { ticker, companyName } = body;
+    const { ticker, companyName, cleanup } = body;
+
+    // Special cleanup endpoint to remove duplicates
+    if (cleanup === true) {
+      console.log('🧹 Running duplicate cleanup for user:', userId);
+      
+      // Get all stocks for user grouped by ticker
+      const allStocksSnap = await db.collection('stocks')
+        .where('userId', '==', userId)
+        .get();
+      
+      const stocksByTicker = new Map();
+      allStocksSnap.docs.forEach(doc => {
+        const data = doc.data();
+        const ticker = data.ticker;
+        if (!stocksByTicker.has(ticker)) {
+          stocksByTicker.set(ticker, []);
+        }
+        stocksByTicker.set(ticker, [...stocksByTicker.get(ticker), { id: doc.id, ...data }]);
+      });
+      
+      let duplicatesRemoved = 0;
+      
+      // For each ticker with multiple entries, keep the newest and delete the rest
+      for (const [ticker, stocks] of stocksByTicker.entries()) {
+        if (stocks.length > 1) {
+          console.log(`🧹 Found ${stocks.length} duplicate entries for ${ticker}`);
+          
+          // Sort by createdAt (newest first) and keep the first one
+          stocks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          const stocksToDelete = stocks.slice(1); // All except the newest
+          
+          for (const stock of stocksToDelete) {
+            try {
+              await db.collection('stocks').doc(stock.id).delete();
+              duplicatesRemoved++;
+              console.log(`🗑️ Deleted duplicate ${ticker} entry:`, stock.id);
+            } catch (error) {
+              console.error(`❌ Failed to delete duplicate ${ticker}:`, error);
+            }
+          }
+        }
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: `Cleanup completed. Removed ${duplicatesRemoved} duplicate entries.`,
+        duplicatesRemoved 
+      });
+    }
 
     if (!ticker || !companyName) {
       return NextResponse.json({ success: false, error: 'Ticker and company name are required' }, { status: 400 });

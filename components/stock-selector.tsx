@@ -43,20 +43,16 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
     if (isOpen) {
       console.log('🔴 STOCK SELECTOR OPENED')
       console.log('🔴 Props currentStocks:', currentStocks.length, currentStocks.map(s => s.symbol))
-      console.log('🔴 Props isShowingDefaults:', isShowingDefaults)
       
-      if (isShowingDefaults) {
-        // When showing UI-only defaults, start with empty selection
-        // This prevents auto-saving the default stocks to database
-        console.log('🔴 Showing defaults - starting with empty selection')
-        setSelectedStocks([])
-      } else {
-        // When showing actual saved stocks, use them as initial selection
-        console.log('🔴 Showing saved stocks - using current stocks as selection')
-        setSelectedStocks(currentStocks)
-      }
+      // SIMPLIFIED: Always start with currentStocks, but deduplicate them
+      const uniqueCurrentStocks = currentStocks.filter((stock, index, self) => 
+        index === self.findIndex(s => s.symbol === stock.symbol)
+      )
+      
+      console.log('🔴 Setting selectedStocks to:', uniqueCurrentStocks.map(s => s.symbol))
+      setSelectedStocks(uniqueCurrentStocks)
     }
-  }, [isOpen, currentStocks, isShowingDefaults])
+  }, [isOpen, currentStocks])
 
   const availableStocks = tickers.filter(ticker => 
     ticker.ticker.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -106,10 +102,11 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
     if (loading) return // Prevent multiple simultaneous saves
     
     setLoading(true)
-    console.log('🔴 Starting save process...')
+    console.log('🔴 Starting SIMPLIFIED save process...')
+    console.log('🔴 Selected stocks to save:', selectedStocks.map(s => s.symbol))
     
     try {
-      // Get current stocks from API
+      // STEP 1: Get current database state
       const currentResponse = await fetchWithAuth('/api/watchlist')
       const currentResult = await currentResponse.json()
       
@@ -117,47 +114,26 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
         throw new Error(currentResult.error || 'Failed to get current stocks')
       }
       
-      const currentStocks = currentResult.data
-      console.log('🔴 Current stocks:', currentStocks.length, currentStocks.map((s: any) => s.ticker))
+      const currentDbStocks = currentResult.data
+      console.log('🔴 Current DB stocks:', currentDbStocks.map((s: any) => s.ticker))
       
-      // Deduplicate selectedStocks to prevent frontend duplicates
-      const uniqueSelectedStocks = selectedStocks.filter((stock, index, self) => 
-        index === self.findIndex(s => s.symbol === stock.symbol)
-      )
-      
-      // Find stocks to remove and add
-      const currentTickers = currentStocks.map((s: any) => s.ticker)
-      const selectedTickers = uniqueSelectedStocks.map(s => s.symbol)
-      
-      const stocksToRemove = currentStocks.filter((s: any) => !selectedTickers.includes(s.ticker))
-      const stocksToAdd = uniqueSelectedStocks.filter(s => !currentTickers.includes(s.symbol))
-      
-      console.log('🔴 Stocks to remove:', stocksToRemove.length, stocksToRemove.map((s: any) => s.ticker))
-      console.log('🔴 Stocks to add:', stocksToAdd.length, stocksToAdd.map((s: any) => s.symbol))
-      
-      // Remove stocks (sequential to avoid conflicts)
-      for (const stock of stocksToRemove) {
+      // STEP 2: Remove ALL current stocks from database
+      for (const stock of currentDbStocks) {
         try {
-          console.log(`🔴 Removing stock: ${stock.ticker}`)
-          const removeResponse = await fetchWithAuth(`/api/watchlist?id=${stock.id}`, {
+          console.log(`🗑️ Removing: ${stock.ticker}`)
+          await fetchWithAuth(`/api/watchlist?id=${stock.id}`, {
             method: 'DELETE'
           })
-          const removeResult = await removeResponse.json()
-          if (!removeResult.success) {
-            console.error(`❌ Failed to remove ${stock.ticker}:`, removeResult.error)
-          } else {
-            console.log(`✅ Successfully removed ${stock.ticker}`)
-          }
         } catch (error) {
           console.error(`❌ Error removing ${stock.ticker}:`, error)
         }
       }
       
-      // Add stocks (sequential to avoid conflicts)
-      for (const stock of stocksToAdd) {
+      // STEP 3: Add all selected stocks to database
+      for (const stock of selectedStocks) {
         try {
-          console.log(`🔴 Adding stock: ${stock.symbol}`)
-          const addResponse = await fetchWithAuth('/api/watchlist', {
+          console.log(`➕ Adding: ${stock.symbol}`)
+          await fetchWithAuth('/api/watchlist', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -167,39 +143,24 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
               companyName: stock.name,
             }),
           })
-          const addResult = await addResponse.json()
-          if (!addResult.success) {
-            console.error(`❌ Failed to add ${stock.symbol}:`, addResult.error)
-            // Don't throw error for duplicates, just log and continue
-            if (!addResult.error?.includes('already in watchlist')) {
-              console.error(`❌ Unexpected error adding ${stock.symbol}:`, addResult.error)
-            }
-          } else {
-            console.log(`✅ Successfully added ${stock.symbol}`)
-          }
         } catch (error) {
           console.error(`❌ Error adding ${stock.symbol}:`, error)
         }
       }
       
-      // Get updated stocks
-      const updatedResponse = await fetchWithAuth('/api/watchlist')
-      const updatedResult = await updatedResponse.json()
+      // STEP 4: Get final result and update UI
+      const finalResponse = await fetchWithAuth('/api/watchlist')
+      const finalResult = await finalResponse.json()
       
-      if (updatedResult.success) {
-        const updatedStocks = updatedResult.data.map((stock: any) => ({
+      if (finalResult.success) {
+        const finalStocks = finalResult.data.map((stock: any) => ({
           id: stock.id,
           symbol: stock.ticker,
           name: stock.companyName
         }))
         
-        // Deduplicate the final result as well
-        const uniqueUpdatedStocks = updatedStocks.filter((stock: Stock, index: number, self: Stock[]) => 
-          index === self.findIndex(s => s.symbol === stock.symbol)
-        )
-        
-        onUpdateWatchlist(uniqueUpdatedStocks)
-        console.log('🔴 Final updated watchlist:', uniqueUpdatedStocks.length, uniqueUpdatedStocks.map((s: Stock) => s.symbol))
+        console.log('🔴 Final watchlist:', finalStocks.map(s => s.symbol))
+        onUpdateWatchlist(finalStocks)
       }
       
       toast({
