@@ -56,9 +56,27 @@ export default function HomePage() {
   // Show onboarding for new users
   useEffect(() => {
     if (isShowingDefaults && !loading) {
-      setShowOnboarding(true)
+      // Check if user has seen onboarding before
+      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true)
+        // Mark that user has seen onboarding
+        localStorage.setItem('hasSeenOnboarding', 'true')
+      }
     }
   }, [isShowingDefaults, loading])
+
+  // Utility function to reset onboarding (for testing)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // @ts-ignore - Adding to window for testing
+      window.resetOnboarding = () => {
+        localStorage.removeItem('hasSeenOnboarding')
+        setShowOnboarding(true)
+        console.log('🔄 Onboarding reset - popup will show again')
+      }
+    }
+  }, [])
 
   // Redirect to login if not authenticated
   useEffect(() => {
