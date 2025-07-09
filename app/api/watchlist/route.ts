@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
           console.log(`🧹 Found ${stocks.length} duplicate entries for ${ticker}`);
           
           // Sort by createdAt (newest first) and keep the first one
-          stocks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          stocks.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           const stocksToDelete = stocks.slice(1); // All except the newest
           
           for (const stock of stocksToDelete) {
