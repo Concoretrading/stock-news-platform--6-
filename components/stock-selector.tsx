@@ -159,7 +159,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           name: stock.companyName
         }))
         
-        console.log('🔴 Final watchlist:', finalStocks.map(s => s.symbol))
+        console.log('🔴 Final watchlist:', finalStocks.map((s: any) => s.symbol))
         onUpdateWatchlist(finalStocks)
       }
       
