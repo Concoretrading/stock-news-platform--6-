@@ -14,11 +14,11 @@ export function OnboardingPopup({ isVisible, onClose }: OnboardingPopupProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-20 right-6 z-50 w-80">
+    <div className="fixed top-4 left-4 right-4 sm:top-20 sm:right-6 sm:left-auto z-50 sm:w-80">
       <Card className="border-blue-200 bg-white dark:bg-gray-800 shadow-lg">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
-            <div className="space-y-2">
+            <div className="space-y-2 flex-1 pr-2">
               <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                 Click <strong>manage</strong> to customize your watch list. Drop your news on the screen and it will be placed in your stocks history.
               </p>
@@ -34,7 +34,7 @@ export function OnboardingPopup({ isVisible, onClose }: OnboardingPopupProps) {
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-6 w-6 p-0"
+              className="h-8 w-8 p-0 touch-manipulation flex-shrink-0"
             >
               <X className="h-4 w-4" />
             </Button>

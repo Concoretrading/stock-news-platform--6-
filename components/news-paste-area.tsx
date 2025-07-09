@@ -86,27 +86,27 @@ export function NewsPasteArea({ isOpen, onClose }: NewsPasteAreaProps) {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl max-h-[80vh] flex flex-col">
-        <CardHeader className="flex-shrink-0">
+    <div className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] sm:max-h-[80vh] flex flex-col">
+        <CardHeader className="flex-shrink-0 pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <FileText className="h-5 w-5" />
               Paste News Article
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} className="touch-manipulation">
               <X className="h-4 w-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="flex-1 flex flex-col gap-4">
+        <CardContent className="flex-1 flex flex-col gap-3 sm:gap-4 pb-4">
           <div className="flex-1 flex flex-col">
-            <div className="flex gap-2 mb-2">
+            <div className="flex flex-col sm:flex-row gap-2 mb-2">
               <Button 
                 variant="outline" 
                 size="sm" 
                 onClick={handlePaste}
-                className="text-sm"
+                className="text-sm touch-manipulation"
               >
                 📋 Paste from Clipboard
               </Button>
@@ -123,23 +123,28 @@ export function NewsPasteArea({ isOpen, onClose }: NewsPasteAreaProps) {
 Example:
 Tesla (TSLA) Reports Strong Q4 Earnings
 Tesla Inc. reported stronger-than-expected fourth quarter earnings yesterday, with revenue climbing 15% year-over-year to $25.2 billion..."
-              className="flex-1 min-h-[300px] resize-none"
+              className="flex-1 min-h-[250px] sm:min-h-[300px] resize-none text-sm"
               disabled={isProcessing}
             />
           </div>
           
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <div className="text-sm text-gray-500 text-center sm:text-left">
               {articleText.length} characters {articleText.length >= 50 ? '✅' : '❌ (min 50)'}
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose} disabled={isProcessing}>
+            <div className="flex gap-2 justify-center sm:justify-end">
+              <Button 
+                variant="outline" 
+                onClick={onClose} 
+                disabled={isProcessing}
+                className="flex-1 sm:flex-none min-w-[100px] touch-manipulation"
+              >
                 Cancel
               </Button>
               <Button 
                 onClick={handleProcess} 
                 disabled={isProcessing || articleText.length < 50}
-                className="min-w-[120px]"
+                className="flex-1 sm:flex-none min-w-[120px] touch-manipulation"
               >
                 {isProcessing ? (
                   <>

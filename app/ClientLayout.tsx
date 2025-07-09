@@ -389,9 +389,9 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
           <div className="flex items-start gap-3">
             <div className="text-2xl">🚀</div>
             <div>
-              <h4 className="font-bold mb-1">News Article Processing</h4>
+              <h4 className="font-bold mb-1">Getting Started</h4>
               <p className="text-sm opacity-90 mb-2">
-                Drag news articles from any website and drop anywhere on this screen!
+                Click manage to customize your watch list. Drop your news on the screen and it will be placed in your stocks history.
               </p>
               <div className="text-xs opacity-75">
                 Or use Ctrl+V or the green button ⬇️

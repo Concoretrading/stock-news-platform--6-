@@ -183,26 +183,27 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col bg-card">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Edit Your Watchlist ({selectedStocks.length}/{maxStocks})</DialogTitle>
+      <DialogContent className="max-w-5xl max-h-[95vh] sm:max-h-[90vh] flex flex-col bg-card m-2 sm:m-4">
+        <DialogHeader className="flex-shrink-0 pb-2 sm:pb-4">
+          <DialogTitle className="text-lg sm:text-xl">Edit Your Watchlist ({selectedStocks.length}/{maxStocks})</DialogTitle>
         </DialogHeader>
         
-        <div className="flex gap-6 flex-1 min-h-0">
+        <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
           {/* Selected Stocks Panel */}
-          <div className="w-1/3 flex flex-col min-h-0">
-            <h3 className="text-lg font-semibold mb-2 flex-shrink-0">Your Watchlist (Remove ✕)</h3>
-            <div className="flex-1 border border-border rounded-lg p-4 overflow-y-auto bg-muted/20">
+          <div className="w-full lg:w-1/3 flex flex-col min-h-0 order-2 lg:order-1">
+            <h3 className="text-base lg:text-lg font-semibold mb-2 flex-shrink-0">Your Watchlist (Remove ✕)</h3>
+            <div className="flex-1 border border-border rounded-lg p-3 sm:p-4 overflow-y-auto bg-muted/20 min-h-[200px] lg:min-h-0">
               <div className="space-y-2">
                 {selectedStocks.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
+                  <p className="text-sm text-muted-foreground text-center py-6 lg:py-8">
                     No stocks selected yet.<br />
-                    Add stocks from the panel on the right →
+                    <span className="hidden lg:inline">Add stocks from the panel on the right →</span>
+                    <span className="lg:hidden">Add stocks from above ↑</span>
                   </p>
                 ) : (
                   selectedStocks.map((stock) => (
-                    <div key={stock.symbol} className="flex items-center justify-between p-3 bg-muted/50 dark:bg-muted rounded-lg border border-border">
-                      <div className="flex-1">
+                    <div key={stock.symbol} className="flex items-center justify-between p-2 sm:p-3 bg-muted/50 dark:bg-muted rounded-lg border border-border">
+                      <div className="flex-1 min-w-0">
                         <span className="font-medium text-sm text-foreground">{stock.symbol}</span>
                         <p className="text-xs text-muted-foreground truncate">{stock.name}</p>
                       </div>
@@ -210,7 +211,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
                         variant="ghost"
                         size="sm"
                         onClick={() => removeStock(stock)}
-                        className="ml-2 h-8 w-8 p-0 hover:bg-destructive/20 text-muted-foreground hover:text-destructive"
+                        className="ml-2 h-8 w-8 p-0 hover:bg-destructive/20 text-muted-foreground hover:text-destructive touch-manipulation flex-shrink-0"
                       >
                         <X className="h-3 w-3" />
                       </Button>
@@ -222,27 +223,27 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           </div>
           
           {/* Available Stocks Panel */}
-          <div className="w-2/3 flex flex-col min-h-0">
-            <h3 className="text-lg font-semibold mb-3 flex-shrink-0">Add Stocks (+)</h3>
+          <div className="w-full lg:w-2/3 flex flex-col min-h-0 order-1 lg:order-2">
+            <h3 className="text-base lg:text-lg font-semibold mb-3 flex-shrink-0">Add Stocks (+)</h3>
             <div className="mb-4 flex-shrink-0">
               <Input
                 placeholder="Search stocks... (e.g. AAPL, Apple, Tesla)"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="text-sm"
+                className="text-sm touch-manipulation"
               />
               <p className="text-xs text-muted-foreground mt-1">
                 Showing {availableStocks.slice(0, 100).length} of {availableStocks.length} stocks
               </p>
             </div>
             
-            <div className="flex-1 border border-border rounded-lg p-4 overflow-y-auto bg-muted/10">
+            <div className="flex-1 border border-border rounded-lg p-3 sm:p-4 overflow-y-auto bg-muted/10 min-h-[300px] lg:min-h-0">
               <div className="grid grid-cols-1 gap-2">
                 {availableStocks.slice(0, 100).map((stock) => (
-                  <Card key={stock.ticker} className="p-3 cursor-pointer hover:bg-muted/70 dark:hover:bg-muted/40 transition-colors border-border/50">
+                  <Card key={stock.ticker} className="p-2 sm:p-3 cursor-pointer hover:bg-muted/70 dark:hover:bg-muted/40 transition-colors border-border/50 touch-manipulation">
                     <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-medium text-sm">{stock.ticker}</span>
                           {isSelected(stock) && (
                             <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
@@ -258,7 +259,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
                           size="sm"
                           onClick={() => toggleStock(stock)}
                           disabled={selectedStocks.length >= maxStocks}
-                          className="ml-3 h-8 text-xs"
+                          className="ml-3 h-8 text-xs touch-manipulation flex-shrink-0"
                         >
                           Add
                         </Button>
@@ -267,7 +268,7 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
                   </Card>
                 ))}
                 {availableStocks.length === 0 && (
-                  <div className="text-center py-8">
+                  <div className="text-center py-6 lg:py-8">
                     <p className="text-muted-foreground">No stocks found matching "{searchTerm}"</p>
                     <p className="text-sm text-muted-foreground mt-1">Try searching for ticker symbols like AAPL, MSFT, TSLA</p>
                   </div>
@@ -277,18 +278,23 @@ export function StockSelector({ isOpen, onClose, onUpdateWatchlist, currentStock
           </div>
         </div>
         
-        <div className="flex justify-between items-center gap-4 mt-4 pt-4 border-t border-border flex-shrink-0">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mt-4 pt-4 border-t border-border flex-shrink-0">
+          <div className="text-sm text-muted-foreground text-center sm:text-left">
             {selectedStocks.length} of {maxStocks} stocks selected
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onClose} disabled={loading}>
+          <div className="flex gap-2 justify-center sm:justify-end">
+            <Button 
+              variant="outline" 
+              onClick={onClose} 
+              disabled={loading}
+              className="flex-1 sm:flex-none min-w-[100px] touch-manipulation"
+            >
               Cancel
             </Button>
             <Button 
               onClick={handleSave} 
               disabled={loading}
-              className="min-w-[120px]"
+              className="flex-1 sm:flex-none min-w-[120px] touch-manipulation"
             >
               {loading ? (
                 <>

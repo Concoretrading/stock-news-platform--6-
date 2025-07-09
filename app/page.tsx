@@ -196,25 +196,26 @@ export default function HomePage() {
         {/* Enhanced Watchlist Section */}
         <Card id="stocks-section" className="mb-8">
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-5 w-5 text-blue-600" />
-                <CardTitle>Your Watchlist</CardTitle>
-                <Badge variant="secondary">{watchlist.length} of {maxStocks} stocks</Badge>
+                <CardTitle className="text-lg sm:text-xl">Your Watchlist</CardTitle>
+                <Badge variant="secondary" className="text-xs sm:text-sm">{watchlist.length} of {maxStocks} stocks</Badge>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 {/* Carousel Navigation */}
                 {totalPages > 1 && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center gap-2 order-2 sm:order-1">
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={prevPage}
                       disabled={currentPage === 0}
+                      className="touch-manipulation"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground min-w-[60px] text-center">
                       {currentPage + 1} of {totalPages}
                     </span>
                     <Button 
@@ -222,12 +223,18 @@ export default function HomePage() {
                       size="sm" 
                       onClick={nextPage}
                       disabled={currentPage === totalPages - 1}
+                      className="touch-manipulation"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
                   </div>
                 )}
-                <Button variant="outline" size="sm" onClick={() => setShowStockSelector(true)}>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowStockSelector(true)}
+                  className="order-1 sm:order-2 touch-manipulation"
+                >
                   <Settings className="h-4 w-4 mr-2" />
                   Manage
                 </Button>
@@ -236,7 +243,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             {isLoadingStocks ? (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="h-32 bg-muted rounded-lg"></div>
@@ -244,7 +251,7 @@ export default function HomePage() {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
                 {visibleStocks.map((stock) => (
                   <div key={stock.symbol} className="transform transition-transform hover:scale-105">
                     <StockCard 
@@ -265,7 +272,7 @@ export default function HomePage() {
                     <button
                       key={idx}
                       onClick={() => setCurrentPage(idx)}
-                      className={`w-3 h-3 rounded-full transition-colors ${
+                      className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-colors touch-manipulation ${
                         currentPage === idx ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
                       }`}
                     />
