@@ -2,7 +2,7 @@
 
 import { AdminCalendarUpload } from '@/components/admin-calendar-upload';
 import { AdminEarningsUpload } from '@/components/admin-earnings-upload';
-import { EarningsCalendar } from '@/components/earnings-calendar';
+import { ModernCalendar } from '@/components/modern-calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,11 +65,14 @@ export default function CalendarPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  Upcoming Events
+                  All Market Events
                 </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Complete view of market holidays, economic data, Fed meetings, options expiration, and earnings events
+                </p>
               </CardHeader>
               <CardContent>
-                <EarningsCalendar type="events" />
+                <ModernCalendar type="all" />
               </CardContent>
             </TabsContent>
 
@@ -79,9 +82,12 @@ export default function CalendarPage() {
                   <TrendingUp className="h-5 w-5" />
                   Earnings Calendar
                 </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Focus view showing only company earnings events and related announcements
+                </p>
               </CardHeader>
               <CardContent>
-                <EarningsCalendar type="earnings" />
+                <ModernCalendar type="earnings" />
               </CardContent>
             </TabsContent>
 
