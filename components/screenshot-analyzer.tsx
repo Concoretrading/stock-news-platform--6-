@@ -290,9 +290,9 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
   return (
     <Card className="w-full relative">
       {(files.some(f => f.status === 'analyzing') || processingText) && (
-        <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center z-20 rounded-xl">
+        <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-20 rounded-xl">
           <Loader2 className="h-12 w-12 animate-spin text-blue-500 mb-4" />
-          <span className="text-lg font-semibold text-blue-700">
+          <span className="text-lg font-semibold text-blue-700 dark:text-blue-400">
             {processingText ? "Processing news article..." : "Analyzing screenshots..."}
           </span>
         </div>
@@ -311,13 +311,13 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
           </p>
         </div>
         {/* Professional Notice: Drag and drop anywhere */}
-        <div className="border-2 border-blue-500 bg-blue-50 p-12 text-center rounded-xl flex flex-col items-center justify-center space-y-6">
+        <div className="border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30 p-12 text-center rounded-xl flex flex-col items-center justify-center space-y-6">
           <Camera className="h-16 w-16 mx-auto text-blue-400" />
           <h3 className="text-2xl font-bold mb-2">Drag & Drop Screenshots or News Articles</h3>
-          <p className="text-gray-700 max-w-xl mx-auto mb-4">
+          <p className="text-gray-700 dark:text-gray-300 max-w-xl mx-auto mb-4">
             Drop your trading screenshots OR copy/paste news articles anywhere on the dashboard for instant AI analysis. Our AI will automatically extract stock tickers, headlines, and key information to create catalyst entries.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
+          <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
               <span>Screenshots → Vision AI Analysis</span>
@@ -327,7 +327,7 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
               <span>News Articles → Text AI Processing</span>
             </div>
           </div>
-          <p className="text-gray-500 text-sm">Or use the floating screenshot button at the bottom right to open the analyzer manually.</p>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Or use the floating screenshot button at the bottom right to open the analyzer manually.</p>
         </div>
 
         {/* List of files to analyze */}
@@ -419,9 +419,9 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
                 </div>
                 {/* News Entry Results */}
                 {f.result?.newsEntryResults?.[0] && (
-                  <div className="mt-4 p-3 bg-green-50 rounded border border-green-200 flex items-center justify-between">
+                  <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/30 rounded border border-green-200 dark:border-green-800 flex items-center justify-between">
                     <span className="font-medium">{f.result?.newsEntryResults?.[0]?.ticker || 'N/A'}</span>
-                    <span className="text-sm text-green-600">
+                    <span className="text-sm text-green-600 dark:text-green-400">
                       {f.result?.newsEntryResults?.[0]?.success ? 'Success' : 'Failed'}
                     </span>
                   </div>
@@ -429,8 +429,8 @@ export function ScreenshotAnalyzer({ externalFile, onExternalFileHandled, onCata
               </div>
             ))}
 
-            <div className="p-4 bg-yellow-50 rounded border border-yellow-200">
-              <p className="text-xs text-yellow-800">
+            <div className="p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded border border-yellow-200 dark:border-yellow-800">
+              <p className="text-xs text-yellow-800 dark:text-yellow-200">
                 <strong>Disclaimer:</strong> This analysis is for educational purposes only and should not be
                 considered as financial advice. Always conduct your own research and consult with a financial
                 advisor before making investment decisions.
