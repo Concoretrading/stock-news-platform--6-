@@ -70,6 +70,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         
         // Sample economic events - only add for current month to reduce flickering
         const sampleEvents = [
+          // Economic Data Releases
           {
             id: 'sample-1',
             date: `${currentMonthKey}-15`,
@@ -80,14 +81,24 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: true
           },
           {
-            id: 'sample-2', 
-            date: format(today, 'yyyy-MM-dd'),
-            ticker: 'AAPL',
-            company_name: 'Apple Inc.',
-            event_type: 'Earnings Report',
+            id: 'sample-5',
+            date: `${currentMonthKey}-12`,
+            ticker: 'PPI',
+            company_name: 'Producer Price Index',
+            event_type: 'Economic Data Release',
             confirmed: true,
-            auto_generated: false
+            auto_generated: true
           },
+          {
+            id: 'sample-6',
+            date: `${currentMonthKey}-08`,
+            ticker: 'CLAIMS',
+            company_name: 'Initial Jobless Claims',
+            event_type: 'Economic Data Release',
+            confirmed: true,
+            auto_generated: true
+          },
+          // Fed Events
           {
             id: 'sample-3',
             date: `${currentMonthKey}-20`,
@@ -98,6 +109,53 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             auto_generated: true
           },
           {
+            id: 'sample-7',
+            date: `${currentMonthKey}-18`,
+            ticker: 'FED',
+            company_name: 'Federal Reserve Beige Book',
+            event_type: 'Fed Report Release',
+            confirmed: true,
+            auto_generated: true
+          },
+          // Market Events
+          {
+            id: 'sample-8',
+            date: `${currentMonthKey}-17`,
+            ticker: 'VIX',
+            company_name: 'VIX Options Expiration',
+            event_type: 'Options Expiration',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-9',
+            date: `${currentMonthKey}-22`,
+            ticker: 'WITCHING',
+            company_name: 'Triple Witching Day',
+            event_type: 'Options & Futures Expiration',
+            confirmed: true,
+            auto_generated: true
+          },
+          {
+            id: 'sample-10',
+            date: `${currentMonthKey}-28`,
+            ticker: 'MARKET',
+            company_name: 'Market Holiday - Thanksgiving',
+            event_type: 'Market Closed',
+            confirmed: true,
+            auto_generated: true
+          },
+          // Earnings Events
+          {
+            id: 'sample-2', 
+            date: format(today, 'yyyy-MM-dd'),
+            ticker: 'AAPL',
+            company_name: 'Apple Inc.',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
             id: 'sample-4',
             date: `${currentMonthKey}-25`,
             ticker: 'TSLA',
@@ -105,11 +163,42 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             event_type: 'Earnings Call',
             confirmed: true,
             auto_generated: false
+          },
+          {
+            id: 'sample-11',
+            date: `${currentMonthKey}-14`,
+            ticker: 'NVDA',
+            company_name: 'NVIDIA Corporation',
+            event_type: 'Earnings Report',
+            confirmed: true,
+            auto_generated: false
+          },
+          {
+            id: 'sample-12',
+            date: `${currentMonthKey}-26`,
+            ticker: 'MSFT',
+            company_name: 'Microsoft Corporation',
+            event_type: 'Earnings Call',
+            confirmed: true,
+            auto_generated: false
           }
         ];
+
+        // Filter events based on type prop
+        const filteredSampleEvents = sampleEvents.filter(event => {
+          if (type === 'earnings') {
+            // Only show earnings events (event_type contains 'Earnings')
+            return event.event_type.toLowerCase().includes('earnings');
+          } else if (type === 'events') {
+            // Show everything EXCEPT earnings events
+            return !event.event_type.toLowerCase().includes('earnings');
+          }
+          // type === 'all' - show everything
+          return true;
+        });
         
         // Add sample events to the calendar
-        sampleEvents.forEach(event => {
+        filteredSampleEvents.forEach(event => {
           if (!newEvents[event.date]) {
             newEvents[event.date] = [];
           }
@@ -155,10 +244,17 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   created_at: data.created_at || data.createdAt
                 };
                 
-                if (!newEvents[dateString]) {
-                  newEvents[dateString] = [];
+                // Apply type filtering to Firebase earnings events
+                const shouldInclude = type === 'all' || 
+                  (type === 'earnings' && event.event_type.toLowerCase().includes('earnings')) ||
+                  (type === 'events' && !event.event_type.toLowerCase().includes('earnings'));
+                
+                if (shouldInclude) {
+                  if (!newEvents[dateString]) {
+                    newEvents[dateString] = [];
+                  }
+                  newEvents[dateString].push(event);
                 }
-                newEvents[dateString].push(event);
               }
             }
             
@@ -177,10 +273,17 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   created_at: data.created_at
                 };
                 
-                if (!newEvents[dateString]) {
-                  newEvents[dateString] = [];
+                // Apply type filtering to Firebase economic events
+                const shouldInclude = type === 'all' || 
+                  (type === 'earnings' && event.event_type.toLowerCase().includes('earnings')) ||
+                  (type === 'events' && !event.event_type.toLowerCase().includes('earnings'));
+                
+                if (shouldInclude) {
+                  if (!newEvents[dateString]) {
+                    newEvents[dateString] = [];
+                  }
+                  newEvents[dateString].push(event);
                 }
-                newEvents[dateString].push(event);
               }
             }
           });
@@ -207,7 +310,17 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           }
         ];
         
-        fallbackEvents.forEach(event => {
+        // Apply filtering to fallback events too
+        const filteredFallbackEvents = fallbackEvents.filter(event => {
+          if (type === 'earnings') {
+            return event.event_type.toLowerCase().includes('earnings');
+          } else if (type === 'events') {
+            return !event.event_type.toLowerCase().includes('earnings');
+          }
+          return true;
+        });
+        
+        filteredFallbackEvents.forEach(event => {
           if (!newEvents[event.date]) {
             newEvents[event.date] = [];
           }
