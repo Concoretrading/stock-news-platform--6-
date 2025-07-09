@@ -19,35 +19,51 @@ function getVisionClient() {
     try {
       console.log('🔄 Initializing Google Vision API client...');
       
-      // Try reading credentials file directly
-      const fs = require('fs');
-      const path = require('path');
-      const credentialsPath = path.join(process.cwd(), 'concorenews-firebase-adminsdk.json');
-      
-      if (fs.existsSync(credentialsPath)) {
-        const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
-        console.log('📁 Using credentials file:', credentialsPath);
+      // Try environment variable with JSON content first (for Vercel/production)
+      const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+      if (credentialsJson) {
+        console.log('🔧 Using GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable');
+        const credentials = JSON.parse(credentialsJson);
         console.log('🔧 Project ID:', credentials.project_id);
         
         vision = new ImageAnnotatorClient({
           credentials: credentials,
           projectId: credentials.project_id
         });
-        console.log('✅ Google Vision API initialized with credentials file');
+        console.log('✅ Google Vision API initialized with environment credentials');
       } else {
-        console.log('❌ Credentials file not found at:', credentialsPath);
+        // Try reading credentials file directly (for local development)
+        const fs = require('fs');
+        const path = require('path');
+        const credentialsPath = path.join(process.cwd(), 'concorenews-firebase-adminsdk.json');
         
-        // Fall back to environment variable
-        const credentialsEnvPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-        if (credentialsEnvPath) {
-          console.log('🔧 Using GOOGLE_APPLICATION_CREDENTIALS env var:', credentialsEnvPath);
+        if (fs.existsSync(credentialsPath)) {
+          const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf8'));
+          console.log('📁 Using credentials file:', credentialsPath);
+          console.log('🔧 Project ID:', credentials.project_id);
+          
           vision = new ImageAnnotatorClient({
-            keyFilename: credentialsEnvPath
+            credentials: credentials,
+            projectId: credentials.project_id
           });
-          console.log('✅ Google Vision API initialized with environment variable');
+          console.log('✅ Google Vision API initialized with credentials file');
         } else {
-          console.log('❌ GOOGLE_APPLICATION_CREDENTIALS not set');
-          throw new Error('Google Vision API credentials not found. Please check your setup.');
+          console.log('❌ No credentials found');
+          console.log('❌ GOOGLE_APPLICATION_CREDENTIALS_JSON not set');
+          console.log('❌ Credentials file not found at:', credentialsPath);
+          
+          // Fall back to environment variable file path
+          const credentialsEnvPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+          if (credentialsEnvPath) {
+            console.log('🔧 Using GOOGLE_APPLICATION_CREDENTIALS env var:', credentialsEnvPath);
+            vision = new ImageAnnotatorClient({
+              keyFilename: credentialsEnvPath
+            });
+            console.log('✅ Google Vision API initialized with environment variable file');
+          } else {
+            console.log('❌ GOOGLE_APPLICATION_CREDENTIALS not set');
+            throw new Error('Google Vision API credentials not found. Please check your setup.');
+          }
         }
       }
       
