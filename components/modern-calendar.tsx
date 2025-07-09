@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addMonths, subMonths, isSameMonth, isToday, parseISO } from 'date-fns';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,21 +27,33 @@ interface ModernCalendarProps {
 }
 
 export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Record<string, CalendarEvent[]>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEvent[]>([]);
+  const fetchingRef = useRef(false);
 
-  // Get calendar days for the current month view
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  // Memoize calendar calculations to prevent unnecessary recalculations
+  const { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays } = useMemo(() => {
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const calendarStart = startOfWeek(monthStart);
+    const calendarEnd = endOfWeek(monthEnd);
+    const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+    
+    return { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays };
+  }, [currentDate]);
+
+  // Memoize the current month string to prevent unnecessary useEffect runs
+  const currentMonthKey = useMemo(() => format(currentDate, 'yyyy-MM'), [currentDate]);
 
   useEffect(() => {
     const fetchEvents = async () => {
+      // Prevent multiple simultaneous fetches
+      if (fetchingRef.current) return;
+      fetchingRef.current = true;
+
       try {
         setIsLoading(true);
         const db = getFirestore();
@@ -55,13 +67,12 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         
         // Add sample events for the current month
         const today = new Date();
-        const currentMonth = format(today, 'yyyy-MM');
         
-        // Sample economic events
+        // Sample economic events - only add for current month to reduce flickering
         const sampleEvents = [
           {
             id: 'sample-1',
-            date: `${currentMonth}-15`,
+            date: `${currentMonthKey}-15`,
             ticker: 'CPI',
             company_name: 'Consumer Price Index',
             event_type: 'Economic Data Release',
@@ -79,7 +90,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           },
           {
             id: 'sample-3',
-            date: `${currentMonth}-20`,
+            date: `${currentMonthKey}-20`,
             ticker: 'FOMC',
             company_name: 'Federal Reserve',
             event_type: 'FOMC Meeting',
@@ -88,7 +99,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           },
           {
             id: 'sample-4',
-            date: `${currentMonth}-25`,
+            date: `${currentMonthKey}-25`,
             ticker: 'TSLA',
             company_name: 'Tesla Inc.',
             event_type: 'Earnings Call',
@@ -183,13 +194,11 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         console.error('Error fetching events:', error);
         // Still show sample events even if Firebase fails
         const newEvents: Record<string, CalendarEvent[]> = {};
-        const today = new Date();
-        const currentMonth = format(today, 'yyyy-MM');
         
         const fallbackEvents = [
           {
             id: 'fallback-1',
-            date: format(today, 'yyyy-MM-dd'),
+            date: format(new Date(), 'yyyy-MM-dd'),
             ticker: 'SAMPLE',
             company_name: 'Sample Event',
             event_type: 'Demo Event',
@@ -208,11 +217,12 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         setEvents(newEvents);
       } finally {
         setIsLoading(false);
+        fetchingRef.current = false;
       }
     };
 
     fetchEvents();
-  }, [currentDate, calendarStart, calendarEnd, type]);
+  }, [currentMonthKey, type]); // Only depend on currentMonthKey and type to prevent unnecessary re-renders
 
   const handleDateClick = (date: Date) => {
     const dateKey = format(date, 'yyyy-MM-dd');
