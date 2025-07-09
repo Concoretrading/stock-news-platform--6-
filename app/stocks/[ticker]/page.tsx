@@ -34,22 +34,7 @@ export default function StockPage() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [activeTab, setActiveTab] = useState("history")
 
-  useEffect(() => {
-    // Check for URL fragment to determine active tab
-    if (typeof window !== 'undefined') {
-      const fragment = window.location.hash.replace('#', '')
-      if (fragment && ['history', 'search', 'add-news', 'alerts'].includes(fragment)) {
-        setActiveTab(fragment)
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    // Update URL fragment when tab changes
-    if (typeof window !== 'undefined' && activeTab) {
-      window.history.replaceState(null, '', `#${activeTab}`)
-    }
-  }, [activeTab])
+  // Removed URL fragment handling to prevent render loops and flashing
 
   useEffect(() => {
     // Mock stock data - in real app, fetch from API
