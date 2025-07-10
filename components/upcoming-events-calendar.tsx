@@ -7,9 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Calendar, TrendingUp, Target, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, Calendar, TrendingUp, Target, AlertTriangle, CheckCircle, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
-import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, addDays, isSameWeek, isWithinInterval } from 'date-fns';
 
 interface UpcomingEvent {
   id: string;
@@ -25,6 +25,17 @@ interface UpcomingEvent {
   daysUntil: number;
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export default function UpcomingEventsCalendar() {
   const { user, firebaseUser } = useAuth();
   const [events, setEvents] = useState<UpcomingEvent[]>([]);
@@ -35,6 +46,12 @@ export default function UpcomingEventsCalendar() {
   const [selectedEventType, setSelectedEventType] = useState<string>('all');
   const [currentView, setCurrentView] = useState<'calendar' | 'list'>('calendar');
   const [selectedMonth, setSelectedMonth] = useState<Date>(new Date());
+  
+  // Mobile-specific state
+  const isMobile = useIsMobile();
+  const [mobileViewMode, setMobileViewMode] = useState<'week' | 'day'>('week');
+  const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
+  const [selectedDay, setSelectedDay] = useState<Date>(new Date());
 
   useEffect(() => {
     if (user) {
@@ -133,6 +150,181 @@ export default function UpcomingEventsCalendar() {
       default:
         return 'text-gray-600';
     }
+  };
+
+  // Mobile Week View
+  const renderMobileWeekView = () => {
+    const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday start
+    const weekEnd = endOfWeek(selectedWeek, { weekStartsOn: 1 });
+    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
+    
+    const weekEvents = events.filter(event => 
+      isWithinInterval(new Date(event.eventDate), { start: weekStart, end: weekEnd })
+    );
+
+    return (
+      <div className="space-y-4">
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedWeek(addWeeks(selectedWeek, -1))}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-center">
+            <div className="font-semibold">
+              {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
+            </div>
+            <div className="text-xs text-muted-foreground">Week View</div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedWeek(addWeeks(selectedWeek, 1))}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Week Days */}
+        <div className="grid grid-cols-7 gap-1">
+          {weekDays.map(day => {
+            const dayEvents = weekEvents.filter(event => 
+              isSameDay(new Date(event.eventDate), day)
+            );
+            
+            return (
+              <div
+                key={day.toISOString()}
+                className={`min-h-[60px] p-1 border rounded text-xs ${
+                  isSameDay(day, new Date()) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'
+                }`}
+                onClick={() => {
+                  setSelectedDay(day);
+                  setMobileViewMode('day');
+                }}
+              >
+                <div className="text-center font-medium mb-1">
+                  {format(day, 'EEE')}
+                </div>
+                <div className="text-center text-muted-foreground mb-1">
+                  {format(day, 'd')}
+                </div>
+                {dayEvents.length > 0 && (
+                  <div className="text-center">
+                    <Badge variant="secondary" className="text-xs">
+                      {dayEvents.length}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Week Events Summary */}
+        {weekEvents.length > 0 && (
+          <div className="space-y-2">
+            <div className="font-medium text-sm">This Week's Events:</div>
+            {weekEvents.slice(0, 5).map(event => (
+              <div key={event.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                <span>{getEventIcon(event)}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-sm truncate">{event.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {format(new Date(event.eventDate), 'MMM d, h:mm a')} • {event.stockTicker}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {weekEvents.length > 5 && (
+              <div className="text-xs text-muted-foreground text-center">
+                +{weekEvents.length - 5} more events this week
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Mobile Day View
+  const renderMobileDayView = () => {
+    const dayEvents = events.filter(event => 
+      isSameDay(new Date(event.eventDate), selectedDay)
+    );
+
+    return (
+      <div className="space-y-4">
+        {/* Day Navigation */}
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedDay(addDays(selectedDay, -1))}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="text-center">
+            <div className="font-semibold">
+              {format(selectedDay, 'EEEE, MMM d, yyyy')}
+            </div>
+            <div className="text-xs text-muted-foreground">Day View</div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedDay(addDays(selectedDay, 1))}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Day Events */}
+        {dayEvents.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No events scheduled for this day.
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {dayEvents.map(event => (
+              <Card key={event.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xl">{getEventIcon(event)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-sm truncate">{event.title}</h4>
+                        <Badge variant="outline" className="text-xs">{event.stockTicker}</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">
+                        {event.description}
+                      </p>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {format(new Date(event.eventDate), 'h:mm a')}
+                        </div>
+                        <div className={`flex items-center gap-1 ${getConfidenceColor(event.confidence)}`}>
+                          <CheckCircle className="h-3 w-3" />
+                          {Math.round(event.confidence * 100)}%
+                        </div>
+                        <div className={`flex items-center gap-1 ${getImpactColor(event.impact)}`}>
+                          <AlertTriangle className="h-3 w-3" />
+                          {event.impact}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderCalendarView = () => {
@@ -292,70 +484,94 @@ export default function UpcomingEventsCalendar() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm font-medium">Stock</label>
-              <Select value={selectedStock} onValueChange={setSelectedStock}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stocks</SelectItem>
-                  <SelectItem value="AAPL">Apple (AAPL)</SelectItem>
-                  <SelectItem value="TSLA">Tesla (TSLA)</SelectItem>
-                  <SelectItem value="NVDA">NVIDIA (NVDA)</SelectItem>
-                  <SelectItem value="MSFT">Microsoft (MSFT)</SelectItem>
-                  <SelectItem value="GOOGL">Alphabet (GOOGL)</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Mobile View Toggle */}
+          {isMobile && (
+            <div className="flex gap-2 mb-4">
+              <Button
+                variant={mobileViewMode === 'week' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMobileViewMode('week')}
+                className="flex-1"
+              >
+                Week
+              </Button>
+              <Button
+                variant={mobileViewMode === 'day' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setMobileViewMode('day')}
+                className="flex-1"
+              >
+                Day
+              </Button>
             </div>
-            
-            <div>
-              <label className="text-sm font-medium">Months Ahead</label>
-              <Select value={monthsAhead.toString()} onValueChange={(value) => setMonthsAhead(parseInt(value))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3 Months</SelectItem>
-                  <SelectItem value="6">6 Months</SelectItem>
-                  <SelectItem value="9">9 Months</SelectItem>
-                  <SelectItem value="12">12 Months</SelectItem>
-                </SelectContent>
-              </Select>
+          )}
+
+          {/* Filters - Hide on mobile when in week/day view */}
+          {(!isMobile || currentView === 'list') && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium">Stock</label>
+                <Select value={selectedStock} onValueChange={setSelectedStock}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Stocks</SelectItem>
+                    <SelectItem value="AAPL">Apple (AAPL)</SelectItem>
+                    <SelectItem value="TSLA">Tesla (TSLA)</SelectItem>
+                    <SelectItem value="NVDA">NVIDIA (NVDA)</SelectItem>
+                    <SelectItem value="MSFT">Microsoft (MSFT)</SelectItem>
+                    <SelectItem value="GOOGL">Alphabet (GOOGL)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Months Ahead</label>
+                <Select value={monthsAhead.toString()} onValueChange={(value) => setMonthsAhead(parseInt(value))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="3">3 Months</SelectItem>
+                    <SelectItem value="6">6 Months</SelectItem>
+                    <SelectItem value="9">9 Months</SelectItem>
+                    <SelectItem value="12">12 Months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">Event Type</label>
+                <Select value={selectedEventType} onValueChange={setSelectedEventType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Events</SelectItem>
+                    <SelectItem value="earnings">Earnings</SelectItem>
+                    <SelectItem value="product_launch">Product Launches</SelectItem>
+                    <SelectItem value="conference">Conferences</SelectItem>
+                    <SelectItem value="regulatory">Regulatory</SelectItem>
+                    <SelectItem value="ai_detected">AI Detected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium">View</label>
+                <Select value={currentView} onValueChange={(value: 'calendar' | 'list') => setCurrentView(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="calendar">Calendar</SelectItem>
+                    <SelectItem value="list">List</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
-            <div>
-              <label className="text-sm font-medium">Event Type</label>
-              <Select value={selectedEventType} onValueChange={setSelectedEventType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Events</SelectItem>
-                  <SelectItem value="earnings">Earnings</SelectItem>
-                  <SelectItem value="product_launch">Product Launches</SelectItem>
-                  <SelectItem value="conference">Conferences</SelectItem>
-                  <SelectItem value="regulatory">Regulatory</SelectItem>
-                  <SelectItem value="ai_detected">AI Detected</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium">View</label>
-              <Select value={currentView} onValueChange={(value: 'calendar' | 'list') => setCurrentView(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="calendar">Calendar</SelectItem>
-                  <SelectItem value="list">List</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          )}
 
           {error && (
             <Alert variant="destructive">
@@ -374,20 +590,29 @@ export default function UpcomingEventsCalendar() {
             </div>
           ) : (
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-sm text-muted-foreground">
-                  Showing {events.length} events in the next {monthsAhead} months
-                </div>
-                <div className="flex gap-2">
-                  <Badge variant="outline">Earnings 📊</Badge>
-                  <Badge variant="outline">Product Launch 🚀</Badge>
-                  <Badge variant="outline">Conference 🎤</Badge>
-                  <Badge variant="outline">Regulatory ⚖️</Badge>
-                  <Badge variant="outline">AI Detected 🤖</Badge>
-                </div>
-              </div>
+              {/* Mobile View */}
+              {isMobile && mobileViewMode === 'week' && renderMobileWeekView()}
+              {isMobile && mobileViewMode === 'day' && renderMobileDayView()}
               
-              {currentView === 'calendar' ? renderCalendarView() : renderListView()}
+              {/* Desktop View */}
+              {!isMobile && (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {events.length} events in the next {monthsAhead} months
+                    </div>
+                    <div className="flex gap-2">
+                      <Badge variant="outline">Earnings 📊</Badge>
+                      <Badge variant="outline">Product Launch 🚀</Badge>
+                      <Badge variant="outline">Conference 🎤</Badge>
+                      <Badge variant="outline">Regulatory ⚖️</Badge>
+                      <Badge variant="outline">AI Detected 🤖</Badge>
+                    </div>
+                  </div>
+                  
+                  {currentView === 'calendar' ? renderCalendarView() : renderListView()}
+                </>
+              )}
             </div>
           )}
         </CardContent>
