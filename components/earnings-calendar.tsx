@@ -36,6 +36,16 @@ interface EarningsCalendarProps {
   type?: 'events' | 'earnings' | 'elite';
 }
 
+// Static market cap mapping (in billions, example values)
+const MARKET_CAPS: Record<string, number> = {
+  AAPL: 3000, MSFT: 2800, GOOGL: 2000, AMZN: 1900, TSLA: 800, NVDA: 2500, META: 1200, BRK: 900, V: 500, UNH: 450, JPM: 400, XOM: 400, MA: 350, AVGO: 600, LLY: 700, JNJ: 400, WMT: 450, PG: 350, HD: 350, CVX: 300
+};
+
+// Helper to get market cap, fallback to 0 if not found
+function getMarketCap(ticker: string) {
+  return MARKET_CAPS[ticker.replace(/\..*$/, '')] || 0;
+}
+
 export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const { user, firebaseUser } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('months');
@@ -45,6 +55,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const [selectedEvent, setSelectedEvent] = useState<EarningsEvent | null>(null);
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  // Add modal state for overflow
+  const [overflowModal, setOverflowModal] = useState<{date: string, events: EarningsEvent[]} | null>(null);
 
   // Generate 7 months starting from current month
   const months = Array.from({ length: 7 }, (_, i) => addMonths(startOfMonth(new Date()), i));
@@ -426,8 +438,12 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           ))}
           {days.map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
-            const dayEvents = events[dateKey] || [];
+            let dayEvents = events[dateKey] || [];
+            // Sort by market cap descending
+            dayEvents = [...dayEvents].sort((a, b) => getMarketCap(b.stockTicker) - getMarketCap(a.stockTicker));
             const isHoveredWeek = hoveredDate && isSameWeek(day, hoveredDate);
+            const showEvents = dayEvents.slice(0, 6);
+            const overflowCount = dayEvents.length - 6;
             return (
               <div
                 key={dateKey}
@@ -450,12 +466,12 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
               >
                 <div className="font-medium">{format(day, 'd')}</div>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {dayEvents.map((event: EarningsEvent, i: number) => (
+                  {showEvents.map((event: EarningsEvent, i: number) => (
                     <div
                       key={i}
                       className="relative group"
                       onClick={(e: MouseEvent) => {
-                        e.stopPropagation(); // Prevent triggering week/day view
+                        e.stopPropagation();
                         handleEventClick(event, e);
                       }}
                     >
@@ -466,11 +482,46 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                       </div>
                     </div>
                   ))}
+                  {overflowCount > 0 && (
+                    <button
+                      className="w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setOverflowModal({ date: dateKey, events: dayEvents });
+                      }}
+                    >
+                      +{overflowCount}
+                    </button>
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
+        {/* Overflow Modal */}
+        {overflowModal && (
+          <Dialog open={!!overflowModal} onOpenChange={() => setOverflowModal(null)}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Earnings for {overflowModal.date}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="max-h-[60vh]">
+                <div className="grid grid-cols-2 gap-4">
+                  {overflowModal.events.map((event, i) => (
+                    <div key={i} className="flex items-center gap-3 p-2 border rounded bg-card">
+                      <CompanyLogo event={event} size="large" />
+                      <div>
+                        <div className="font-semibold">{event.companyName}</div>
+                        <div className="text-sm text-muted-foreground">{event.stockTicker}</div>
+                        <div className="text-xs">{event.earningsType}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     );
   };
