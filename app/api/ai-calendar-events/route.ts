@@ -227,8 +227,8 @@ async function processEarningsText(text: string, db: any) {
   
   for (const line of lines) {
     if (typeof line !== 'string') continue;
-    const trimmedLine = line.trim()
-    if (!trimmedLine) continue
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
     
     // Look for ticker patterns (1-5 letter codes, case-insensitive)
     const tickerMatch = trimmedLine.match(/\b([A-Za-z]{1,5})\b/)
@@ -246,7 +246,9 @@ async function processEarningsText(text: string, db: any) {
       
       let eventDate = null
       for (const pattern of datePatterns) {
-        const dateMatch = trimmedLine.match(pattern)
+        if (!(pattern instanceof RegExp)) continue;
+        if (typeof trimmedLine !== 'string') continue;
+        const dateMatch = trimmedLine.match(pattern);
         if (dateMatch) {
           let dateStr = dateMatch[1]
           let parsedDate: Date | null = null
