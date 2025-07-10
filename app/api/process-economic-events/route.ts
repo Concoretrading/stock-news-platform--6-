@@ -50,12 +50,26 @@ export async function POST(request: NextRequest) {
         Object.entries(event).filter(([_, value]) => value !== undefined && value !== null)
       );
       
-      // Ensure no undefined values remain
+      // Ensure no undefined values remain and handle specific fields
       Object.keys(cleanEvent).forEach(key => {
-        if (cleanEvent[key] === undefined) {
+        if (cleanEvent[key] === undefined || cleanEvent[key] === null) {
           delete cleanEvent[key];
         }
       });
+      
+      // Explicitly handle optional fields that might be undefined
+      if (cleanEvent.actual === undefined || cleanEvent.actual === null) {
+        delete cleanEvent.actual;
+      }
+      if (cleanEvent.forecast === undefined || cleanEvent.forecast === null) {
+        delete cleanEvent.forecast;
+      }
+      if (cleanEvent.previous === undefined || cleanEvent.previous === null) {
+        delete cleanEvent.previous;
+      }
+      if (cleanEvent.iconUrl === undefined || cleanEvent.iconUrl === null) {
+        delete cleanEvent.iconUrl;
+      }
       
       // Update event with unique ID
       cleanEvent.id = uniqueId;
