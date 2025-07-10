@@ -220,6 +220,46 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
     return 'bg-slate-100 text-slate-800 border-slate-200';
   };
 
+  const getEventTypeIcon = (ticker: string) => {
+    if (ticker === 'MARKET') return <AlertTriangle className="h-3 w-3" />;
+    if (ticker === 'WITCHING') return <Zap className="h-3 w-3" />;
+    if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') return <Building2 className="h-3 w-3" />;
+    if (ticker === 'VIX') return <TrendingUp className="h-3 w-3" />;
+    if (['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(ticker)) return <DollarSign className="h-3 w-3" />;
+    return <TrendingUp className="h-3 w-3" />;
+  };
+
+  const getUniqueEventTypes = (events: CalendarEvent[]) => {
+    const eventTypes = new Map<string, React.ReactNode>();
+    
+    events.forEach(event => {
+      const ticker = event.ticker;
+      let icon: React.ReactNode;
+      
+      if (ticker === 'MARKET') {
+        icon = <AlertTriangle className="h-3 w-3 text-red-600" />;
+        eventTypes.set('Market Closed', icon);
+      } else if (ticker === 'WITCHING') {
+        icon = <Zap className="h-3 w-3 text-purple-600" />;
+        eventTypes.set('Options Expiration', icon);
+      } else if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') {
+        icon = <Building2 className="h-3 w-3 text-blue-600" />;
+        eventTypes.set('Fed Events', icon);
+      } else if (ticker === 'VIX') {
+        icon = <TrendingUp className="h-3 w-3 text-orange-600" />;
+        eventTypes.set('VIX Events', icon);
+      } else if (['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(ticker)) {
+        icon = <DollarSign className="h-3 w-3 text-green-600" />;
+        eventTypes.set('Economic Data', icon);
+      } else {
+        icon = <TrendingUp className="h-3 w-3 text-slate-600" />;
+        eventTypes.set('Other Events', icon);
+      }
+    });
+    
+    return Array.from(eventTypes.values());
+  };
+
   const renderDayDetailDialog = () => {
     if (!selectedDate) return null;
 
@@ -375,56 +415,75 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
               const isDayToday = isToday(day);
               const isDayPast = isPast(day) && !isDayToday;
               return (
-                <div
-                  key={dateKey}
-                  className={cn(
-                    "relative min-h-[60px] sm:min-h-[80px] md:min-h-[120px] p-0.5 sm:p-1 md:p-2 border rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
-                    "hover:bg-accent hover:shadow-sm",
-                    !isCurrentMonth && "opacity-40 bg-muted/20",
-                    isDayToday && "ring-1 sm:ring-2 ring-primary bg-primary/5",
-                    isDayPast && "bg-muted/10"
-                  )}
-                  onClick={() => {
-                    setSelectedDate(day);
-                    setSelectedDayEvents(dayEvents);
-                  }}
-                >
-                  {/* Cross overlay for past dates */}
-                  {isDayPast && dayEvents.length > 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                      <X className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-muted-foreground/50 stroke-[1.5]" />
-                    </div>
-                  )}
-                  <div className={cn(
-                    "text-[10px] sm:text-xs md:text-sm font-medium mb-0.5 sm:mb-1 md:mb-2",
-                    isDayToday && "text-primary font-bold",
-                    isDayPast && "text-muted-foreground"
-                  )}>
-                    {format(day, 'd')}
-                  </div>
-                  <div className="space-y-0.5 sm:space-y-1">
-                    {dayEvents.slice(0, 1).map((event, index) => (
-                      <div
-                        key={`${event.date}-${index}`}
-                        className={cn(
-                          "text-[8px] sm:text-xs px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 rounded border truncate",
-                          getEventColor(event.ticker, event.event_type),
-                          isDayPast && "opacity-60"
-                        )}
-                        title={`${event.ticker}: ${event.company_name}`}
-                      >
-                        <span className="font-medium">{event.ticker}</span>
-                      </div>
-                    ))}
-                    {dayEvents.length > 1 && (
-                      <div className={cn(
-                        "text-[8px] sm:text-xs text-muted-foreground px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1",
-                        isDayPast && "opacity-60"
-                      )}>
-                        +{dayEvents.length - 1} more
+                <div key={dateKey} className="relative">
+                  <div
+                    className={cn(
+                      "relative min-h-[60px] sm:min-h-[80px] md:min-h-[120px] p-0.5 sm:p-1 md:p-2 border rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
+                      "hover:bg-accent hover:shadow-sm",
+                      !isCurrentMonth && "opacity-40 bg-muted/20",
+                      isDayToday && "ring-1 sm:ring-2 ring-primary bg-primary/5",
+                      isDayPast && "bg-muted/10"
+                    )}
+                    onClick={() => {
+                      setSelectedDate(day);
+                      setSelectedDayEvents(dayEvents);
+                    }}
+                  >
+                    {/* Cross overlay for past dates */}
+                    {isDayPast && dayEvents.length > 0 && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                        <X className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-muted-foreground/50 stroke-[1.5]" />
                       </div>
                     )}
+                    <div className={cn(
+                      "text-[10px] sm:text-xs md:text-sm font-medium mb-0.5 sm:mb-1 md:mb-2",
+                      isDayToday && "text-primary font-bold",
+                      isDayPast && "text-muted-foreground"
+                    )}>
+                      {format(day, 'd')}
+                    </div>
+                    
+                    <div className="space-y-0.5 sm:space-y-1">
+                      {dayEvents.slice(0, 1).map((event, index) => (
+                        <div
+                          key={`${event.date}-${index}`}
+                          className={cn(
+                            "text-[8px] sm:text-xs px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 rounded border truncate",
+                            getEventColor(event.ticker, event.event_type),
+                            isDayPast && "opacity-60"
+                          )}
+                          title={`${event.ticker}: ${event.company_name}`}
+                        >
+                          <span className="font-medium">{event.ticker}</span>
+                        </div>
+                      ))}
+                      {dayEvents.length > 1 && (
+                        <div className={cn(
+                          "text-[8px] sm:text-xs text-muted-foreground px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1",
+                          isDayPast && "opacity-60"
+                        )}>
+                          +{dayEvents.length - 1} more
+                        </div>
+                      )}
+                    </div>
                   </div>
+                  
+                  {/* Event Type Icons - Positioned to the right */}
+                  {dayEvents.length > 0 && (
+                    <div className="absolute -right-1 sm:-right-2 top-1 sm:top-2 flex flex-col gap-0.5 sm:gap-1">
+                      {getUniqueEventTypes(dayEvents).map((icon, index) => (
+                        <div
+                          key={index}
+                          className={cn(
+                            "p-0.5 sm:p-1 rounded border bg-background shadow-sm",
+                            isDayPast && "opacity-60"
+                          )}
+                        >
+                          {icon}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -449,25 +508,48 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             const dateKey = format(day, 'yyyy-MM-dd');
             const dayEvents = events[dateKey] || [];
             return (
-              <Card key={dateKey} className="p-3">
-                <div className="text-center mb-2">
-                  <div className="text-lg font-bold">{format(day, 'EEE')}</div>
-                  <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <CalendarIcon className="h-8 w-8 text-muted-foreground" />
-                  {dayEvents.length > 0 ? (
-                    dayEvents.map((event, i) => (
-                      <div key={i} className="flex flex-col items-center gap-1">
-                        <span className="font-semibold text-xs">{event.company_name}</span>
-                        <span className="text-xs text-muted-foreground">{event.ticker}</span>
+              <div key={dateKey} className="relative">
+                <Card className="p-3">
+                  <div className="text-center mb-2">
+                    <div className="text-lg font-bold">{format(day, 'EEE')}</div>
+                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    {dayEvents.length > 0 ? (
+                      <>
+                        {/* Event Details */}
+                        {dayEvents.slice(0, 2).map((event, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1">
+                            <span className="font-semibold text-xs">{event.company_name}</span>
+                            <span className="text-xs text-muted-foreground">{event.ticker}</span>
+                          </div>
+                        ))}
+                        {dayEvents.length > 2 && (
+                          <div className="text-xs text-muted-foreground">
+                            +{dayEvents.length - 2} more
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No Events</div>
+                    )}
+                  </div>
+                </Card>
+                
+                {/* Event Type Icons - Positioned to the right */}
+                {dayEvents.length > 0 && (
+                  <div className="absolute -right-1 top-2 flex flex-col gap-1">
+                    {getUniqueEventTypes(dayEvents).map((icon, index) => (
+                      <div
+                        key={index}
+                        className="p-1 rounded border bg-background shadow-sm"
+                      >
+                        {icon}
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-sm text-muted-foreground">No Events</div>
-                  )}
-                </div>
-              </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
