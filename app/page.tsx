@@ -35,6 +35,17 @@ interface FirebaseStock {
   createdAt: string
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export default function HomePage() {
   const [watchlist, setWatchlist] = useState<Stock[]>([])
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
@@ -48,9 +59,10 @@ export default function HomePage() {
   const { user, loading } = useAuth()
   const { toast } = useToast()
   const router = useRouter()
+  const isMobile = useIsMobile()
 
-  // Carousel settings - show 8 stocks per page (2 rows of 4), max 10 total
-  const stocksPerPage = 8
+  // Carousel settings - show 5 stocks per page on mobile, 8 on desktop (2 rows of 4), max 10 total
+  const stocksPerPage = isMobile ? 5 : 8
   const maxStocks = 10
 
   // Show onboarding for new users
@@ -270,18 +282,64 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                {/* Mobile: Vertical Scrollable Carousel */}
+                {/* Mobile: Horizontal Sliding Layout with 5 stocks visible */}
                 <div className="block sm:hidden">
-                  <div className="flex flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2">
-                    {watchlist.map((stock) => (
-                      <div key={stock.symbol} className="transform transition-transform hover:scale-105">
-                        <StockCard 
-                          ticker={stock.symbol}
-                          name={stock.name}
-                          onClick={() => handleStockClick(stock)}
-                        />
+                  <div className="relative">
+                    {/* Mobile Navigation Arrows */}
+                    {totalPages > 1 && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={prevPage}
+                          disabled={currentPage === 0}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm border-gray-300 shadow-sm"
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={nextPage}
+                          disabled={currentPage === totalPages - 1}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm border-gray-300 shadow-sm"
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    
+                    {/* Horizontal Scroll Container - Show only current page stocks */}
+                    <div className="overflow-x-auto scrollbar-hide touch-scroll">
+                      <div className="flex gap-3 pb-4">
+                        {visibleStocks.map((stock) => (
+                          <div key={stock.symbol} className="flex-shrink-0 w-[calc(20%-12px)] transform transition-transform hover:scale-105">
+                            <StockCard 
+                              ticker={stock.symbol}
+                              name={stock.name}
+                              onClick={() => handleStockClick(stock)}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    </div>
+                    
+                    {/* Mobile Page Indicators */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center mt-4">
+                        <div className="flex space-x-2">
+                          {Array.from({ length: totalPages }).map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setCurrentPage(idx)}
+                              className={`w-2 h-2 rounded-full transition-colors touch-manipulation ${
+                                currentPage === idx ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 
