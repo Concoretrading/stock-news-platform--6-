@@ -46,6 +46,13 @@ export async function POST(request: NextRequest) {
         Object.entries(event).filter(([_, value]) => value !== undefined && value !== null)
       );
       
+      // Ensure no undefined values remain
+      Object.keys(cleanEvent).forEach(key => {
+        if (cleanEvent[key] === undefined) {
+          delete cleanEvent[key];
+        }
+      });
+      
       batch.set(eventRef, {
         ...cleanEvent,
         createdAt: new Date(),

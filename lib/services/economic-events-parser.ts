@@ -105,7 +105,7 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
             currency: 'USD',
             importance,
             forecast: expectations || null,
-            iconUrl,
+            iconUrl: iconUrl || undefined,
             type: 'economic'
           };
           
