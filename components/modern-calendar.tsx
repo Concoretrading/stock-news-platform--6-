@@ -341,11 +341,16 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         variant={viewMode === 'week' ? 'default' : 'outline'}
         onClick={() => {
           setViewMode('week');
-          setWeekStartDate(startOfWeek(selectedDate || currentDate));
+          if (!selectedDate) {
+            setSelectedDate(new Date());
+            setWeekStartDate(startOfWeek(new Date()));
+          } else {
+            setWeekStartDate(startOfWeek(selectedDate));
+          }
         }}
       >Week</Button>
-      </div>
-    );
+    </div>
+  );
 
   const renderMonthView = () => (
     <>
