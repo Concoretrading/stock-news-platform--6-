@@ -22,6 +22,8 @@ export function AdminEarningsUpload() {
   const [defaultDate, setDefaultDate] = useState<Date | null>(null);
   const [bulkPasteSummary, setBulkPasteSummary] = useState<{added: number, skipped: any[]} | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isListing, setIsListing] = useState(false);
+  const [earningsList, setEarningsList] = useState<any[]>([]);
 
   // Allow all authenticated users to access earnings upload
   if (!user) {
@@ -220,6 +222,29 @@ export function AdminEarningsUpload() {
     }
   };
 
+  const handleListEarnings = async () => {
+    setIsListing(true);
+    try {
+      const response = await fetch('/api/list-earnings', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${await firebaseUser?.getIdToken()}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to list earnings events');
+      }
+      setEarningsList(data.earnings || []);
+      toast.success(`📋 Found ${data.count} earnings events in database`);
+    } catch (error) {
+      console.error('List earnings error:', error);
+      toast.error('Failed to list earnings events');
+    } finally {
+      setIsListing(false);
+    }
+  };
+
   return (
     <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
       <CardHeader>
@@ -291,6 +316,59 @@ export function AdminEarningsUpload() {
             </Button>
           </div>
         </div>
+
+        {/* List All Earnings Button */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-blue-800 mb-1">📋 List All Earnings</h3>
+              <p className="text-sm text-blue-700">View all earnings events currently in the database</p>
+            </div>
+            <Button 
+              onClick={handleListEarnings}
+              disabled={isListing}
+              variant="outline"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isListing ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Clipboard className="h-4 w-4 mr-2" />
+                  List All Earnings
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Display Earnings List */}
+        {earningsList.length > 0 && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">📋 Current Earnings in Database ({earningsList.length}):</h3>
+            <div className="max-h-60 overflow-y-auto space-y-2">
+              {earningsList.map((earning, i) => (
+                <div key={i} className="text-sm p-2 bg-white rounded border border-gray-100">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <span className="font-medium">{earning.companyName}</span> 
+                      <span className="text-blue-600"> ({earning.stockTicker})</span>
+                      <span className="text-gray-600"> - {earning.earningsDate}</span>
+                      {earning.earningsType && (
+                        <span className="ml-2 px-2 py-1 bg-blue-200 text-blue-800 rounded text-xs">
+                          {earning.earningsType}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Primary Paste Area */}
         <div 
