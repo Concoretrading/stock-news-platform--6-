@@ -120,11 +120,20 @@ export default function CalendarPage() {
                   <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-yellow-300 rounded-full blur-md"></div>
                 </div>
                 <div className="relative z-10 max-w-lg mx-auto">
-                  {/* Enhanced star icon with glow effect */}
+                  {/* Golden Concore Logo with glow effect */}
                   <div className="mb-6 flex justify-center">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-pulse"></div>
-                      <Star className="h-16 w-16 text-amber-500 relative z-10 drop-shadow-lg" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 rounded-full blur-md opacity-40 animate-pulse"></div>
+                      <div className="relative z-10 w-16 h-16 mx-auto">
+                        <img 
+                          src="/images/concore-logo-new.png" 
+                          alt="Concore Elite" 
+                          className="w-full h-full object-contain filter drop-shadow-lg"
+                          style={{
+                            filter: 'brightness(1.2) contrast(1.1) saturate(1.3) hue-rotate(15deg) drop-shadow(0 4px 8px rgba(251, 191, 36, 0.4))'
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                   {/* Main message with better typography */}
