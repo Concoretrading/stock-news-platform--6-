@@ -266,7 +266,7 @@ async function processEarningsText(text: string, db: any) {
         }
       }
       
-      if (eventDate) {
+      if (eventDate && !isNaN(eventDate.getTime())) {
         // Determine earnings type from text
         let earningsType = 'BMO' // Default to Before Market Open
         if (trimmedLine.toLowerCase().includes('after market') || 
@@ -286,6 +286,9 @@ async function processEarningsText(text: string, db: any) {
           conferenceCallUrl: null,
           event_type: 'Earnings Call'
         })
+      } else if (eventDate) {
+        // Invalid date parsed, log for debugging
+        console.warn('Skipping line with invalid date:', trimmedLine, eventDate)
       }
     }
   }
