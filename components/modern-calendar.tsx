@@ -105,7 +105,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         }
 
         if (type === 'earnings' || type === 'all') {
-          // Fetch earnings events
+          // Fetch earnings events (but not when type is 'events')
           const earningsRef = collection(db, 'earnings_calendar');
           const earningsQuery = query(
             earningsRef,
@@ -613,12 +613,14 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4">
-            <div className="flex items-center gap-1 sm:gap-2">
-              <div className="p-0.5 sm:p-1 rounded bg-slate-100 text-slate-800">
-                <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+            {type !== 'events' && (
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="p-0.5 sm:p-1 rounded bg-slate-100 text-slate-800">
+                  <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                </div>
+                <span className="text-[10px] sm:text-xs md:text-sm">Earnings</span>
               </div>
-              <span className="text-[10px] sm:text-xs md:text-sm">Earnings</span>
-            </div>
+            )}
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="p-0.5 sm:p-1 rounded bg-green-100 text-green-800">
                 <DollarSign className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
