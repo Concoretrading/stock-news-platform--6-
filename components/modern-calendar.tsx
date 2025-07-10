@@ -143,36 +143,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         console.error('Error fetching events:', error);
         // Show fallback event if Firebase fails
         const newEvents: Record<string, CalendarEvent[]> = {};
-        
-        const fallbackEvents = [
-          {
-            id: 'fallback-1',
-            date: format(new Date(), 'yyyy-MM-dd'),
-            ticker: 'SAMPLE',
-            company_name: 'Sample Event',
-            event_type: 'Demo Event',
-            confirmed: true,
-            auto_generated: false
-          }
-        ];
-        
-        // Apply filtering to fallback events too
-        const filteredFallbackEvents = fallbackEvents.filter(event => {
-          if (type === 'earnings') {
-            return event.event_type.toLowerCase().includes('earnings');
-          } else if (type === 'events') {
-            return !event.event_type.toLowerCase().includes('earnings');
-          }
-          return true;
-        });
-        
-        filteredFallbackEvents.forEach(event => {
-          if (!newEvents[event.date]) {
-            newEvents[event.date] = [];
-          }
-          newEvents[event.date].push(event);
-        });
-        
         setEvents(newEvents);
       } finally {
         setIsLoading(false);
