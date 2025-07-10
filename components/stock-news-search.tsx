@@ -112,7 +112,9 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
     } else {
       const q = searchQuery.toLowerCase().trim()
       const filtered = userEntries.filter(entry => {
-        return (entry.description as string).toLowerCase().includes(q)
+        const desc = (entry.description || '').toLowerCase();
+        const title = (entry.title || '').toLowerCase();
+        return desc.includes(q) || title.includes(q);
       })
       setFilteredEntries(filtered)
     }
