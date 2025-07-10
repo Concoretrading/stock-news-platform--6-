@@ -68,6 +68,9 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         const startDate = format(calendarStart, 'yyyy-MM-dd');
         const endDate = format(calendarEnd, 'yyyy-MM-dd');
         
+        console.log('📅 Fetching events for date range:', startDate, 'to', endDate);
+        console.log('📅 Current month being displayed:', format(currentDate, 'MMMM yyyy'));
+        
         // Fetch real events from database
         const newEvents: Record<string, CalendarEvent[]> = {};
 
@@ -81,8 +84,11 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           );
           const economicSnapshot = await getDocs(economicQuery);
           
+          console.log('📊 Found', economicSnapshot.size, 'economic events in database');
+          
           economicSnapshot.forEach((doc) => {
             const eventData = doc.data();
+            console.log('📊 Economic event:', eventData);
             const event: CalendarEvent = {
               id: doc.id,
               date: eventData.date,
@@ -114,6 +120,8 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           );
           const earningsSnapshot = await getDocs(earningsQuery);
           
+          console.log('📊 Found', earningsSnapshot.size, 'earnings events in database');
+          
           earningsSnapshot.forEach((doc) => {
             const eventData = doc.data();
             const event: CalendarEvent = {
@@ -139,6 +147,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
         setEvents(newEvents);
         console.log('📅 Calendar events loaded:', Object.keys(newEvents).length, 'days with events');
+        console.log('📅 Events by date:', newEvents);
       } catch (error) {
         console.error('Error fetching events:', error);
         // Show fallback event if Firebase fails
@@ -364,6 +373,23 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
   const renderMonthView = () => (
     <>
+      {/* Month Navigation */}
+      <div className="flex justify-between items-center mb-4">
+        <Button 
+          variant="ghost" 
+          onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <h2 className="text-xl font-bold">{format(currentDate, 'MMMM yyyy')}</h2>
+        <Button 
+          variant="ghost" 
+          onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+      
       {renderViewToggles()}
       {/* Calendar Grid (existing code) */}
       <Card>
