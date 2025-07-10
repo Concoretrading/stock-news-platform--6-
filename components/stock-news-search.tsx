@@ -103,9 +103,12 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   }, [ticker, toast])
 
   useEffect(() => {
-    // Only include user-entered entries with a non-empty description
+    // Only include user manual entries with a non-empty title or description
     const userEntries = Array.isArray(allEntries)
-      ? allEntries.filter(entry => entry.isManual && typeof entry.description === 'string' && entry.description.trim().length > 0)
+      ? allEntries.filter(entry => entry.isManual && (
+          (typeof entry.title === 'string' && entry.title.trim().length > 0) ||
+          (typeof entry.description === 'string' && entry.description.trim().length > 0)
+        ))
       : [];
     if (!searchQuery.trim()) {
       setFilteredEntries(userEntries)
