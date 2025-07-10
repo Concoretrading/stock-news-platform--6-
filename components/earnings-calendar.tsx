@@ -7,13 +7,16 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, Calendar as CalendarIcon, ExternalLink, Clock } from 'lucide-react';
+import { ChevronLeft, Calendar as CalendarIcon, ExternalLink, Clock, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuth } from '@/components/auth-provider';
 import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
 type ViewMode = 'months' | 'month' | 'week' | 'day';
 
 interface EarningsEvent {
+  id: string; // Document ID for deletion
   stockTicker: string;
   companyName: string;
   eventDate: Date;
@@ -34,110 +37,151 @@ interface EarningsCalendarProps {
 }
 
 export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
+  const { user, firebaseUser } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('months');
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<Record<string, EarningsEvent[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<EarningsEvent | null>(null);
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   // Generate 7 months starting from current month
   const months = Array.from({ length: 7 }, (_, i) => addMonths(startOfMonth(new Date()), i));
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setIsLoading(true);
-        const db = getFirestore();
-        
-        // Get start and end dates based on view mode
-        let start: Date, end: Date;
-        if (viewMode === 'months') {
-          start = months[0];
-          end = months[months.length - 1];
-        } else if (viewMode === 'month') {
-          start = startOfMonth(selectedDate);
-          end = endOfMonth(selectedDate);
-        } else {
-          start = startOfWeek(selectedDate);
-          end = endOfWeek(selectedDate);
-        }
-
-        const eventsRef = collection(db, 'earnings_calendar');
-        
-        // Convert dates to YYYY-MM-DD format for proper querying since events are stored as YYYY-MM-DD strings
-        const startDate = format(start, 'yyyy-MM-dd');
-        const endDate = format(end, 'yyyy-MM-dd');
-        
-        const q = query(
-          eventsRef,
-          where('earningsDate', '>=', startDate),
-          where('earningsDate', '<=', endDate)
-        );
-
-        const querySnapshot = await getDocs(q);
-        const newEvents: Record<string, EarningsEvent[]> = {};
-
-        console.log(`📅 Earnings Calendar: Querying from ${startDate} to ${endDate}`);
-        console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents`);
-
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          console.log(`📅 Earnings Calendar: Processing event:`, data);
-          
-          const event: EarningsEvent = {
-            stockTicker: data.stockTicker,
-            companyName: data.companyName,
-            eventDate: new Date(data.earningsDate),
-            logoUrl: data.logoUrl,
-            earningsType: data.earningsType,
-            estimatedEPS: data.estimatedEPS,
-            actualEPS: data.actualEPS,
-            estimatedRevenue: data.estimatedRevenue,
-            actualRevenue: data.actualRevenue,
-            conferenceCallUrl: data.conferenceCallUrl,
-            lastEarningsDate: data.lastEarningsDate ? new Date(data.lastEarningsDate) : undefined,
-            lastEarningsEPS: data.lastEarningsEPS,
-            lastEarningsRevenue: data.lastEarningsRevenue
-          };
-          const dateKey = format(new Date(data.earningsDate), 'yyyy-MM-dd');
-          if (!newEvents[dateKey]) {
-            newEvents[dateKey] = [];
-          }
-          newEvents[dateKey].push(event);
-        });
-
-        console.log(`📅 Earnings Calendar: Processed ${Object.keys(newEvents).length} days with events`);
-        setEvents(newEvents);
-        
-        // If no events found, try a simple query to see if there are any events at all
-        if (Object.keys(newEvents).length === 0) {
-          console.log('📅 Earnings Calendar: No events found in date range, checking if any events exist...');
-          try {
-            const simpleQuery = query(eventsRef, limit(5));
-            const simpleSnapshot = await getDocs(simpleQuery);
-            console.log(`📅 Earnings Calendar: Found ${simpleSnapshot.size} total events in database`);
-            simpleSnapshot.forEach((doc) => {
-              const data = doc.data();
-              console.log(`📅 Earnings Calendar: Sample event:`, data);
-            });
-          } catch (simpleError) {
-            console.error('📅 Earnings Calendar: Error checking for events:', simpleError);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching events:', error);
-      } finally {
-        setIsLoading(false);
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      const db = getFirestore();
+      
+      // Get start and end dates based on view mode
+      let start: Date, end: Date;
+      if (viewMode === 'months') {
+        start = months[0];
+        end = months[months.length - 1];
+      } else if (viewMode === 'month') {
+        start = startOfMonth(selectedDate);
+        end = endOfMonth(selectedDate);
+      } else {
+        start = startOfWeek(selectedDate);
+        end = endOfWeek(selectedDate);
       }
-    };
 
+      const eventsRef = collection(db, 'earnings_calendar');
+      
+      // Convert dates to YYYY-MM-DD format for proper querying since events are stored as YYYY-MM-DD strings
+      const startDate = format(start, 'yyyy-MM-dd');
+      const endDate = format(end, 'yyyy-MM-dd');
+      
+      const q = query(
+        eventsRef,
+        where('earningsDate', '>=', startDate),
+        where('earningsDate', '<=', endDate)
+      );
+
+      const querySnapshot = await getDocs(q);
+      const newEvents: Record<string, EarningsEvent[]> = {};
+
+      console.log(`📅 Earnings Calendar: Querying from ${startDate} to ${endDate}`);
+      console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents`);
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        console.log(`📅 Earnings Calendar: Processing event:`, data);
+        
+        const event: EarningsEvent = {
+          id: doc.id, // Add document ID for deletion
+          stockTicker: data.stockTicker,
+          companyName: data.companyName,
+          eventDate: new Date(data.earningsDate),
+          logoUrl: data.logoUrl,
+          earningsType: data.earningsType,
+          estimatedEPS: data.estimatedEPS,
+          actualEPS: data.actualEPS,
+          estimatedRevenue: data.estimatedRevenue,
+          actualRevenue: data.actualRevenue,
+          conferenceCallUrl: data.conferenceCallUrl,
+          lastEarningsDate: data.lastEarningsDate ? new Date(data.lastEarningsDate) : undefined,
+          lastEarningsEPS: data.lastEarningsEPS,
+          lastEarningsRevenue: data.lastEarningsRevenue
+        };
+        const dateKey = format(new Date(data.earningsDate), 'yyyy-MM-dd');
+        if (!newEvents[dateKey]) {
+          newEvents[dateKey] = [];
+        }
+        newEvents[dateKey].push(event);
+      });
+
+      console.log(`📅 Earnings Calendar: Processed ${Object.keys(newEvents).length} days with events`);
+      setEvents(newEvents);
+      
+      // If no events found, try a simple query to see if there are any events at all
+      if (Object.keys(newEvents).length === 0) {
+        console.log('📅 Earnings Calendar: No events found in date range, checking if any events exist...');
+        try {
+          const simpleQuery = query(eventsRef, limit(5));
+          const simpleSnapshot = await getDocs(simpleQuery);
+          console.log(`📅 Earnings Calendar: Found ${simpleSnapshot.size} total events in database`);
+          simpleSnapshot.forEach((doc) => {
+            const data = doc.data();
+            console.log(`📅 Earnings Calendar: Sample event:`, data);
+          });
+        } catch (simpleError) {
+          console.error('📅 Earnings Calendar: Error checking for events:', simpleError);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchEvents();
   }, [selectedDate, viewMode, type]);
 
   const handleEventClick = (event: EarningsEvent, e: MouseEvent) => {
     e.stopPropagation(); // Prevent triggering parent click handlers
     setSelectedEvent(event);
+  };
+
+  const handleDeleteEvent = async (event: EarningsEvent) => {
+    if (!firebaseUser) {
+      toast.error('You must be logged in to delete events');
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete the ${event.stockTicker} earnings event on ${format(event.eventDate, 'MMM d, yyyy')}?`)) {
+      return;
+    }
+
+    setIsDeleting(event.id);
+    try {
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch(`/api/delete-earnings/${event.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete event');
+      }
+
+      toast.success(`🗑️ Deleted ${event.stockTicker} earnings event`);
+      setSelectedEvent(null);
+      
+      // Refresh the events
+      fetchEvents();
+    } catch (error) {
+      console.error('Delete event error:', error);
+      toast.error('Failed to delete earnings event');
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   const CompanyLogo = ({ event, size = "small" }: { event: EarningsEvent, size?: "small" | "large" }) => {
@@ -283,6 +327,30 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                 }
               </p>
             </div>
+
+            {/* Delete Button (Admin Only) */}
+            {user?.email === 'handrigannick@gmail.com' && (
+              <div className="border-t pt-4">
+                <Button 
+                  variant="destructive" 
+                  onClick={() => handleDeleteEvent(selectedEvent)}
+                  disabled={isDeleting === selectedEvent.id}
+                  className="w-full"
+                >
+                  {isDeleting === selectedEvent.id ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Earnings Event
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
