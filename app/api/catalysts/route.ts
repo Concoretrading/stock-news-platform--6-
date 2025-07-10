@@ -75,6 +75,10 @@ export async function GET(request: NextRequest) {
     }
     
     const catalysts = catalystsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(c => {
+        const cat = c as any;
+        return cat && cat.id && cat.description && cat.isManual === true;
+      });
     return NextResponse.json({ success: true, data: catalysts })
   } catch (error) {
     console.error("Error in GET /api/catalysts:", error)
