@@ -8,9 +8,9 @@ export interface EconomicEvent {
   country: string;
   currency: string;
   importance: 'HIGH' | 'MEDIUM' | 'LOW';
-  actual?: string;
-  forecast?: string;
-  previous?: string;
+  actual?: string | null;
+  forecast?: string | null;
+  previous?: string | null;
   iconUrl?: string;
   type: 'economic';
 }
@@ -43,10 +43,10 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
       // Determine importance based on event type
       const importance = determineImportance(event);
       
-      // Parse actual/forecast/previous if available
-      const actual = columns[4] || undefined;
-      const forecast = columns[5] || undefined;
-      const previous = columns[6] || undefined;
+      // Parse actual/forecast/previous if available (only include if not empty)
+      const actual = columns[4]?.trim() || null;
+      const forecast = columns[5]?.trim() || null;
+      const previous = columns[6]?.trim() || null;
       
       // Map event to icon
       const iconUrl = mapEventToIcon(event);

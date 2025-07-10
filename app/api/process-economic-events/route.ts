@@ -41,8 +41,13 @@ export async function POST(request: NextRequest) {
     
     for (const event of events) {
       const eventRef = db.collection('economic_events').doc(event.id);
+      // Filter out undefined and null values before saving to Firestore
+      const cleanEvent = Object.fromEntries(
+        Object.entries(event).filter(([_, value]) => value !== undefined && value !== null)
+      );
+      
       batch.set(eventRef, {
-        ...event,
+        ...cleanEvent,
         createdAt: new Date(),
         updatedAt: new Date()
       });
