@@ -226,6 +226,7 @@ async function processEarningsText(text: string, db: any) {
   const lines = text.split('\n')
   
   for (const line of lines) {
+    if (typeof line !== 'string') continue;
     const trimmedLine = line.trim()
     if (!trimmedLine) continue
     
