@@ -452,6 +452,7 @@ async function processEarningsText(text: string, db: any) {
           
           // Try to find a date in this line
           let eventDate = null
+          let originalDateStr = null
           const datePatterns = [
             /(\d{1,2}\/\d{1,2}\/\d{2,4})/g,
             /(\d{1,2}-\d{1,2}-\d{2,4})/g,

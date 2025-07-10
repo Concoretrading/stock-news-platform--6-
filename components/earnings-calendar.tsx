@@ -89,11 +89,15 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         const data = doc.data();
         console.log(`📅 Earnings Calendar: Processing event:`, data);
         
+        // Create date in local timezone to avoid UTC conversion issues
+        const [year, month, day] = data.earningsDate.split('-').map(Number);
+        const localEventDate = new Date(year, month - 1, day);
+        
         const event: EarningsEvent = {
           id: doc.id, // Add document ID for deletion
           stockTicker: data.stockTicker,
           companyName: data.companyName,
-          eventDate: new Date(data.earningsDate),
+          eventDate: localEventDate,
           logoUrl: data.logoUrl,
           earningsType: data.earningsType,
           estimatedEPS: data.estimatedEPS,
@@ -105,7 +109,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           lastEarningsEPS: data.lastEarningsEPS,
           lastEarningsRevenue: data.lastEarningsRevenue
         };
-        const dateKey = format(new Date(data.earningsDate), 'yyyy-MM-dd');
+        const dateKey = format(localEventDate, 'yyyy-MM-dd');
         if (!newEvents[dateKey]) {
           newEvents[dateKey] = [];
         }
