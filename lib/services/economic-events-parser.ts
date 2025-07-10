@@ -45,14 +45,9 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
       // If we have a current date and this looks like an event line
       if (currentDate && (firstColumn.includes('am') || firstColumn.includes('pm'))) {
         console.log(`📊 Processing event: ${firstColumn} for date: ${currentDate}`);
-        const timeStr = firstColumn;
-        const eventName = columns[1] || '';
-        const period = columns[2] || '';
-        const actual = columns[3]?.trim() || null;
-        const forecast = columns[4]?.trim() || null;
-        const previous = columns[5]?.trim() || null;
         
         // Parse time
+        const timeStr = firstColumn;
         const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
         let hours = 0, minutes = 0;
         
@@ -67,28 +62,52 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
         
         const timeStrFormatted = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         
-        // Determine importance based on event type
-        const importance = determineImportance(eventName);
+        // Find event name and expectations
+        let eventName = '';
+        let expectations = '';
         
-        // Map event to icon
-        const iconUrl = mapEventToIcon(eventName);
+        // Look for event name (skip time column)
+        for (let j = 1; j < columns.length; j++) {
+          const col = columns[j];
+          if (col && !col.includes('%') && !col.match(/^-?\d+\.?\d*$/)) {
+            eventName = col;
+            break;
+          }
+        }
         
-        const economicEvent: EconomicEvent = {
-          id: `economic_${Date.now()}_${i}`,
-          date: currentDate,
-          time: timeStrFormatted,
-          event: eventName,
-          country: 'US',
-          currency: 'USD',
-          importance,
-          actual,
-          forecast,
-          previous,
-          iconUrl,
-          type: 'economic'
-        };
+        // Look for expectations (numbers with % or decimal values)
+        for (let j = 1; j < columns.length; j++) {
+          const col = columns[j];
+          if (col && (col.includes('%') || col.match(/^-?\d+\.?\d*$/))) {
+            expectations = col;
+            break;
+          }
+        }
         
-        events.push(economicEvent);
+        if (eventName) {
+          // Determine importance based on event type
+          const importance = determineImportance(eventName);
+          
+          // Map event to icon
+          const iconUrl = mapEventToIcon(eventName);
+          
+          const economicEvent: EconomicEvent = {
+            id: `economic_${Date.now()}_${i}`,
+            date: currentDate,
+            time: timeStrFormatted,
+            event: eventName,
+            country: 'US',
+            currency: 'USD',
+            importance,
+            actual: null,
+            forecast: expectations || null,
+            previous: null,
+            iconUrl,
+            type: 'economic'
+          };
+          
+          events.push(economicEvent);
+        }
       }
     } catch (error) {
       console.error(`Error parsing line ${i + 1}:`, error);
@@ -221,16 +240,22 @@ export function validateMarketWatchData(rawData: string): { isValid: boolean; er
     
     const columns = line.split(/\t+/).map(col => col.trim()).filter(col => col);
     
-    if (columns.length < 4) {
-      errors.push(`Line ${i + 1}: Insufficient columns (expected 4+, got ${columns.length})`);
+    // Check if this is a day header (e.g., "TUESDAY, JULY 15")
+    if (columns.length === 1 && columns[0].includes(',') && (columns[0].includes('JULY') || columns[0].includes('JUNE') || columns[0].includes('AUGUST'))) {
+      validLines++;
       continue;
     }
     
-    const dateTimeStr = columns[0];
-    const parsedDateTime = parseDateTime(dateTimeStr);
+    // For event lines, we need at least 2 columns (time and event name)
+    if (columns.length < 2) {
+      errors.push(`Line ${i + 1}: Insufficient columns (expected 2+, got ${columns.length})`);
+      continue;
+    }
     
-    if (!parsedDateTime) {
-      errors.push(`Line ${i + 1}: Invalid date/time format: "${dateTimeStr}"`);
+    // Check if first column is a time (e.g., "8:30 am")
+    const timeStr = columns[0];
+    if (!timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i)) {
+      errors.push(`Line ${i + 1}: Invalid time format: "${timeStr}"`);
       continue;
     }
     

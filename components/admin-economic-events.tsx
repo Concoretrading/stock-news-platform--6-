@@ -32,22 +32,34 @@ export default function AdminEconomicEvents() {
   } | null>(null);
 
   const handlePreview = () => {
+    console.log('🔍 Preview button clicked');
+    console.log('📝 Raw data:', rawData);
+    
     if (!rawData.trim()) {
+      console.log('❌ No raw data');
       setValidationErrors(['Please enter MarketWatch economic calendar data']);
       setPreviewEvents([]);
       return;
     }
 
+    console.log('✅ Raw data exists, validating...');
     const validation = validateMarketWatchData(rawData);
+    console.log('🔍 Validation result:', validation);
+    
     if (!validation.isValid) {
+      console.log('❌ Validation failed:', validation.errors);
       setValidationErrors(validation.errors);
       setPreviewEvents([]);
       return;
     }
 
+    console.log('✅ Validation passed, parsing events...');
     const events = parseMarketWatchData(rawData);
+    console.log('📊 Parsed events:', events);
+    
     setPreviewEvents(events);
     setValidationErrors([]);
+    console.log('✅ Preview events set:', events.length, 'events');
   };
 
   const handleUpload = async () => {
