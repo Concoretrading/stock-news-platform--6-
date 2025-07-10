@@ -21,6 +21,9 @@ interface CalendarEvent {
   confirmed: boolean;
   auto_generated?: boolean;
   created_at?: any;
+  iconUrl?: string;
+  logoUrl?: string;
+  type?: 'economic' | 'earnings';
 }
 
 interface ModernCalendarProps {
@@ -62,594 +65,83 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
       try {
         setIsLoading(true);
         const db = getFirestore();
-        
-        // Choose collection based on type
-        const collectionName = type === 'events' ? 'economic_events' : 'earnings_calendar';
-        const eventsRef = collection(db, collectionName);
         const startDate = format(calendarStart, 'yyyy-MM-dd');
         const endDate = format(calendarEnd, 'yyyy-MM-dd');
         
-        // Create sample events for immediate testing
+        // Fetch real events from database
         const newEvents: Record<string, CalendarEvent[]> = {};
 
-        // Add sample events for the current month
-        const today = new Date();
-        
-        // Comprehensive Market Watch Economic Data - spread throughout the month
-        const sampleEvents = [
-          // EMPLOYMENT DATA
-          {
-            id: 'sample-1',
-            date: `${currentMonthKey}-01`,
-            ticker: 'JOBS',
-            company_name: 'Non-Farm Payrolls',
-            event_type: 'Employment Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-2',
-            date: `${currentMonthKey}-01`,
-            ticker: 'UNEMP',
-            company_name: 'Unemployment Rate',
-            event_type: 'Employment Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-3',
-            date: `${currentMonthKey}-08`,
-            ticker: 'CLAIMS',
-            company_name: 'Initial Jobless Claims',
-            event_type: 'Employment Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          // INFLATION DATA
-          {
-            id: 'sample-4',
-            date: `${currentMonthKey}-12`,
-            ticker: 'CPI',
-            company_name: 'Consumer Price Index',
-            event_type: 'Inflation Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-5',
-            date: `${currentMonthKey}-14`,
-            ticker: 'PPI',
-            company_name: 'Producer Price Index',
-            event_type: 'Inflation Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-6',
-            date: `${currentMonthKey}-29`,
-            ticker: 'PCE',
-            company_name: 'Personal Consumption Expenditures',
-            event_type: 'Inflation Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          // CONSUMER/RETAIL DATA
-          {
-            id: 'sample-7',
-            date: `${currentMonthKey}-15`,
-            ticker: 'RETAIL',
-            company_name: 'Retail Sales',
-            event_type: 'Consumer Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-8',
-            date: `${currentMonthKey}-26`,
-            ticker: 'CONF',
-            company_name: 'Consumer Confidence',
-            event_type: 'Consumer Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-9',
-            date: `${currentMonthKey}-27`,
-            ticker: 'MICH',
-            company_name: 'Michigan Consumer Sentiment',
-            event_type: 'Consumer Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          // MANUFACTURING DATA
-          {
-            id: 'sample-10',
-            date: `${currentMonthKey}-03`,
-            ticker: 'ISM',
-            company_name: 'ISM Manufacturing PMI',
-            event_type: 'Manufacturing Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-11',
-            date: `${currentMonthKey}-05`,
-            ticker: 'ISPMI',
-            company_name: 'ISM Services PMI',
-            event_type: 'Manufacturing Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-12',
-            date: `${currentMonthKey}-16`,
-            ticker: 'IP',
-            company_name: 'Industrial Production',
-            event_type: 'Manufacturing Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          // HOUSING DATA
-          {
-            id: 'sample-13',
-            date: `${currentMonthKey}-19`,
-            ticker: 'STARTS',
-            company_name: 'Housing Starts',
-            event_type: 'Housing Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-14',
-            date: `${currentMonthKey}-21`,
-            ticker: 'EXIST',
-            company_name: 'Existing Home Sales',
-            event_type: 'Housing Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-15',
-            date: `${currentMonthKey}-24`,
-            ticker: 'NEW',
-            company_name: 'New Home Sales',
-            event_type: 'Housing Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          // GDP & TRADE DATA
-          {
-            id: 'sample-16',
-            date: `${currentMonthKey}-30`,
-            ticker: 'GDP',
-            company_name: 'Gross Domestic Product',
-            event_type: 'Economic Growth',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-17',
-            date: `${currentMonthKey}-06`,
-            ticker: 'TRADE',
-            company_name: 'Trade Balance',
-            event_type: 'Trade Data',
-            confirmed: true,
-            auto_generated: true
-          },
-          // FED EVENTS
-          {
-            id: 'sample-18',
-            date: `${currentMonthKey}-20`,
-            ticker: 'FOMC',
-            company_name: 'Federal Reserve FOMC Meeting',
-            event_type: 'Fed Meeting',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-19',
-            date: `${currentMonthKey}-18`,
-            ticker: 'BEIGE',
-            company_name: 'Fed Beige Book Release',
-            event_type: 'Fed Report',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-20',
-            date: `${currentMonthKey}-10`,
-            ticker: 'MINUTES',
-            company_name: 'FOMC Meeting Minutes',
-            event_type: 'Fed Report',
-            confirmed: true,
-            auto_generated: true
-          },
-          // MARKET STRUCTURE EVENTS
-          {
-            id: 'sample-21',
-            date: `${currentMonthKey}-17`,
-            ticker: 'VIX',
-            company_name: 'VIX Options Expiration',
-            event_type: 'Options Expiration',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-22',
-            date: `${currentMonthKey}-22`,
-            ticker: 'WITCHING',
-            company_name: 'Triple Witching Day',
-            event_type: 'Options & Futures Expiration',
-            confirmed: true,
-            auto_generated: true
-          },
-          {
-            id: 'sample-23',
-            date: `${currentMonthKey}-28`,
-            ticker: 'MARKET',
-            company_name: 'Market Holiday',
-            event_type: 'Market Closed',
-            confirmed: true,
-            auto_generated: true
-          },
-          // EARNINGS EVENTS (Major Tech & Blue Chips - Q4 2024 Results)
-          // JANUARY 2025 - Q4 2024 Earnings Season
-          {
-            id: 'earnings-1', 
-            date: '2025-01-14',
-            ticker: 'JPM',
-            company_name: 'JPMorgan Chase & Co.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-2',
-            date: '2025-01-15',
-            ticker: 'C',
-            company_name: 'Citigroup Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-3',
-            date: '2025-01-16',
-            ticker: 'BAC',
-            company_name: 'Bank of America Corp.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-4',
-            date: '2025-01-17',
-            ticker: 'WFC',
-            company_name: 'Wells Fargo & Company',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-5',
-            date: '2025-01-21',
-            ticker: 'NFLX',
-            company_name: 'Netflix Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-6',
-            date: '2025-01-22',
-            ticker: 'JNJ',
-            company_name: 'Johnson & Johnson',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-7',
-            date: '2025-01-28',
-            ticker: 'AAPL',
-            company_name: 'Apple Inc.',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-8',
-            date: '2025-01-29',
-            ticker: 'MSFT',
-            company_name: 'Microsoft Corporation',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-9',
-            date: '2025-01-30',
-            ticker: 'TSLA',
-            company_name: 'Tesla Inc.',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-10',
-            date: '2025-01-31',
-            ticker: 'META',
-            company_name: 'Meta Platforms Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          // FEBRUARY 2025 - Continued Q4 2024 Earnings
-          {
-            id: 'earnings-11',
-            date: '2025-02-03',
-            ticker: 'GOOGL',
-            company_name: 'Alphabet Inc.',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-12',
-            date: '2025-02-04',
-            ticker: 'AMZN',
-            company_name: 'Amazon.com Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-13',
-            date: '2025-02-05',
-            ticker: 'NVDA',
-            company_name: 'NVIDIA Corporation',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-14',
-            date: '2025-02-06',
-            ticker: 'V',
-            company_name: 'Visa Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-15',
-            date: '2025-02-11',
-            ticker: 'PFE',
-            company_name: 'Pfizer Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-16',
-            date: '2025-02-12',
-            ticker: 'KO',
-            company_name: 'The Coca-Cola Company',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-17',
-            date: '2025-02-13',
-            ticker: 'DIS',
-            company_name: 'The Walt Disney Company',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-18',
-            date: '2025-02-18',
-            ticker: 'WMT',
-            company_name: 'Walmart Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-19',
-            date: '2025-02-19',
-            ticker: 'HD',
-            company_name: 'The Home Depot Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-20',
-            date: '2025-02-25',
-            ticker: 'PYPL',
-            company_name: 'PayPal Holdings Inc.',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          // MARCH 2025 - Late Q4 2024 & Early Q1 2025 Guidance
-          {
-            id: 'earnings-21',
-            date: '2025-03-04',
-            ticker: 'CRM',
-            company_name: 'Salesforce Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-22',
-            date: '2025-03-06',
-            ticker: 'ORCL',
-            company_name: 'Oracle Corporation',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-23',
-            date: '2025-03-11',
-            ticker: 'ADBE',
-            company_name: 'Adobe Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-24',
-            date: '2025-03-13',
-            ticker: 'INTC',
-            company_name: 'Intel Corporation',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-25',
-            date: '2025-03-18',
-            ticker: 'BA',
-            company_name: 'The Boeing Company',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-26',
-            date: '2025-03-20',
-            ticker: 'NKE',
-            company_name: 'Nike Inc.',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-27',
-            date: '2025-03-25',
-            ticker: 'AMD',
-            company_name: 'Advanced Micro Devices Inc.',
-            event_type: 'Earnings Report',
-            confirmed: true,
-            auto_generated: false
-          },
-          {
-            id: 'earnings-28',
-            date: '2025-03-27',
-            ticker: 'SBUX',
-            company_name: 'Starbucks Corporation',
-            event_type: 'Earnings Call',
-            confirmed: true,
-            auto_generated: false
-          }
-        ];
-
-        // Filter events based on type prop
-        const filteredSampleEvents = sampleEvents.filter(event => {
-          if (type === 'earnings') {
-            // Only show earnings events (event_type contains 'Earnings')
-            return event.event_type.toLowerCase().includes('earnings');
-          } else if (type === 'events') {
-            // Show everything EXCEPT earnings events
-            return !event.event_type.toLowerCase().includes('earnings');
-          }
-          // type === 'all' - show everything
-          return true;
-        });
-        
-        // Add sample events to the calendar
-        filteredSampleEvents.forEach(event => {
-          if (!newEvents[event.date]) {
-            newEvents[event.date] = [];
-          }
-          newEvents[event.date].push(event);
-        });
-
-        try {
-          // Try to fetch real events with simple query (no complex indexes)
-          const simpleQuery = query(
-            eventsRef,
-            limit(50) // Simple query without complex where clauses
+        if (type === 'events' || type === 'all') {
+          // Fetch economic events
+          const economicEventsRef = collection(db, 'economic_events');
+          const economicQuery = query(
+            economicEventsRef,
+            where('date', '>=', startDate),
+            where('date', '<=', endDate)
           );
+          const economicSnapshot = await getDocs(economicQuery);
           
-          const snapshot = await getDocs(simpleQuery);
-          
-          snapshot.forEach((doc) => {
-          const data = doc.data();
-            let dateString: string;
+          economicSnapshot.forEach((doc) => {
+            const eventData = doc.data();
+            const event: CalendarEvent = {
+              id: doc.id,
+              date: eventData.date,
+              ticker: eventData.event?.substring(0, 5).toUpperCase() || 'ECON',
+              company_name: eventData.event || 'Economic Event',
+              event_type: eventData.importance || 'MEDIUM',
+              confirmed: true,
+              auto_generated: false,
+              created_at: eventData.createdAt,
+              // Add economic event specific fields
+              iconUrl: eventData.iconUrl,
+              type: 'economic'
+            };
             
-            if (type === 'earnings') {
-              // Handle earnings events from earnings_calendar collection
-              if (data.earningsDate) {
-                const earningsDate = data.earningsDate;
-                if (earningsDate instanceof Date) {
-                  dateString = format(earningsDate, 'yyyy-MM-dd');
-                } else if (typeof earningsDate === 'string') {
-                  dateString = earningsDate.split('T')[0];
-                } else if (earningsDate?.toDate) {
-                  dateString = format(earningsDate.toDate(), 'yyyy-MM-dd');
-                } else {
-                  return;
-                }
-                
-                // Only include events in current view range
-                if (dateString >= startDate && dateString <= endDate) {
-                  const event: CalendarEvent = {
-                    id: doc.id,
-                    date: dateString,
-                    ticker: data.stockTicker || 'EARN',
-                    company_name: data.companyName || 'Company Earnings',
-                    event_type: data.earningsType || 'Earnings',
-                    confirmed: data.isConfirmed !== false,
-                    auto_generated: false,
-                    created_at: data.created_at || data.createdAt
-                  };
-                  
-                  if (!newEvents[dateString]) {
-                    newEvents[dateString] = [];
-                  }
-                  newEvents[dateString].push(event);
-                }
-              }
-            } else {
-              // Handle economic events from economic_events collection
-              if (data.date && typeof data.date === 'string') {
-                const dateString = data.date;
-                if (dateString >= startDate && dateString <= endDate) {
-          const event: CalendarEvent = {
-            id: doc.id,
-                    date: dateString,
-                    ticker: data.ticker || 'ECO',
-                    company_name: data.company_name || 'Economic Data',
-                    event_type: data.event_type || 'Economic Event',
-            confirmed: data.confirmed !== false,
-            auto_generated: data.auto_generated || false,
-            created_at: data.created_at
-          };
-          
-                  if (!newEvents[dateString]) {
-                    newEvents[dateString] = [];
-                  }
-                  newEvents[dateString].push(event);
-                }
-              }
+            if (!newEvents[event.date]) {
+              newEvents[event.date] = [];
             }
+            newEvents[event.date].push(event);
           });
-        } catch (queryError) {
-          console.log('📅 Using sample events only (Firebase queries need indexes):', queryError);
+        }
+
+        if (type === 'earnings' || type === 'all') {
+          // Fetch earnings events
+          const earningsRef = collection(db, 'earnings_calendar');
+          const earningsQuery = query(
+            earningsRef,
+            where('earningsDate', '>=', startDate),
+            where('earningsDate', '<=', endDate)
+          );
+          const earningsSnapshot = await getDocs(earningsQuery);
+          
+          earningsSnapshot.forEach((doc) => {
+            const eventData = doc.data();
+            const event: CalendarEvent = {
+              id: doc.id,
+              date: eventData.earningsDate,
+              ticker: eventData.ticker || 'STOCK',
+              company_name: eventData.company_name || 'Company',
+              event_type: eventData.earningsType || 'Earnings',
+              confirmed: eventData.isConfirmed || false,
+              auto_generated: eventData.auto_generated || false,
+              created_at: eventData.created_at,
+              // Add earnings specific fields
+              logoUrl: eventData.logoUrl,
+              type: 'earnings'
+            };
+            
+            if (!newEvents[event.date]) {
+              newEvents[event.date] = [];
+            }
+            newEvents[event.date].push(event);
+          });
         }
 
         setEvents(newEvents);
         console.log('📅 Calendar events loaded:', Object.keys(newEvents).length, 'days with events');
       } catch (error) {
         console.error('Error fetching events:', error);
-        // Still show sample events even if Firebase fails
+        // Show fallback event if Firebase fails
         const newEvents: Record<string, CalendarEvent[]> = {};
         
         const fallbackEvents = [
@@ -698,7 +190,19 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
     setSelectedDayEvents(dayEvents);
   };
 
-  const getEventIcon = (ticker: string, eventType: string) => {
+  const getEventIcon = (event: CalendarEvent) => {
+    // If event has an iconUrl, use it
+    if (event.iconUrl) {
+      return <img src={event.iconUrl} alt={event.company_name} className="h-4 w-4 rounded" />;
+    }
+    
+    // If event has a logoUrl, use it
+    if (event.logoUrl) {
+      return <img src={event.logoUrl} alt={event.company_name} className="h-4 w-4 rounded" />;
+    }
+    
+    // Fallback to ticker-based icons
+    const ticker = event.ticker;
     if (ticker === 'MARKET') return <AlertTriangle className="h-4 w-4" />;
     if (ticker === 'WITCHING') return <Zap className="h-4 w-4" />;
     if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') return <Building2 className="h-4 w-4" />;
@@ -750,7 +254,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                         "p-1.5 sm:p-2 rounded-lg flex items-center justify-center shrink-0",
                         getEventColor(event.ticker, event.event_type)
                       )}>
-                        {getEventIcon(event.ticker, event.event_type)}
+                        {getEventIcon(event)}
                       </div>
                       
                       <div className="flex-1 min-w-0">

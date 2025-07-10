@@ -4,34 +4,60 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Calendar, FileText, CheckCircle } from 'lucide-react';
+import { Loader2, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { parseMarketWatchData, validateMarketWatchData, EconomicEvent } from '@/lib/services/economic-events-parser';
 
-interface ProcessedEvent {
+interface PreviewEvent {
+  id: string;
   date: string;
   time: string;
-  event_name: string;
-  description: string;
+  event: string;
+  country: string;
+  currency: string;
   importance: 'HIGH' | 'MEDIUM' | 'LOW';
+  iconUrl?: string;
 }
 
 export default function AdminEconomicEvents() {
-  const [text, setText] = useState('');
+  const [rawData, setRawData] = useState('');
+  const [previewEvents, setPreviewEvents] = useState<PreviewEvent[]>([]);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [results, setResults] = useState<ProcessedEvent[]>([]);
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
+  const [uploadResult, setUploadResult] = useState<{
+    success: boolean;
+    message: string;
+    events?: PreviewEvent[];
+  } | null>(null);
 
-  const handleProcess = async () => {
-    if (!text.trim()) {
-      setError('Please paste some text to process');
+  const handlePreview = () => {
+    if (!rawData.trim()) {
+      setValidationErrors(['Please enter MarketWatch economic calendar data']);
+      setPreviewEvents([]);
+      return;
+    }
+
+    const validation = validateMarketWatchData(rawData);
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors);
+      setPreviewEvents([]);
+      return;
+    }
+
+    const events = parseMarketWatchData(rawData);
+    setPreviewEvents(events);
+    setValidationErrors([]);
+  };
+
+  const handleUpload = async () => {
+    if (previewEvents.length === 0) {
+      setValidationErrors(['Please preview events before uploading']);
       return;
     }
 
     setIsProcessing(true);
-    setError('');
-    setResults([]);
-    setMessage('');
+    setUploadResult(null);
 
     try {
       const response = await fetch('/api/process-economic-events', {
@@ -39,144 +65,162 @@ export default function AdminEconomicEvents() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: text.trim() }),
+        body: JSON.stringify({ rawData }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to process events');
+      if (response.ok) {
+        setUploadResult({
+          success: true,
+          message: result.message,
+          events: result.events
+        });
+        setRawData('');
+        setPreviewEvents([]);
+      } else {
+        setUploadResult({
+          success: false,
+          message: result.error || 'Upload failed'
+        });
       }
-
-      setResults(data.events || []);
-      setMessage(data.message || 'Events processed successfully');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+    } catch (error) {
+      setUploadResult({
+        success: false,
+        message: 'Network error occurred'
+      });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const handleClear = () => {
-    setText('');
-    setResults([]);
-    setMessage('');
-    setError('');
+  const getImportanceColor = (importance: string) => {
+    switch (importance) {
+      case 'HIGH': return 'bg-red-100 text-red-800 border-red-200';
+      case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'LOW': return 'bg-green-100 text-green-800 border-green-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
-            Economic Events Text Processor
+            <Upload className="h-5 w-5" />
+            Economic Events Upload
           </CardTitle>
           <CardDescription>
-            Copy and paste MarketWatch economic calendar articles or text to automatically extract and add events to your calendar
+            Paste MarketWatch economic calendar data to automatically parse and upload events to the calendar.
+            The data should be tab-separated with columns: Date/Time, Event, Country, Currency, etc.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label htmlFor="economic-text" className="block text-sm font-medium mb-2">
-              Paste MarketWatch Article or Economic Calendar Text
-            </label>
+            <label className="text-sm font-medium">MarketWatch Economic Calendar Data</label>
             <Textarea
-              id="economic-text"
-              placeholder="Paste your MarketWatch economic calendar article or text here...
-
-Example:
-This Week's Major U.S. Economic Reports & Fed Speakers
-Time (ET)	Report	Period	Actual	Median Forecast	Previous
-TUESDAY, JULY 15
-8:30 am	Consumer price index	June	0.1%
-8:30 am	CPI year over year	2.3%
-2:00 pm	Fed Beige Book
-..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={12}
-              className="w-full"
+              value={rawData}
+              onChange={(e) => setRawData(e.target.value)}
+              placeholder="Paste MarketWatch economic calendar data here...
+Example format:
+Monday, Jan 15, 2024 8:30 AM	Consumer Price Index	United States	USD	0.3%	0.2%	0.1%
+Monday, Jan 15, 2024 10:00 AM	Retail Sales	United States	USD	0.4%	0.3%	0.2%"
+              className="min-h-[200px] font-mono text-sm"
             />
           </div>
 
+          {validationErrors.length > 0 && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <ul className="list-disc list-inside space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex gap-2">
+            <Button onClick={handlePreview} disabled={!rawData.trim()}>
+              Preview Events
+            </Button>
             <Button 
-              onClick={handleProcess} 
-              disabled={isProcessing || !text.trim()}
-              className="flex items-center gap-2"
+              onClick={handleUpload} 
+              disabled={previewEvents.length === 0 || isProcessing}
+              className="bg-green-600 hover:bg-green-700"
             >
               {isProcessing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing...
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading...
                 </>
               ) : (
                 <>
-                  <Calendar className="h-4 w-4" />
-                  Extract Events
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Events
                 </>
               )}
             </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleClear}
-              disabled={isProcessing}
-            >
-              Clear
-            </Button>
           </div>
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {message && (
-            <Alert>
-              <CheckCircle className="h-4 w-4" />
-              <AlertDescription>{message}</AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
 
-      {results.length > 0 && (
+      {uploadResult && (
+        <Alert variant={uploadResult.success ? "default" : "destructive"}>
+          {uploadResult.success ? (
+            <CheckCircle className="h-4 w-4" />
+          ) : (
+            <AlertCircle className="h-4 w-4" />
+          )}
+          <AlertDescription>{uploadResult.message}</AlertDescription>
+        </Alert>
+      )}
+
+      {previewEvents.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Extracted Events ({results.length})</CardTitle>
+            <CardTitle>Preview Events ({previewEvents.length})</CardTitle>
             <CardDescription>
-              These events have been added to your Events calendar
+              Review the parsed events before uploading to the calendar
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {results.map((event, index) => (
-                <div 
-                  key={index} 
-                  className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium">{event.event_name}</span>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          event.importance === 'HIGH' 
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                            : event.importance === 'MEDIUM'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        }`}>
-                          {event.importance}
-                        </span>
+              {previewEvents.map((event) => (
+                <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {event.iconUrl && (
+                      <img 
+                        src={event.iconUrl} 
+                        alt={event.event}
+                        className="w-8 h-8 rounded"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div>
+                      <div className="font-medium">{event.event}</div>
+                      <div className="text-sm text-gray-500">
+                        {formatDate(event.date)} at {event.time} • {event.country} ({event.currency})
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">
-                        <span className="font-medium">{event.date}</span> at {event.time}
-                      </div>
-                      <div className="text-sm mt-1">{event.description}</div>
                     </div>
                   </div>
+                  <Badge className={getImportanceColor(event.importance)}>
+                    {event.importance}
+                  </Badge>
                 </div>
               ))}
             </div>
