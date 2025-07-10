@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -18,6 +18,35 @@ interface Catalyst {
   createdAt: string
   stockTickers?: string[]
   isManual?: boolean
+}
+
+// ErrorBoundary for bulletproof error handling
+class SearchErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('StockNewsSearch error boundary caught:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="space-y-6">
+          <div>
+            <Input type="text" placeholder="Search catalysts by description..." className="w-full" disabled />
+          </div>
+          <div className="text-center py-8">
+            <div className="text-red-600 font-semibold">Unexpected error: {String(this.state.error)}</div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export function StockNewsSearch({ ticker }: { ticker?: string }) {
@@ -112,8 +141,8 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   };
 
   // Fallback error boundary
-  try {
-    return (
+  return (
+    <SearchErrorBoundary>
       <div className="space-y-6">
         <div>
           <Input
@@ -156,7 +185,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                 console.warn('Skipping invalid entry:', entry);
                 return null;
               }
-              
+              console.log('Rendering catalyst entry:', entry);
               return (
                 <Card key={entry.id || index} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
                   <CardHeader>
@@ -186,7 +215,10 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                         Source: {entry.source}
                       </div>
                     )}
-                    {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} source={entry.source} />}
+                    {/* NewsImage fallback */}
+                    {entry.imageUrl ? (
+                      <NewsImage imagePath={entry.imageUrl} source={entry.source} />
+                    ) : null}
                   </CardContent>
                 </Card>
               );
@@ -194,24 +226,6 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
           </div>
         )}
       </div>
-    );
-  } catch (err) {
-    console.error('StockNewsSearch render error:', err)
-    return (
-      <div className="space-y-6">
-        <div>
-          <Input
-            type="text"
-            placeholder="Search catalysts by description..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full"
-          />
-        </div>
-        <div className="text-center py-8">
-          <div className="text-red-600 font-semibold">Unexpected error: {String(err)}</div>
-        </div>
-      </div>
-    );
-  }
+    </SearchErrorBoundary>
+  );
 } 
