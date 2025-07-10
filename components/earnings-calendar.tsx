@@ -205,17 +205,17 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
     
     return (
       <div 
-        className={`${sizeClasses} rounded-full bg-primary cursor-pointer hover:opacity-80`}
+        className={`${sizeClasses} cursor-pointer hover:opacity-80`}
         onClick={(e) => handleEventClick(event, e)}
       >
         {event.logoUrl ? (
           <img
             src={event.logoUrl}
             alt={event.companyName}
-            className="w-full h-full rounded-full"
+            className="w-full h-full object-contain"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs text-white">
+          <div className="w-full h-full flex items-center justify-center text-xs bg-primary text-white rounded">
             {event.stockTicker.slice(0, 2)}
           </div>
         )}
@@ -442,13 +442,13 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
             // Sort by market cap descending
             dayEvents = [...dayEvents].sort((a, b) => getMarketCap(b.stockTicker) - getMarketCap(a.stockTicker));
             const isHoveredWeek = hoveredDate && isSameWeek(day, hoveredDate, { weekStartsOn: 1 });
-            const showEvents = dayEvents.slice(0, 6);
-            const overflowCount = dayEvents.length - 6;
+            const showEvents = dayEvents.slice(0, 8);
+            const overflowCount = dayEvents.length - 8;
             return (
               <div
                 key={dateKey}
                 className={cn(
-                  "min-h-[100px] p-2 border rounded transition-colors duration-200",
+                  "min-h-[120px] p-2 border rounded transition-colors duration-200",
                   isHoveredWeek && "bg-accent/50 cursor-pointer",
                   !dayEvents.length && "hover:bg-accent/25"
                 )}
@@ -465,35 +465,59 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                 }}
               >
                 <div className="font-medium">{format(day, 'd')}</div>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {showEvents.map((event: EarningsEvent, i: number) => (
-                    <div
-                      key={i}
-                      className="relative group"
-                      onClick={(e: MouseEvent) => {
-                        e.stopPropagation();
-                        handleEventClick(event, e);
-                      }}
-                    >
-                      <CompanyLogo event={event} />
-                      {/* Hover tooltip */}
-                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
-                        {event.companyName}
-                      </div>
+                {dayEvents.length > 0 && (
+                  <div className="mt-1">
+                    {/* First row of 4 logos */}
+                    <div className="grid grid-cols-4 gap-1 mb-1">
+                      {showEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
+                        <div
+                          key={i}
+                          className="relative group"
+                          onClick={(e: MouseEvent) => {
+                            e.stopPropagation();
+                            handleEventClick(event, e);
+                          }}
+                        >
+                          <CompanyLogo event={event} />
+                          {/* Hover tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                            {event.companyName}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                  {overflowCount > 0 && (
-                    <button
-                      className="w-10 h-10 flex items-center justify-center bg-gray-700 text-white rounded"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setOverflowModal({ date: dateKey, events: dayEvents });
-                      }}
-                    >
-                      +{overflowCount}
-                    </button>
-                  )}
-                </div>
+                    {/* Second row of 4 logos or overflow button */}
+                    <div className="grid grid-cols-4 gap-1">
+                      {showEvents.slice(4, 8).map((event: EarningsEvent, i: number) => (
+                        <div
+                          key={i + 4}
+                          className="relative group"
+                          onClick={(e: MouseEvent) => {
+                            e.stopPropagation();
+                            handleEventClick(event, e);
+                          }}
+                        >
+                          <CompanyLogo event={event} />
+                          {/* Hover tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                            {event.companyName}
+                          </div>
+                        </div>
+                      ))}
+                      {overflowCount > 0 && (
+                        <button
+                          className="w-6 h-6 flex items-center justify-center bg-gray-700 text-white text-xs rounded"
+                          onClick={e => {
+                            e.stopPropagation();
+                            setOverflowModal({ date: dateKey, events: dayEvents });
+                          }}
+                        >
+                          +{overflowCount}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
