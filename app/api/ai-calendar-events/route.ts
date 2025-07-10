@@ -228,17 +228,17 @@ async function processEarningsText(text: string, db: any) {
     const trimmedLine = line.trim()
     if (!trimmedLine) continue
     
-    // Look for ticker patterns (3-5 letter codes)
-    const tickerMatch = trimmedLine.match(/\b([A-Z]{3,5})\b/)
+    // Look for ticker patterns (1-5 letter codes, case-insensitive)
+    const tickerMatch = trimmedLine.match(/\b([A-Za-z]{1,5})\b/)
     if (tickerMatch) {
-      const ticker = tickerMatch[1]
-      const companyName = companyTickers[ticker] || `${ticker} Corporation`
+      const ticker = tickerMatch[1].toUpperCase()
+      const companyName = companyTickers[ticker] || `${ticker}`
       
-      // Look for date patterns
+      // Look for date patterns (support 2-digit years, dashes, slashes, and month names)
       const datePatterns = [
-        /(\d{1,2}\/\d{1,2}\/\d{4})/g,
-        /(\d{1,2}-\d{1,2}-\d{4})/g,
-        /(\w+ \d{1,2},? \d{4})/g,
+        /(\d{1,2}\/\d{1,2}\/\d{2,4})/g,
+        /(\d{1,2}-\d{1,2}-\d{2,4})/g,
+        /(\w+ \d{1,2},? \d{2,4})/g,
         /(\d{4}-\d{2}-\d{2})/g
       ]
       
@@ -247,7 +247,18 @@ async function processEarningsText(text: string, db: any) {
         const dateMatch = trimmedLine.match(pattern)
         if (dateMatch) {
           try {
-            eventDate = new Date(dateMatch[1])
+            // Try to parse date, handle 2-digit years as 20xx
+            let dateStr = dateMatch[1]
+            if (/\d{1,2}\/\d{1,2}\/\d{2}$/.test(dateStr)) {
+              // e.g. 7/15/25 => 7/15/2025
+              const parts = dateStr.split('/')
+              if (parts.length === 3) {
+                const year = parseInt(parts[2], 10)
+                if (year < 100) parts[2] = (2000 + year).toString()
+                dateStr = parts.join('/')
+              }
+            }
+            eventDate = new Date(dateStr)
             if (!isNaN(eventDate.getTime())) break
           } catch (e) {
             continue
