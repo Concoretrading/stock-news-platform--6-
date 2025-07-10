@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuth } from '@/lib/firebase-admin'
 import { getFirestore } from '@/lib/firebase-admin'
+import { parse, isValid } from 'date-fns'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -246,22 +247,24 @@ async function processEarningsText(text: string, db: any) {
       for (const pattern of datePatterns) {
         const dateMatch = trimmedLine.match(pattern)
         if (dateMatch) {
-          try {
-            let dateStr = dateMatch[1]
-            // Handle 2-digit years for slashes and dashes
-            if (/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2}$/.test(dateStr)) {
-              // e.g. 7/15/25 or 7-15-25 => 7/15/2025 or 7-15-2025
-              let parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-')
-              if (parts.length === 3) {
-                let year = parseInt(parts[2], 10)
-                if (year < 100) parts[2] = (2000 + year).toString()
-                dateStr = dateStr.includes('/') ? parts.join('/') : parts.join('-')
-              }
+          let dateStr = dateMatch[1]
+          let parsedDate: Date | null = null
+          // Try date-fns parse for common formats
+          const formats = ['MM/dd/yy', 'MM-dd-yy', 'MM/dd/yyyy', 'MM-dd-yyyy']
+          for (const fmt of formats) {
+            const d = parse(dateStr, fmt, new Date())
+            if (isValid(d)) {
+              parsedDate = d
+              break
             }
-            eventDate = new Date(dateStr)
-            if (!isNaN(eventDate.getTime())) break
-          } catch (e) {
-            continue
+          }
+          // Fallback to native Date
+          if (!parsedDate) {
+            parsedDate = new Date(dateStr)
+          }
+          if (parsedDate && isValid(parsedDate)) {
+            eventDate = parsedDate
+            break
           }
         }
       }
