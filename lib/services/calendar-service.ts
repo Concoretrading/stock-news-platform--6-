@@ -3,6 +3,7 @@ import { getFirestore } from '@/lib/firebase-admin';
 import { Query, DocumentData } from 'firebase-admin/firestore';
 import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
 import { getStorage } from '@/lib/firebase-admin';
+import tickers from '../tickers.json';
 
 // Helper function to get database safely
 async function getDatabase() {
@@ -338,10 +339,16 @@ export async function getCalendarEvents(userId: string, params: CalendarEventPar
     }
 
     const snapshot = await query.get();
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    return snapshot.docs.map(doc => {
+      const data = doc.data();
+      // Attach logoUrl from tickers.json
+      const tickerInfo = tickers.find(t => t.ticker === data.stockTicker);
+      return {
+        id: doc.id,
+        ...data,
+        logoUrl: tickerInfo?.logoUrl || data.logoUrl || null
+      };
+    });
   } catch (error) {
     console.error('Error fetching calendar events:', error);
     throw error;
