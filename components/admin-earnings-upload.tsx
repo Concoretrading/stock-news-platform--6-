@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Upload, Star, Save, Eye, Clipboard, Calendar, Database, AlertTriangle } from 'lucide-react';
+import { Calendar as AdminDateCalendar } from '@/components/ui/calendar';
 
 export function AdminEarningsUpload() {
   const { user, firebaseUser } = useAuth();
@@ -14,6 +15,12 @@ export function AdminEarningsUpload() {
   const [previewEvents, setPreviewEvents] = useState<any[]>([]);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const pasteAreaRef = useRef<HTMLDivElement>(null);
+
+  // Bulk Paste Earnings State
+  const [bulkPaste, setBulkPaste] = useState("");
+  const [isBulkSaving, setIsBulkSaving] = useState(false);
+  const [defaultDate, setDefaultDate] = useState<Date | null>(null);
+  const [bulkPasteSummary, setBulkPasteSummary] = useState<{added: number, skipped: any[]} | null>(null);
 
   // Check if user is admin
   const isAdmin = user?.email === 'handrigannick@gmail.com';
@@ -120,6 +127,36 @@ export function AdminEarningsUpload() {
       toast.error('Failed to save earnings events');
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleBulkPaste = async () => {
+    if (!bulkPaste.trim()) return;
+    setIsBulkSaving(true);
+    setBulkPasteSummary(null);
+    try {
+      const response = await fetch('/api/admin-earnings-upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${await firebaseUser?.getIdToken()}`
+        },
+        body: JSON.stringify({ bulkPaste, defaultDate: defaultDate ? defaultDate.toISOString().split('T')[0] : undefined })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to process pasted earnings');
+      }
+      toast.success(`\u2705 Successfully added ${data.added || 0} earnings events!`);
+      setBulkPasteSummary({ added: data.added || 0, skipped: data.skipped || [] });
+      setBulkPaste("");
+      // Optionally, trigger a calendar refresh here if possible
+      // window.location.reload(); // or use a state update if calendar is in same component tree
+    } catch (error) {
+      console.error('Bulk paste error:', error);
+      toast.error('Failed to process pasted earnings');
+    } finally {
+      setIsBulkSaving(false);
     }
   };
 
@@ -274,6 +311,52 @@ export function AdminEarningsUpload() {
             </div>
           </div>
         )}
+
+        {/* Bulk Paste Earnings Section */}
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-200">
+          <h3 className="text-lg font-semibold text-blue-800 mb-2 flex items-center gap-2">
+            <Clipboard className="h-5 w-5" />
+            Bulk Paste Earnings
+          </h3>
+          <p className="text-sm text-blue-700 mb-3">Paste lines like <code>nvda 7/23/25 AMC</code> or <code>aapl 7/25/25 BMO</code> (timing optional, defaults to AMC). Any order, extra words/hashtags ignored. One per line.</p>
+          <div className="flex items-center gap-4 mb-2">
+            <span className="text-sm text-blue-800">Default Date (optional):</span>
+            <div className="border rounded bg-white">
+              <AdminDateCalendar
+                mode="single"
+                selected={defaultDate || undefined}
+                onSelect={(date) => setDefaultDate(date ?? null)}
+                required={false}
+                className="rounded"
+              />
+            </div>
+          </div>
+          <textarea
+            className="w-full min-h-[120px] rounded border border-blue-300 p-2 text-sm font-mono mb-2"
+            placeholder="nvda 7/23/25 AMC\naapl 7/25/25 BMO\nmsft 7/26/25"
+            value={bulkPaste}
+            onChange={e => setBulkPaste(e.target.value)}
+            disabled={isBulkSaving}
+          />
+          <Button onClick={handleBulkPaste} disabled={isBulkSaving || !bulkPaste.trim()}>
+            {isBulkSaving ? 'Saving...' : 'Submit'}
+          </Button>
+          {bulkPasteSummary && (
+            <div className="mt-4">
+              <div className="text-green-700 font-medium">Added: {bulkPasteSummary.added}</div>
+              {bulkPasteSummary.skipped.length > 0 && (
+                <div className="text-red-700 mt-2">
+                  <div>Skipped lines:</div>
+                  <ul className="list-disc list-inside text-xs">
+                    {bulkPasteSummary.skipped.map((s, i) => (
+                      <li key={i}>{s.line} <span className="text-gray-500">({s.reason})</span></li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="text-xs text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
           <strong>📋 Admin Workflow:</strong>

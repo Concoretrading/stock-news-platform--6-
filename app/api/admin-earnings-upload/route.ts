@@ -293,30 +293,59 @@ export async function POST(request: NextRequest) {
     if (contentType.includes('application/json')) {
       const body = await request.json();
       if (body.bulkPaste) {
-        // Parse pasted lines
+        // Accept optional default date from frontend
+        const defaultDateRaw = body.defaultDate;
+        let defaultDate: Date | null = null;
+        if (defaultDateRaw) {
+          const parsed = tryParseDate(defaultDateRaw);
+          if (parsed && !isNaN(parsed.getTime())) defaultDate = parsed;
+        }
+        // Parse pasted lines flexibly
         const lines = body.bulkPaste.split('\n').map((l: string) => l.trim()).filter(Boolean);
         const events = [];
+        const skipped = [];
         for (const line of lines) {
-          // Accept: ticker date [timing]
-          // Example: nvda 7/23/25 AMC
-          const parts = line.split(/\s+|,|\t/).filter(Boolean);
-          if (parts.length < 2) continue;
-          const ticker = parts[0].toUpperCase();
-          const dateRaw = parts[1];
-          const timing = (parts[2] || 'AMC').toUpperCase();
-          // Parse date (support MM/DD/YY, MM/DD/YYYY, YYYY-MM-DD)
-          let dateObj;
-          if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(dateRaw)) {
-            // MM/DD/YY or MM/DD/YYYY
-            const [m, d, y] = dateRaw.split('/');
-            let year = y.length === 2 ? '20' + y : y;
-            dateObj = new Date(`${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
-          } else if (/\d{4}-\d{2}-\d{2}/.test(dateRaw)) {
-            dateObj = new Date(dateRaw);
-          } else {
-            continue; // skip invalid date
+          // Remove hashtags and comments
+          const cleanLine = line.replace(/^#.*$/, '').replace(/#.*/, '').trim();
+          if (!cleanLine) continue;
+          // Split into words
+          const parts = cleanLine.split(/\s+|,|\t/).filter(Boolean);
+          let ticker = null;
+          let dateObj = null;
+          let timing = null;
+          // Try to find a ticker (1-5 letters, matches known tickers or looks like a ticker)
+          for (const part of parts) {
+            if (/^[A-Za-z]{1,5}$/.test(part) && tickers.find(t => t.ticker.toUpperCase() === part.toUpperCase())) {
+              ticker = part.toUpperCase();
+              break;
+            }
           }
-          if (isNaN(dateObj.getTime())) continue;
+          // If not found, fallback: first 1-5 letter word
+          if (!ticker) {
+            const fallback = parts.find((p: string) => /^[A-Za-z]{1,5}$/.test(p));
+            if (fallback) ticker = fallback.toUpperCase();
+          }
+          // Try to find a date in any part
+          for (const part of parts) {
+            const parsed = tryParseDate(part);
+            if (parsed && !isNaN(parsed.getTime())) {
+              dateObj = parsed;
+              break;
+            }
+          }
+          // If no date found, use defaultDate if available
+          if (!dateObj && defaultDate) dateObj = defaultDate;
+          // Try to find timing (AMC/BMO)
+          for (const part of parts) {
+            if (/^(AMC|BMO)$/i.test(part)) {
+              timing = part.toUpperCase();
+              break;
+            }
+          }
+          if (!ticker || !dateObj) {
+            skipped.push({ line, reason: !ticker ? 'No valid ticker' : 'No valid date' });
+            continue;
+          }
           // Lookup company name
           const tickerEntry = tickers.find(t => t.ticker.toUpperCase() === ticker);
           const companyName = tickerEntry ? tickerEntry.name : ticker;
@@ -344,7 +373,7 @@ export async function POST(request: NextRequest) {
           }
           await batch.commit();
         }
-        return NextResponse.json({ success: true, added: events.length });
+        return NextResponse.json({ success: true, added: events.length, skipped });
       }
     }
 
@@ -543,4 +572,23 @@ export async function POST(request: NextRequest) {
       error: 'Failed to process earnings screenshot'
     }, { status: 500 });
   }
+} 
+
+// Helper: Try to parse a date from various formats
+function tryParseDate(str: string): Date | null {
+  // Try ISO, MM/DD/YY, MM/DD/YYYY, YYYY-MM-DD, MMM DD YYYY, etc.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return new Date(str);
+  if (/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(str)) {
+    const [m, d, y] = str.split('/');
+    let year = y.length === 2 ? '20' + y : y;
+    return new Date(`${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
+  }
+  if (/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[ .-]?\d{1,2}[,]?[ .-]?\d{2,4}?$/i.test(str)) {
+    // e.g. Jul 23 2025, July 23, 2025
+    return new Date(str);
+  }
+  // Try Date.parse fallback
+  const parsed = Date.parse(str);
+  if (!isNaN(parsed)) return new Date(parsed);
+  return null;
 } 
