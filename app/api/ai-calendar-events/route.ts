@@ -247,15 +247,15 @@ async function processEarningsText(text: string, db: any) {
         const dateMatch = trimmedLine.match(pattern)
         if (dateMatch) {
           try {
-            // Try to parse date, handle 2-digit years as 20xx
             let dateStr = dateMatch[1]
-            if (/\d{1,2}\/\d{1,2}\/\d{2}$/.test(dateStr)) {
-              // e.g. 7/15/25 => 7/15/2025
-              const parts = dateStr.split('/')
+            // Handle 2-digit years for slashes and dashes
+            if (/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2}$/.test(dateStr)) {
+              // e.g. 7/15/25 or 7-15-25 => 7/15/2025 or 7-15-2025
+              let parts = dateStr.includes('/') ? dateStr.split('/') : dateStr.split('-')
               if (parts.length === 3) {
-                const year = parseInt(parts[2], 10)
+                let year = parseInt(parts[2], 10)
                 if (year < 100) parts[2] = (2000 + year).toString()
-                dateStr = parts.join('/')
+                dateStr = dateStr.includes('/') ? parts.join('/') : parts.join('-')
               }
             }
             eventDate = new Date(dateStr)
