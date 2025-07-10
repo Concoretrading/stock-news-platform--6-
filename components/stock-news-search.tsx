@@ -224,11 +224,43 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">
-                        {searchQuery && entry.description 
-                          ? highlightMatch(entry.description, searchQuery) 
-                          : (entry.description || "No description")}
+                        {/* Bulletproof: never render object as child */}
+                        {(() => {
+                          let desc = entry.description;
+                          if (desc && typeof desc === 'object') {
+                            // Firestore Timestamp or other object
+                            if (typeof (desc as any).toDate === 'function') {
+                              desc = (desc as any).toDate().toISOString();
+                            } else if (typeof (desc as any).toString === 'function') {
+                              desc = (desc as any).toString();
+                            } else {
+                              console.error('Description is object and cannot be stringified:', desc);
+                              desc = '[Invalid object]';
+                            }
+                          }
+                          if (searchQuery && desc && typeof desc === 'string') {
+                            return highlightMatch(desc, searchQuery);
+                          }
+                          return desc || "No description";
+                        })()}
                       </CardTitle>
-                      <Badge variant="secondary">{entry.date || "No date"}</Badge>
+                      <Badge variant="secondary">
+                        {/* Bulletproof: never render object as child */}
+                        {(() => {
+                          let dateVal = entry.date;
+                          if (dateVal && typeof dateVal === 'object') {
+                            if (typeof (dateVal as any).toDate === 'function') {
+                              dateVal = (dateVal as any).toDate().toISOString();
+                            } else if (typeof (dateVal as any).toString === 'function') {
+                              dateVal = (dateVal as any).toString();
+                            } else {
+                              console.error('Date is object and cannot be stringified:', dateVal);
+                              dateVal = '[Invalid object]';
+                            }
+                          }
+                          return dateVal || "No date";
+                        })()}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -237,7 +269,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                         <div className="flex flex-wrap gap-1">
                           {entry.stockTickers.map((ticker, tickerIndex) => (
                             <Badge key={tickerIndex} variant="outline" className="text-xs">
-                              {ticker || ""}
+                              {typeof ticker === 'object' ? JSON.stringify(ticker) : ticker || ""}
                             </Badge>
                           ))}
                         </div>
@@ -245,12 +277,12 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                     )}
                     {entry.source && (
                       <div className="text-xs text-muted-foreground mb-3">
-                        Source: {entry.source}
+                        Source: {typeof entry.source === 'object' ? JSON.stringify(entry.source) : entry.source}
                       </div>
                     )}
                     {/* NewsImage fallback */}
                     {entry.imageUrl ? (
-                      <NewsImage imagePath={entry.imageUrl} source={entry.source} />
+                      <NewsImage imagePath={typeof entry.imageUrl === 'object' ? JSON.stringify(entry.imageUrl) : entry.imageUrl} source={entry.source} />
                     ) : null}
                   </CardContent>
                 </Card>
