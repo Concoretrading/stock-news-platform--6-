@@ -25,12 +25,14 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredEntries, setFilteredEntries] = useState<Catalyst[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast()
 
   useEffect(() => {
     async function fetchCatalysts() {
       try {
         setLoading(true)
+        setError(null)
         let url = '/api/catalysts'
         if (ticker) {
           url += `?ticker=${ticker.toUpperCase()}`
@@ -41,15 +43,16 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
         
         if (result.success) {
           setAllEntries(result.data || [])
+          console.log('Fetched catalysts:', result.data)
         } else {
-          console.error('Failed to fetch catalysts:', result.error)
           setAllEntries([])
-          toast({ title: "Error", description: "Failed to fetch news data", variant: "destructive" })
+          setError('Failed to fetch news data')
+          console.error('Failed to fetch catalysts:', result.error)
         }
       } catch (error) {
-        console.error('Error fetching catalysts:', error)
-        toast({ title: "Error", description: "Failed to fetch news", variant: "destructive" })
         setAllEntries([])
+        setError('Failed to fetch news')
+        console.error('Error fetching catalysts:', error)
       } finally {
         setLoading(false)
       }
@@ -93,6 +96,22 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
             ))}
           </div>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-red-600 font-semibold">{error}</div>
+      </div>
+    )
+  }
+
+  if (!filteredEntries || filteredEntries.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-muted-foreground">No results found.</div>
       </div>
     )
   }
