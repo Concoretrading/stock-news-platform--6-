@@ -96,11 +96,17 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
     if (typeof text !== 'string' || !text) return "";
     if (!query || typeof query !== 'string' || !query.trim()) return text;
     try {
-      const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-      return text.split(regex).map((part, i) =>
-        regex.test(part) ? <mark key={i} className="bg-yellow-200 px-1 rounded font-medium">{part}</mark> : part
-      );
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      const parts = text.split(regex);
+      return parts.map((part, i) => {
+        if (regex.test(part)) {
+          return <mark key={i} className="bg-yellow-200 px-1 rounded font-medium">{part}</mark>;
+        }
+        return part;
+      });
     } catch (e) {
+      console.error('Highlight match error:', e);
       return text;
     }
   };
@@ -117,7 +123,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full"
           />
-          {searchQuery && filteredEntries && (
+          {searchQuery && Array.isArray(filteredEntries) && (
             <p className="text-sm text-muted-foreground mt-2">
               Found {filteredEntries.length} result{filteredEntries.length !== 1 ? 's' : ''} for "{searchQuery}"
             </p>
@@ -144,37 +150,47 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredEntries.map(entry => (
-              <Card key={entry.id} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">
-                      {searchQuery ? highlightMatch(entry.description ?? "", searchQuery) : (entry.description ?? "")}
-                    </CardTitle>
-                    <Badge variant="secondary">{entry.date ?? "No date"}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {entry.stockTickers && entry.stockTickers.length > 0 && (
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-1">
-                        {entry.stockTickers.map((ticker, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {ticker ?? ""}
-                          </Badge>
-                        ))}
+            {filteredEntries.map((entry, index) => {
+              // Extra defensive checks for each entry
+              if (!entry || !entry.id) {
+                console.warn('Skipping invalid entry:', entry);
+                return null;
+              }
+              
+              return (
+                <Card key={entry.id || index} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">
+                        {searchQuery && entry.description 
+                          ? highlightMatch(entry.description, searchQuery) 
+                          : (entry.description || "No description")}
+                      </CardTitle>
+                      <Badge variant="secondary">{entry.date || "No date"}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {entry.stockTickers && Array.isArray(entry.stockTickers) && entry.stockTickers.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {entry.stockTickers.map((ticker, tickerIndex) => (
+                            <Badge key={tickerIndex} variant="outline" className="text-xs">
+                              {ticker || ""}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {entry.source && (
-                    <div className="text-xs text-muted-foreground mb-3">
-                      Source: {entry.source ?? ""}
-                    </div>
-                  )}
-                  {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} source={entry.source} />}
-                </CardContent>
-              </Card>
-            ))}
+                    )}
+                    {entry.source && (
+                      <div className="text-xs text-muted-foreground mb-3">
+                        Source: {entry.source}
+                      </div>
+                    )}
+                    {entry.imageUrl && <NewsImage imagePath={entry.imageUrl} source={entry.source} />}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
@@ -182,8 +198,19 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   } catch (err) {
     console.error('StockNewsSearch render error:', err)
     return (
-      <div className="text-center py-8">
-        <div className="text-red-600 font-semibold">Unexpected error: {String(err)}</div>
+      <div className="space-y-6">
+        <div>
+          <Input
+            type="text"
+            placeholder="Search catalysts by description..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+        <div className="text-center py-8">
+          <div className="text-red-600 font-semibold">Unexpected error: {String(err)}</div>
+        </div>
       </div>
     );
   }
