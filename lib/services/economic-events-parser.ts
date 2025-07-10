@@ -33,7 +33,7 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
       const firstColumn = columns[0];
       
       // Check if this is a day header (e.g., "TUESDAY, JULY 15")
-      if (firstColumn.includes(',') && (firstColumn.includes('JULY') || firstColumn.includes('JUNE') || firstColumn.includes('AUGUST'))) {
+      if (firstColumn.includes(',') && (firstColumn.includes('JULY') || firstColumn.includes('JUNE') || firstColumn.includes('AUGUST') || firstColumn.includes('JANUARY') || firstColumn.includes('FEBRUARY') || firstColumn.includes('MARCH') || firstColumn.includes('APRIL') || firstColumn.includes('MAY') || firstColumn.includes('SEPTEMBER') || firstColumn.includes('OCTOBER') || firstColumn.includes('NOVEMBER') || firstColumn.includes('DECEMBER'))) {
         const dateTime = parseDateTime(firstColumn);
         if (dateTime) {
           currentDate = dateTime.date;
@@ -128,7 +128,7 @@ function parseDateTime(dateTimeStr: string): { date: string; time: string } | nu
     const currentYear = new Date().getFullYear();
     
     // Check if it's a day header (e.g., "MONDAY, JULY 14")
-    if (dateTimeStr.includes(',') && dateTimeStr.includes('JULY')) {
+    if (dateTimeStr.includes(',') && (dateTimeStr.includes('JULY') || dateTimeStr.includes('JANUARY') || dateTimeStr.includes('FEBRUARY') || dateTimeStr.includes('MARCH') || dateTimeStr.includes('APRIL') || dateTimeStr.includes('MAY') || dateTimeStr.includes('JUNE') || dateTimeStr.includes('AUGUST') || dateTimeStr.includes('SEPTEMBER') || dateTimeStr.includes('OCTOBER') || dateTimeStr.includes('NOVEMBER') || dateTimeStr.includes('DECEMBER'))) {
       // Extract month and day from "MONDAY, JULY 14"
       const parts = dateTimeStr.split(',');
       const monthDay = parts[1]?.trim(); // "JULY 14"
