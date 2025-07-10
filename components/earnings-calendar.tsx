@@ -430,13 +430,16 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           <h2 className="text-2xl font-bold">{format(selectedDate, 'MMMM yyyy')}</h2>
         </div>
         {renderViewToggles()}
-        <div className="grid grid-cols-7 gap-1">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+        <div className="grid grid-cols-5 gap-1">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(day => (
             <div key={day} className="p-2 text-center font-medium text-muted-foreground">
               {day}
             </div>
           ))}
-          {days.map((day) => {
+          {days.filter(day => {
+            const dayOfWeek = day.getDay();
+            return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday = 1, Friday = 5
+          }).map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
             let dayEvents = events[dateKey] || [];
             // Sort by market cap descending
