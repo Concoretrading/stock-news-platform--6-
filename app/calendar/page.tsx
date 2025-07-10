@@ -106,12 +106,9 @@ export default function CalendarPage() {
               {/* Golden Logo with gold filter */}
               <span className="inline-block w-7 h-7 sm:w-9 sm:h-9">
                 <img
-                  src="/images/concore-logo-new.png"
-                  alt="Concore Gold Logo"
+                  src="/images/elite-logo.png"
+                  alt="Elite Logo"
                   className="w-full h-full object-contain drop-shadow-lg"
-                  style={{
-                    filter: 'brightness(1.2) contrast(1.1) saturate(2) sepia(1) hue-rotate(25deg) drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5))',
-                  }}
                 />
               </span>
               Elite
@@ -136,12 +133,9 @@ export default function CalendarPage() {
                       <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 rounded-full blur-md opacity-40 animate-pulse"></div>
                       <div className="relative z-10 w-16 h-16 mx-auto">
                         <img 
-                          src="/images/concore-logo-new.png" 
-                          alt="Concore Elite" 
-                          className="w-full h-full object-contain filter drop-shadow-lg"
-                          style={{
-                            filter: 'brightness(1.2) contrast(1.1) saturate(2) sepia(1) hue-rotate(25deg) drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5))',
-                          }}
+                          src="/images/elite-logo.png" 
+                          alt="Elite Logo" 
+                          className="w-full h-full object-contain drop-shadow-lg"
                         />
                       </div>
                     </div>
