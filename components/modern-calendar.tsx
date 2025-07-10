@@ -36,7 +36,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEvent[]>([]);
   const fetchingRef = useRef(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [weekStartDate, setWeekStartDate] = useState<Date>(startOfWeek(currentDate));
 
   // Memoize calendar calculations to prevent unnecessary recalculations
@@ -840,10 +840,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           setWeekStartDate(startOfWeek(selectedDate || currentDate));
         }}
       >Week</Button>
-      <Button
-        variant={viewMode === 'day' ? 'default' : 'outline'}
-        onClick={() => setViewMode('day')}
-      >Day</Button>
     </div>
   );
 
@@ -882,7 +878,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   onClick={() => {
                     setSelectedDate(day);
                     setSelectedDayEvents(dayEvents);
-                    setViewMode('day');
                   }}
                 >
                   {/* Cross overlay for past dates */}
@@ -971,35 +966,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
     );
   };
 
-  const renderDayView = () => {
-    const dateKey = format(selectedDate || new Date(), 'yyyy-MM-dd');
-    const dayEvents = events[dateKey] || [];
-    return (
-      <>
-        {renderViewToggles()}
-        <div className="flex justify-between items-center mb-4">
-          <Button variant="ghost" onClick={() => setViewMode('month')}><ChevronLeft className="h-4 w-4" />Back to Month</Button>
-          <h2 className="text-xl font-bold">{format(selectedDate || new Date(), 'EEEE, MMMM d, yyyy')}</h2>
-        </div>
-        <Card className="p-6">
-          <div className="flex flex-col items-center gap-4">
-            <CalendarIcon className="h-10 w-10 text-muted-foreground" />
-            {dayEvents.length > 0 ? (
-              dayEvents.map((event, i) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <span className="font-semibold text-lg">{event.company_name}</span>
-                  <span className="text-sm text-muted-foreground">{event.ticker}</span>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-muted-foreground">No Events</div>
-            )}
-          </div>
-        </Card>
-      </>
-    );
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -1049,7 +1015,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
       {/* View Mode Switcher */}
       {viewMode === 'month' && renderMonthView()}
       {viewMode === 'week' && renderWeekView()}
-      {viewMode === 'day' && renderDayView()}
       {/* Event Legend - Mobile Optimized */}
       <Card>
         <CardHeader className="pb-3">
