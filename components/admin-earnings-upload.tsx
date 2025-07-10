@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Upload, Star, Save, Eye, Clipboard, Calendar, Database, AlertTriangle } from 'lucide-react';
+import { Upload, Star, Save, Eye, Clipboard, Calendar, Database, AlertTriangle, Trash2 } from 'lucide-react';
 import { Calendar as AdminDateCalendar } from '@/components/ui/calendar';
 
 export function AdminEarningsUpload() {
@@ -21,6 +21,7 @@ export function AdminEarningsUpload() {
   const [isBulkSaving, setIsBulkSaving] = useState(false);
   const [defaultDate, setDefaultDate] = useState<Date | null>(null);
   const [bulkPasteSummary, setBulkPasteSummary] = useState<{added: number, skipped: any[]} | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Check if user is admin
   const isAdmin = user?.email === 'handrigannick@gmail.com';
@@ -160,6 +161,36 @@ export function AdminEarningsUpload() {
     }
   };
 
+  const handleDeleteAllEarnings = async () => {
+    if (!confirm('Are you sure you want to delete ALL earnings events? This action cannot be undone.')) {
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch('/api/delete-earnings', {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${await firebaseUser?.getIdToken()}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete earnings events');
+      }
+      toast.success(`🗑️ Successfully deleted ${data.deletedCount} earnings events!`);
+      // Optionally refresh the page to show empty calendar
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error('Delete earnings error:', error);
+      toast.error('Failed to delete earnings events');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
       <CardHeader>
@@ -176,6 +207,34 @@ export function AdminEarningsUpload() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Delete All Earnings Button */}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-red-800 mb-1">🗑️ Delete All Earnings</h3>
+              <p className="text-sm text-red-700">Remove all earnings events from the database to start fresh</p>
+            </div>
+            <Button 
+              onClick={handleDeleteAllEarnings}
+              disabled={isDeleting}
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete All Earnings
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
         {/* Primary Paste Area */}
         <div 
           ref={pasteAreaRef}
