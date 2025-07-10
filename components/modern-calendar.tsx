@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isToday, addMonths, subMonths, isPast } from 'date-fns';
+import { startOfDay, endOfDay, isSameWeek, addDays } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -26,6 +27,8 @@ interface ModernCalendarProps {
   type?: 'events' | 'earnings' | 'all';
 }
 
+type ViewMode = 'month' | 'week' | 'day';
+
 export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<Record<string, CalendarEvent[]>>({});
@@ -33,6 +36,8 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedDayEvents, setSelectedDayEvents] = useState<CalendarEvent[]>([]);
   const fetchingRef = useRef(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('month');
+  const [weekStartDate, setWeekStartDate] = useState<Date>(startOfWeek(currentDate));
 
   // Memoize calendar calculations to prevent unnecessary recalculations
   const { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays } = useMemo(() => {
@@ -821,6 +826,180 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
     );
   };
 
+  // Helper for toggles
+  const renderViewToggles = () => (
+    <div className="flex gap-2 mb-4 justify-center">
+      <Button
+        variant={viewMode === 'month' ? 'default' : 'outline'}
+        onClick={() => setViewMode('month')}
+      >Month</Button>
+      <Button
+        variant={viewMode === 'week' ? 'default' : 'outline'}
+        onClick={() => {
+          setViewMode('week');
+          setWeekStartDate(startOfWeek(selectedDate || currentDate));
+        }}
+      >Week</Button>
+      <Button
+        variant={viewMode === 'day' ? 'default' : 'outline'}
+        onClick={() => setViewMode('day')}
+      >Day</Button>
+    </div>
+  );
+
+  const renderMonthView = () => (
+    <>
+      {renderViewToggles()}
+      {/* Calendar Grid (existing code) */}
+      <Card>
+        <CardContent className="p-2 sm:p-6">
+          {/* Day Headers */}
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 sm:mb-4">
+            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+              <div key={day} className="p-1 sm:p-3 text-center font-medium text-muted-foreground text-[10px] sm:text-sm">
+                {day}
+              </div>
+            ))}
+          </div>
+          {/* Calendar Days */}
+          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+            {calendarDays.map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const dayEvents = events[dateKey] || [];
+              const isCurrentMonth = isSameMonth(day, currentDate);
+              const isDayToday = isToday(day);
+              const isDayPast = isPast(day) && !isDayToday;
+              return (
+                <div
+                  key={dateKey}
+                  className={cn(
+                    "relative min-h-[60px] sm:min-h-[80px] md:min-h-[120px] p-0.5 sm:p-1 md:p-2 border rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
+                    "hover:bg-accent hover:shadow-sm",
+                    !isCurrentMonth && "opacity-40 bg-muted/20",
+                    isDayToday && "ring-1 sm:ring-2 ring-primary bg-primary/5",
+                    isDayPast && "bg-muted/10"
+                  )}
+                  onClick={() => {
+                    setSelectedDate(day);
+                    setSelectedDayEvents(dayEvents);
+                    setViewMode('day');
+                  }}
+                >
+                  {/* Cross overlay for past dates */}
+                  {isDayPast && dayEvents.length > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                      <X className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-muted-foreground/50 stroke-[1.5]" />
+                    </div>
+                  )}
+                  <div className={cn(
+                    "text-[10px] sm:text-xs md:text-sm font-medium mb-0.5 sm:mb-1 md:mb-2",
+                    isDayToday && "text-primary font-bold",
+                    isDayPast && "text-muted-foreground"
+                  )}>
+                    {format(day, 'd')}
+                  </div>
+                  <div className="space-y-0.5 sm:space-y-1">
+                    {dayEvents.slice(0, 1).map((event, index) => (
+                      <div
+                        key={`${event.date}-${index}`}
+                        className={cn(
+                          "text-[8px] sm:text-xs px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 rounded border truncate",
+                          getEventColor(event.ticker, event.event_type),
+                          isDayPast && "opacity-60"
+                        )}
+                        title={`${event.ticker}: ${event.company_name}`}
+                      >
+                        <span className="font-medium">{event.ticker}</span>
+                      </div>
+                    ))}
+                    {dayEvents.length > 1 && (
+                      <div className={cn(
+                        "text-[8px] sm:text-xs text-muted-foreground px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1",
+                        isDayPast && "opacity-60"
+                      )}>
+                        +{dayEvents.length - 1} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+    </>
+  );
+
+  const renderWeekView = () => {
+    const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStartDate, i));
+    return (
+      <>
+        {renderViewToggles()}
+        <div className="flex justify-between items-center mb-4">
+          <Button variant="ghost" onClick={() => setWeekStartDate(addDays(weekStartDate, -7))}><ChevronLeft className="h-4 w-4" />Prev</Button>
+          <h2 className="text-xl font-bold">Week of {format(weekStartDate, 'MMM d, yyyy')}</h2>
+          <Button variant="ghost" onClick={() => setWeekStartDate(addDays(weekStartDate, 7))}>Next<ChevronRight className="h-4 w-4" /></Button>
+        </div>
+        <div className="grid grid-cols-7 gap-2">
+          {weekDays.map((day) => {
+            const dateKey = format(day, 'yyyy-MM-dd');
+            const dayEvents = events[dateKey] || [];
+            return (
+              <Card key={dateKey} className="p-3">
+                <div className="text-center mb-2">
+                  <div className="text-lg font-bold">{format(day, 'EEE')}</div>
+                  <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <CalendarIcon className="h-8 w-8 text-muted-foreground" />
+                  {dayEvents.length > 0 ? (
+                    dayEvents.map((event, i) => (
+                      <div key={i} className="flex flex-col items-center gap-1">
+                        <span className="font-semibold text-xs">{event.company_name}</span>
+                        <span className="text-xs text-muted-foreground">{event.ticker}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground">No Events</div>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
+
+  const renderDayView = () => {
+    const dateKey = format(selectedDate || new Date(), 'yyyy-MM-dd');
+    const dayEvents = events[dateKey] || [];
+    return (
+      <>
+        {renderViewToggles()}
+        <div className="flex justify-between items-center mb-4">
+          <Button variant="ghost" onClick={() => setViewMode('month')}><ChevronLeft className="h-4 w-4" />Back to Month</Button>
+          <h2 className="text-xl font-bold">{format(selectedDate || new Date(), 'EEEE, MMMM d, yyyy')}</h2>
+        </div>
+        <Card className="p-6">
+          <div className="flex flex-col items-center gap-4">
+            <CalendarIcon className="h-10 w-10 text-muted-foreground" />
+            {dayEvents.length > 0 ? (
+              dayEvents.map((event, i) => (
+                <div key={i} className="flex flex-col items-center gap-2">
+                  <span className="font-semibold text-lg">{event.company_name}</span>
+                  <span className="text-sm text-muted-foreground">{event.ticker}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">No Events</div>
+            )}
+          </div>
+        </Card>
+      </>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -840,7 +1019,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">{format(currentDate, 'MMMM yyyy')}</h2>
           <p className="text-muted-foreground text-xs sm:text-sm">Click any day to view events</p>
         </div>
-        
         <div className="flex items-center gap-1 sm:gap-2 justify-center sm:justify-end">
           <Button
             variant="outline"
@@ -850,7 +1028,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           >
             <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
-          
           <Button
             variant="outline"
             size="sm"
@@ -859,7 +1036,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           >
             Today
           </Button>
-          
           <Button
             variant="outline"
             size="sm"
@@ -870,86 +1046,10 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           </Button>
         </div>
       </div>
-
-      {/* Calendar Grid */}
-      <Card>
-        <CardContent className="p-2 sm:p-6">
-          {/* Day Headers */}
-          <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2 sm:mb-4">
-            {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-              <div key={day} className="p-1 sm:p-3 text-center font-medium text-muted-foreground text-[10px] sm:text-sm">
-                {day}
-              </div>
-            ))}
-          </div>
-          
-          {/* Calendar Days */}
-          <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
-            {calendarDays.map((day) => {
-              const dateKey = format(day, 'yyyy-MM-dd');
-              const dayEvents = events[dateKey] || [];
-              const isCurrentMonth = isSameMonth(day, currentDate);
-              const isDayToday = isToday(day);
-              const isDayPast = isPast(day) && !isDayToday;
-              
-              return (
-                <div
-                  key={dateKey}
-                  className={cn(
-                    "relative min-h-[60px] sm:min-h-[80px] md:min-h-[120px] p-0.5 sm:p-1 md:p-2 border rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
-                    "hover:bg-accent hover:shadow-sm",
-                    !isCurrentMonth && "opacity-40 bg-muted/20",
-                    isDayToday && "ring-1 sm:ring-2 ring-primary bg-primary/5",
-                    isDayPast && "bg-muted/10"
-                  )}
-                  onClick={() => handleDateClick(day)}
-                >
-                  {/* Cross overlay for past dates */}
-                  {isDayPast && dayEvents.length > 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                      <X className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-muted-foreground/50 stroke-[1.5]" />
-                    </div>
-                  )}
-                  
-                  <div className={cn(
-                    "text-[10px] sm:text-xs md:text-sm font-medium mb-0.5 sm:mb-1 md:mb-2",
-                    isDayToday && "text-primary font-bold",
-                    isDayPast && "text-muted-foreground"
-                  )}>
-                    {format(day, 'd')}
-                  </div>
-                  
-                  <div className="space-y-0.5 sm:space-y-1">
-                    {dayEvents.slice(0, 1).map((event, index) => (
-                      <div
-                        key={`${event.date}-${index}`}
-                        className={cn(
-                          "text-[8px] sm:text-xs px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1 rounded border truncate",
-                          getEventColor(event.ticker, event.event_type),
-                          isDayPast && "opacity-60"
-                        )}
-                        title={`${event.ticker}: ${event.company_name}`}
-                      >
-                        <span className="font-medium">{event.ticker}</span>
-                      </div>
-                    ))}
-                    
-                    {dayEvents.length > 1 && (
-                      <div className={cn(
-                        "text-[8px] sm:text-xs text-muted-foreground px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1",
-                        isDayPast && "opacity-60"
-                      )}>
-                        +{dayEvents.length - 1} more
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
+      {/* View Mode Switcher */}
+      {viewMode === 'month' && renderMonthView()}
+      {viewMode === 'week' && renderWeekView()}
+      {viewMode === 'day' && renderDayView()}
       {/* Event Legend - Mobile Optimized */}
       <Card>
         <CardHeader className="pb-3">
@@ -996,7 +1096,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           </div>
         </CardContent>
       </Card>
-
       {/* Day Detail Dialog */}
       {renderDayDetailDialog()}
     </div>
