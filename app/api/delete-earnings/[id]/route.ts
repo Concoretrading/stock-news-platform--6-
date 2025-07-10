@@ -27,10 +27,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Only allow admin user
-    if (decodedToken.email !== 'handrigannick@gmail.com') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
+    // Allow any authenticated user to delete earnings events
+    // No admin restriction needed
 
     const { id } = params;
     

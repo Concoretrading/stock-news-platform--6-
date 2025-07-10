@@ -23,11 +23,9 @@ export function AdminEarningsUpload() {
   const [bulkPasteSummary, setBulkPasteSummary] = useState<{added: number, skipped: any[]} | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Check if user is admin
-  const isAdmin = user?.email === 'handrigannick@gmail.com';
-
-  if (!isAdmin) {
-    return null; // Don't render anything for non-admin users
+  // Allow all authenticated users to access earnings upload
+  if (!user) {
+    return null; // Don't render anything for non-authenticated users
   }
 
   // Add paste event listener

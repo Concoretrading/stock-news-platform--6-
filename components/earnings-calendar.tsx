@@ -328,8 +328,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
               </p>
             </div>
 
-            {/* Delete Button (Admin Only) */}
-            {user?.email === 'handrigannick@gmail.com' && (
+            {/* Delete Button (All Users) */}
+            {user && (
               <div className="border-t pt-4">
                 <Button 
                   variant="destructive" 
