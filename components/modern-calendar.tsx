@@ -399,12 +399,8 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         variant={viewMode === 'week' ? 'default' : 'outline'}
         onClick={() => {
           setViewMode('week');
-          if (!selectedDate) {
-            setSelectedDate(new Date());
-            setWeekStartDate(startOfWeek(new Date()));
-          } else {
-            setWeekStartDate(startOfWeek(selectedDate));
-          }
+          setSelectedDate(new Date());
+          setWeekStartDate(startOfWeek(new Date()));
         }}
       >Week</Button>
     </div>
@@ -454,7 +450,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   <div
                     className={cn(
                       "relative min-h-[60px] sm:min-h-[80px] md:min-h-[120px] p-0.5 sm:p-1 md:p-2 border rounded-md sm:rounded-lg cursor-pointer transition-all duration-200 touch-manipulation",
-                      "hover:bg-accent hover:shadow-sm",
+                      "hover:bg-accent hover:shadow-md hover:scale-[1.02] active:scale-[0.98]",
                       !isCurrentMonth && "opacity-40 bg-muted/20",
                       isDayToday && "ring-1 sm:ring-2 ring-primary bg-primary/5",
                       isDayPast && "bg-muted/10"
@@ -466,8 +462,9 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   >
                     {/* Cross overlay for past dates */}
                     {isDayPast && dayEvents.length > 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                        <X className="h-6 w-6 sm:h-8 sm:w-8 md:h-12 md:w-12 text-muted-foreground/50 stroke-[1.5]" />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                        <div className="absolute inset-0 bg-red-500/10 rounded-md" />
+                        <X className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 text-red-500 drop-shadow-lg opacity-80" />
                       </div>
                     )}
                     <div className={cn(
@@ -476,6 +473,11 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                       isDayPast && "text-muted-foreground"
                     )}>
                       {format(day, 'd')}
+                      {dayEvents.length > 0 && (
+                        <div className="text-[8px] text-muted-foreground mt-0.5 opacity-60">
+                          click to view
+                        </div>
+                      )}
                     </div>
                     
                     <div className="space-y-0.5 sm:space-y-1">
@@ -544,10 +546,21 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             const dayEvents = events[dateKey] || [];
             return (
               <div key={dateKey} className="relative">
-                <Card className="p-3">
+                <Card 
+                  className="p-3 cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => {
+                    setSelectedDate(day);
+                    setSelectedDayEvents(dayEvents);
+                  }}
+                >
                   <div className="text-center mb-2">
                     <div className="text-lg font-bold">{format(day, 'EEE')}</div>
                     <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                    {dayEvents.length > 0 && (
+                      <div className="text-[8px] text-muted-foreground mt-1 opacity-60">
+                        click to view
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col items-center gap-2">
                     {dayEvents.length > 0 ? (
