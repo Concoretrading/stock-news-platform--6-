@@ -103,7 +103,17 @@ export default function CalendarPage() {
         <TabsContent value="elite">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Star className="h-4 w-4 sm:h-5 sm:w-5" />
+              {/* Golden Logo with gold filter */}
+              <span className="inline-block w-7 h-7 sm:w-9 sm:h-9">
+                <img
+                  src="/images/concore-logo-new.png"
+                  alt="Concore Gold Logo"
+                  className="w-full h-full object-contain drop-shadow-lg"
+                  style={{
+                    filter: 'brightness(1.2) contrast(1.1) saturate(2) sepia(1) hue-rotate(25deg) drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5))',
+                  }}
+                />
+              </span>
               Elite
             </CardTitle>
             <p className="text-xs sm:text-sm text-muted-foreground">
@@ -130,7 +140,7 @@ export default function CalendarPage() {
                           alt="Concore Elite" 
                           className="w-full h-full object-contain filter drop-shadow-lg"
                           style={{
-                            filter: 'brightness(1.2) contrast(1.1) saturate(1.3) hue-rotate(15deg) drop-shadow(0 4px 8px rgba(251, 191, 36, 0.4))'
+                            filter: 'brightness(1.2) contrast(1.1) saturate(2) sepia(1) hue-rotate(25deg) drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5))',
                           }}
                         />
                       </div>
