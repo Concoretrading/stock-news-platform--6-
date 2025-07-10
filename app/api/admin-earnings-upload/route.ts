@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
           let timing = null;
           // Try to find a ticker (1-5 letters, matches known tickers or looks like a ticker)
           for (const part of parts) {
-            if (/^[A-Za-z]{1,5}$/.test(part) && tickers.find(t => t.ticker.toUpperCase() === part.toUpperCase())) {
+            if (/^[A-Za-z]{1,5}$/.test(part)) {
               ticker = part.toUpperCase();
               break;
             }
