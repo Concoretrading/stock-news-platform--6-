@@ -27,7 +27,7 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
     // Split by tabs or multiple spaces
     const columns = line.split(/\t+/).map(col => col.trim()).filter(col => col);
     
-    if (columns.length < 2) continue; // Skip invalid lines
+    if (columns.length < 1) continue; // Skip empty lines
     
     try {
       const firstColumn = columns[0];
@@ -75,6 +75,11 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
           }
         }
         
+        // If no event name found in columns, try to extract from the line
+        if (!eventName && columns.length > 1) {
+          eventName = columns[1]; // Use second column as event name
+        }
+        
         // Look for expectations (numbers with % or decimal values)
         for (let j = 1; j < columns.length; j++) {
           const col = columns[j];
@@ -99,9 +104,7 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
             country: 'US',
             currency: 'USD',
             importance,
-            actual: null,
             forecast: expectations || null,
-            previous: null,
             iconUrl,
             type: 'economic'
           };
