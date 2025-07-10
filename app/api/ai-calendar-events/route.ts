@@ -95,7 +95,10 @@ async function handleFileUpload(request: NextRequest, db: any) {
     return NextResponse.json({ 
       success: true, 
       events: events,
-      extractedText: extractedText.substring(0, 500) + '...' // Preview of extracted text
+      extractedText: extractedText.substring(0, 500) + '...', // Preview of extracted text
+      message: events.length > 0 
+        ? `✅ Successfully processed image and found ${events.length} earnings events`
+        : `⚠️ No earnings events found in the image. Please check the image quality and try again.`
     })
   } catch (error) {
     console.error('File upload error:', error)
@@ -121,7 +124,10 @@ async function handleTextProcessing(request: NextRequest, db: any) {
     return NextResponse.json({ 
       success: true, 
       events: events,
-      processedText: text.substring(0, 500) + '...' // Preview of processed text
+      processedText: text.substring(0, 500) + '...', // Preview of processed text
+      message: events.length > 0 
+        ? `✅ Successfully processed text and found ${events.length} earnings events`
+        : `⚠️ No earnings events found in the provided text. Please check the format and try again.`
     })
   } catch (error) {
     console.error('Text processing error:', error)
@@ -138,6 +144,9 @@ async function processEarningsText(text: string, db: any) {
     console.warn('Invalid text input:', text)
     return []
   }
+  
+  console.log(`Processing earnings text (${text.length} characters):`)
+  console.log('Text preview:', text.substring(0, 500) + '...')
   
   // Common company names and tickers for earnings detection
   const companyTickers: { [key: string]: string } = {
@@ -249,10 +258,25 @@ async function processEarningsText(text: string, db: any) {
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
     
-    // Look for ticker patterns (1-5 letter codes, case-insensitive)
+    // Look for ticker patterns (1-5 letter codes, case-insensitive) - more flexible
     let tickerMatch = null
     try {
-      tickerMatch = trimmedLine.match(/\b([A-Za-z]{1,5})\b/)
+      // Try multiple patterns for better ticker detection
+      const tickerPatterns = [
+        /\b([A-Za-z]{1,5})\b/, // Standard ticker format
+        /\b([A-Za-z]{1,5})\s/, // Ticker followed by space
+        /^([A-Za-z]{1,5})\s/, // Ticker at start of line
+        /\s([A-Za-z]{1,5})\s/, // Ticker between spaces
+        /\s([A-Za-z]{1,5})$/, // Ticker at end of line
+        /\b([A-Za-z]{1,5})[\/\-]/ // Ticker followed by slash or dash
+      ]
+      
+      for (const pattern of tickerPatterns) {
+        tickerMatch = trimmedLine.match(pattern)
+        if (tickerMatch && tickerMatch[1]) {
+          break
+        }
+      }
     } catch (tickerError) {
       console.warn('Ticker match error:', tickerError, 'for line:', trimmedLine)
       continue
@@ -262,12 +286,19 @@ async function processEarningsText(text: string, db: any) {
       const ticker = tickerMatch[1].toUpperCase()
       const companyName = companyTickers[ticker] || `${ticker}`
       
+      console.log(`Found ticker: ${ticker} in line: "${trimmedLine}"`)
+      
       // Look for date patterns (support 2-digit years, dashes, slashes, and month names)
       const datePatterns = [
         /(\d{1,2}\/\d{1,2}\/\d{2,4})/g,
         /(\d{1,2}-\d{1,2}-\d{2,4})/g,
         /(\w+ \d{1,2},? \d{2,4})/g,
-        /(\d{4}-\d{2}-\d{2})/g
+        /(\d{4}-\d{2}-\d{2})/g,
+        /(\d{1,2}\.\d{1,2}\.\d{2,4})/g, // DD.MM.YYYY format
+        /(\d{1,2}\s+\d{1,2}\s+\d{2,4})/g, // DD MM YYYY format
+        /(\w+\s+\d{1,2}\s+\d{4})/g, // Month DD YYYY
+        /(\d{1,2}\/\d{1,2})/g, // MM/DD (current year assumed)
+        /(\d{1,2}-\d{1,2})/g // MM-DD (current year assumed)
       ]
       
       let eventDate = null
@@ -279,13 +310,22 @@ async function processEarningsText(text: string, db: any) {
           if (dateMatch && dateMatch[1]) {
             let dateStr = dateMatch[1]
             let parsedDate: Date | null = null
+            
+            console.log(`Trying to parse date: "${dateStr}" from line: "${trimmedLine}"`)
+            
             // Try date-fns parse for common formats
-            const formats = ['MM/dd/yy', 'MM-dd-yy', 'MM/dd/yyyy', 'MM-dd-yyyy']
+            const formats = [
+              'MM/dd/yy', 'MM-dd-yy', 'MM/dd/yyyy', 'MM-dd-yyyy',
+              'dd/MM/yy', 'dd-MM-yy', 'dd/MM/yyyy', 'dd-MM-yyyy',
+              'MMM dd yyyy', 'MMMM dd yyyy', 'MMM dd, yyyy', 'MMMM dd, yyyy'
+            ]
+            
             for (const fmt of formats) {
               try {
                 const d = parse(dateStr, fmt, new Date())
                 if (isValid(d)) {
                   parsedDate = d
+                  console.log(`Successfully parsed date with format ${fmt}:`, parsedDate)
                   break
                 }
               } catch (parseError) {
@@ -293,10 +333,14 @@ async function processEarningsText(text: string, db: any) {
                 continue
               }
             }
+            
             // Fallback to native Date
             if (!parsedDate) {
               try {
                 parsedDate = new Date(dateStr)
+                if (isValid(parsedDate)) {
+                  console.log(`Successfully parsed date with native Date:`, parsedDate)
+                }
               } catch (dateError) {
                 console.warn('Native date parse error:', dateError, 'for date:', dateStr)
                 continue
@@ -322,6 +366,8 @@ async function processEarningsText(text: string, db: any) {
           earningsType = 'AMC'
         }
         
+        console.log(`Creating earnings event: ${ticker} on ${eventDate.toISOString().split('T')[0]} (${earningsType})`)
+        
         events.push({
           stockTicker: ticker,
           companyName: companyName,
@@ -333,9 +379,103 @@ async function processEarningsText(text: string, db: any) {
           conferenceCallUrl: null,
           event_type: 'Earnings Call'
         })
-      } else if (eventDate) {
-        // Invalid date parsed, log for debugging
-        console.warn('Skipping line with invalid date:', trimmedLine, eventDate)
+      } else {
+        // No valid date found, but we have a ticker - create event with current date as fallback
+        console.log(`No valid date found for ${ticker}, using current date as fallback`)
+        
+        const fallbackDate = new Date()
+        fallbackDate.setDate(fallbackDate.getDate() + 7) // Default to next week
+        
+        let earningsType = 'BMO' // Default to Before Market Open
+        if (trimmedLine.toLowerCase().includes('after market') || 
+            trimmedLine.toLowerCase().includes('amc') ||
+            trimmedLine.toLowerCase().includes('after hours')) {
+          earningsType = 'AMC'
+        }
+        
+        events.push({
+          stockTicker: ticker,
+          companyName: companyName,
+          earningsDate: fallbackDate.toISOString(),
+          earningsType: earningsType,
+          isConfirmed: false, // Mark as unconfirmed since we don't have a real date
+          estimatedEPS: null,
+          estimatedRevenue: null,
+          conferenceCallUrl: null,
+          event_type: 'Earnings Call',
+          note: 'Date estimated - no valid date found in text'
+        })
+      }
+    }
+  }
+  
+  // Fallback: If no events found with ticker detection, try company name detection
+  if (events.length === 0) {
+    console.log('No events found with ticker detection, trying company name fallback...')
+    
+    const lines = text.split('\n')
+    for (const line of lines) {
+      if (typeof line !== 'string' || !line) continue;
+      const trimmedLine = line.trim();
+      if (!trimmedLine) continue;
+      
+      // Look for company names in the text
+      for (const [ticker, companyName] of Object.entries(companyTickers)) {
+        if (trimmedLine.toLowerCase().includes(companyName.toLowerCase()) || 
+            trimmedLine.toLowerCase().includes(ticker.toLowerCase())) {
+          
+          console.log(`Found company match: ${companyName} (${ticker}) in line: "${trimmedLine}"`)
+          
+          // Try to find a date in this line
+          let eventDate = null
+          const datePatterns = [
+            /(\d{1,2}\/\d{1,2}\/\d{2,4})/g,
+            /(\d{1,2}-\d{1,2}-\d{2,4})/g,
+            /(\w+ \d{1,2},? \d{2,4})/g,
+            /(\d{4}-\d{2}-\d{2})/g
+          ]
+          
+          for (const pattern of datePatterns) {
+            try {
+              const dateMatch = trimmedLine.match(pattern);
+              if (dateMatch && dateMatch[1]) {
+                const parsedDate = new Date(dateMatch[1])
+                if (isValid(parsedDate)) {
+                  eventDate = parsedDate
+                  break
+                }
+              }
+            } catch (error) {
+              continue
+            }
+          }
+          
+          if (eventDate) {
+            let earningsType = 'BMO'
+            if (trimmedLine.toLowerCase().includes('after market') || 
+                trimmedLine.toLowerCase().includes('amc') ||
+                trimmedLine.toLowerCase().includes('after hours')) {
+              earningsType = 'AMC'
+            }
+            
+            events.push({
+              stockTicker: ticker,
+              companyName: companyName,
+              earningsDate: eventDate.toISOString(),
+              earningsType: earningsType,
+              isConfirmed: true,
+              estimatedEPS: null,
+              estimatedRevenue: null,
+              conferenceCallUrl: null,
+              event_type: 'Earnings Call',
+              source: 'company_name_fallback'
+            })
+            
+            console.log(`Created fallback event: ${ticker} on ${eventDate.toISOString().split('T')[0]}`)
+          }
+          
+          break // Only process first match per line
+        }
       }
     }
   }
@@ -382,6 +522,11 @@ async function processEarningsText(text: string, db: any) {
       // Don't fail the entire request if Firebase save fails
     }
   }
+  
+  console.log(`Processing complete. Found ${events.length} earnings events:`)
+  events.forEach((event, index) => {
+    console.log(`  ${index + 1}. ${event.stockTicker} - ${event.companyName} - ${event.earningsDate} - ${event.earningsType}`)
+  })
   
   return events
 } 
