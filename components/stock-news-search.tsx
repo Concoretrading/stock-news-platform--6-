@@ -39,15 +39,27 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
         }
         
         const response = await fetchWithAuth(url)
-        const result = await response.json()
-        
-        if (result.success) {
-          setAllEntries(result.data || [])
+        let result: any = null;
+        try {
+          result = await response.json()
+        } catch (jsonErr) {
+          setAllEntries([])
+          setError('Failed to parse news data')
+          console.error('Failed to parse catalysts JSON:', jsonErr)
+          return;
+        }
+        console.log('Full API response:', result)
+        if (result && result.success === true && Array.isArray(result.data)) {
+          setAllEntries(result.data)
           console.log('Fetched catalysts:', result.data)
+        } else if (result && result.error) {
+          setAllEntries([])
+          setError(result.error)
+          console.error('Failed to fetch catalysts:', result.error)
         } else {
           setAllEntries([])
-          setError('Failed to fetch news data')
-          console.error('Failed to fetch catalysts:', result.error)
+          setError('Unexpected API response')
+          console.error('Unexpected API response:', result)
         }
       } catch (error) {
         setAllEntries([])
