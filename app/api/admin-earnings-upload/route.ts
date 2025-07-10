@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuth } from '@/lib/firebase-admin';
 import { ImageAnnotatorClient, protos } from '@google-cloud/vision';
+import tickers from '@/lib/tickers.json';
 
 // Initialize Vision API client with proper credentials
 let vision: ImageAnnotatorClient;
@@ -287,6 +288,66 @@ function parseCalendarText(detectedText: string): Array<{company: string, ticker
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if this is a bulk paste request
+    const contentType = request.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const body = await request.json();
+      if (body.bulkPaste) {
+        // Parse pasted lines
+        const lines = body.bulkPaste.split('\n').map((l: string) => l.trim()).filter(Boolean);
+        const events = [];
+        for (const line of lines) {
+          // Accept: ticker date [timing]
+          // Example: nvda 7/23/25 AMC
+          const parts = line.split(/\s+|,|\t/).filter(Boolean);
+          if (parts.length < 2) continue;
+          const ticker = parts[0].toUpperCase();
+          const dateRaw = parts[1];
+          const timing = (parts[2] || 'AMC').toUpperCase();
+          // Parse date (support MM/DD/YY, MM/DD/YYYY, YYYY-MM-DD)
+          let dateObj;
+          if (/\d{1,2}\/\d{1,2}\/\d{2,4}/.test(dateRaw)) {
+            // MM/DD/YY or MM/DD/YYYY
+            const [m, d, y] = dateRaw.split('/');
+            let year = y.length === 2 ? '20' + y : y;
+            dateObj = new Date(`${year}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
+          } else if (/\d{4}-\d{2}-\d{2}/.test(dateRaw)) {
+            dateObj = new Date(dateRaw);
+          } else {
+            continue; // skip invalid date
+          }
+          if (isNaN(dateObj.getTime())) continue;
+          // Lookup company name
+          const tickerEntry = tickers.find(t => t.ticker.toUpperCase() === ticker);
+          const companyName = tickerEntry ? tickerEntry.name : ticker;
+          events.push({
+            companyName,
+            stockTicker: ticker,
+            earningsDate: dateObj.toISOString().split('T')[0],
+            earningsType: timing === 'BMO' ? 'BMO' : 'AMC',
+            isConfirmed: true,
+            estimatedEPS: null,
+            estimatedRevenue: null,
+            source: 'admin_bulk_paste',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        }
+        // Save to Firestore
+        if (events.length > 0) {
+          const { getFirestore } = await import('@/lib/firebase-admin');
+          const db = await getFirestore();
+          const batch = db.batch();
+          for (const event of events) {
+            const docRef = db.collection('earnings_calendar').doc();
+            batch.set(docRef, event);
+          }
+          await batch.commit();
+        }
+        return NextResponse.json({ success: true, added: events.length });
+      }
+    }
+
     // Check if Vision API client is properly initialized
     if (!vision) {
       console.error('Vision API client not initialized');
