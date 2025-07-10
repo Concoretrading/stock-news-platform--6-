@@ -186,12 +186,28 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
           <div className="space-y-4">
             {/* Log all ids before rendering */}
             {(() => { console.log('Rendering catalyst entry ids:', filteredEntries.map(e => e && typeof e.id === 'string' ? e.id : '[INVALID]'), 'Types:', filteredEntries.map(e => typeof e.id)); return null; })()}
-            {filteredEntries.map((entry) => {
+            {filteredEntries.map((entry, idx) => {
               // Only render entries with a valid id (string or convertible)
               let safeId = typeof entry.id === 'string' ? entry.id : ((entry as any).id && typeof (entry as any).id === 'object' && typeof (entry as any).id.toString === 'function' ? (entry as any).id.toString() : String((entry as any).id));
-              if (!entry || !safeId || typeof safeId !== 'string' || !safeId.trim()) {
-                console.warn('Skipping entry with invalid id:', entry);
-                return null;
+              if (!entry || !safeId || typeof safeId !== 'string' || !safeId.trim() || safeId === '[object Object]') {
+                // Fallback: use a hash of title+createdAt if possible
+                let fallbackKey = '';
+                if (entry && entry.title && entry.createdAt) {
+                  fallbackKey = btoa(unescape(encodeURIComponent(entry.title + entry.createdAt)));
+                } else {
+                  fallbackKey = `invalid-key-${idx}`;
+                }
+                console.error('Skipping entry with invalid id, using fallback key:', { entry, fallbackKey });
+                return (
+                  <Card key={fallbackKey} className="border border-red-400 bg-red-50 dark:bg-red-900/30">
+                    <CardHeader>
+                      <CardTitle className="text-red-700 text-sm">Invalid entry (not rendered)</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <pre className="text-xs text-red-700 whitespace-pre-wrap">{JSON.stringify(entry, null, 2)}</pre>
+                    </CardContent>
+                  </Card>
+                );
               }
               return (
                 <Card key={safeId} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
