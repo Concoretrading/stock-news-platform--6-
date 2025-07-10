@@ -29,6 +29,11 @@ export default function AdminEconomicEvents() {
     success: boolean;
     message: string;
     events?: PreviewEvent[];
+    stats?: {
+      total: number;
+      added: number;
+      skipped: number;
+    };
   } | null>(null);
 
   const handlePreview = () => {
@@ -87,7 +92,8 @@ export default function AdminEconomicEvents() {
         setUploadResult({
           success: true,
           message: result.message,
-          events: result.events
+          events: result.events,
+          stats: result.stats
         });
         setRawData('');
         setPreviewEvents([]);
@@ -197,7 +203,16 @@ Monday, Jan 15, 2024 10:00 AM	Retail Sales	United States	USD	0.4%	0.3%	0.2%"
           ) : (
             <AlertCircle className="h-4 w-4" />
           )}
-          <AlertDescription>{uploadResult.message}</AlertDescription>
+          <AlertDescription>
+            <div className="space-y-2">
+              <div>{uploadResult.message}</div>
+              {uploadResult.stats && (
+                <div className="text-sm text-muted-foreground">
+                  📊 Processed: {uploadResult.stats.total} • Added: {uploadResult.stats.added} • Skipped: {uploadResult.stats.skipped}
+                </div>
+              )}
+            </div>
+          </AlertDescription>
         </Alert>
       )}
 

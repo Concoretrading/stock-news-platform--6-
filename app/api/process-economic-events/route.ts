@@ -35,12 +35,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store events in Firestore
+    // Store events in Firestore with deduplication
     const db = await getFirestore();
     const batch = db.batch();
+    const newEvents = [];
+    const skippedEvents = [];
     
     for (const event of events) {
-      const eventRef = db.collection('economic_events').doc(event.id);
+      // Check for existing event with same date, time, and event name
+      const existingQuery = db.collection('economic_events')
+        .where('date', '==', event.date)
+        .where('time', '==', event.time)
+        .where('event', '==', event.event);
+      
+      const existingSnapshot = await existingQuery.get();
+      
+      if (!existingSnapshot.empty) {
+        // Event already exists, skip it
+        skippedEvents.push({
+          date: event.date,
+          time: event.time,
+          event: event.event,
+          reason: 'Duplicate event already exists'
+        });
+        continue;
+      }
+      
+      // Create unique ID for new event
+      const uniqueId = `economic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const eventRef = db.collection('economic_events').doc(uniqueId);
+      
       // Filter out undefined and null values before saving to Firestore
       const cleanEvent = Object.fromEntries(
         Object.entries(event).filter(([_, value]) => value !== undefined && value !== null)
@@ -53,26 +77,41 @@ export async function POST(request: NextRequest) {
         }
       });
       
+      // Update event with unique ID
+      cleanEvent.id = uniqueId;
+      
       batch.set(eventRef, {
         ...cleanEvent,
         createdAt: new Date(),
         updatedAt: new Date()
       });
+      
+      newEvents.push(event);
     }
 
     await batch.commit();
 
+    const totalProcessed = newEvents.length + skippedEvents.length;
+    const message = newEvents.length > 0 
+      ? `Successfully added ${newEvents.length} new economic events${skippedEvents.length > 0 ? `, skipped ${skippedEvents.length} duplicates` : ''}`
+      : `No new events added - all ${skippedEvents.length} events were duplicates`;
+    
     return NextResponse.json({
       success: true,
-      message: `Successfully processed ${events.length} economic events`,
-      events: events.map(event => ({
+      message,
+      events: newEvents.map(event => ({
         id: event.id,
         date: event.date,
         time: event.time,
         event: event.event,
         importance: event.importance,
         iconUrl: event.iconUrl
-      }))
+      })),
+      stats: {
+        total: totalProcessed,
+        added: newEvents.length,
+        skipped: skippedEvents.length
+      }
     });
 
   } catch (error) {
