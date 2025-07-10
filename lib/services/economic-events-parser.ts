@@ -18,6 +18,7 @@ export interface EconomicEvent {
 export function parseMarketWatchData(rawData: string): EconomicEvent[] {
   const lines = rawData.trim().split('\n');
   const events: EconomicEvent[] = [];
+  let currentDate = '';
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -26,47 +27,69 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
     // Split by tabs or multiple spaces
     const columns = line.split(/\t+/).map(col => col.trim()).filter(col => col);
     
-    if (columns.length < 4) continue; // Skip invalid lines
+    if (columns.length < 2) continue; // Skip invalid lines
     
     try {
-      // Parse date and time
-      const dateTimeStr = columns[0];
-      const dateTime = parseDateTime(dateTimeStr);
+      const firstColumn = columns[0];
       
-      if (!dateTime) continue;
+      // Check if this is a day header (e.g., "TUESDAY, JULY 15")
+      if (firstColumn.includes(',') && (firstColumn.includes('JULY') || firstColumn.includes('JUNE') || firstColumn.includes('AUGUST'))) {
+        const dateTime = parseDateTime(firstColumn);
+        if (dateTime) {
+          currentDate = dateTime.date;
+          console.log(`📅 Set current date to: ${currentDate} from: ${firstColumn}`);
+        }
+        continue; // Skip day headers as events
+      }
       
-      // Parse event details
-      const event = columns[1] || '';
-      const country = columns[2] || '';
-      const currency = columns[3] || '';
-      
-      // Determine importance based on event type
-      const importance = determineImportance(event);
-      
-      // Parse actual/forecast/previous if available (only include if not empty)
-      const actual = columns[4]?.trim() || null;
-      const forecast = columns[5]?.trim() || null;
-      const previous = columns[6]?.trim() || null;
-      
-      // Map event to icon
-      const iconUrl = mapEventToIcon(event);
-      
-      const economicEvent: EconomicEvent = {
-        id: `economic_${Date.now()}_${i}`,
-        date: dateTime.date,
-        time: dateTime.time,
-        event,
-        country,
-        currency,
-        importance,
-        actual,
-        forecast,
-        previous,
-        iconUrl,
-        type: 'economic'
-      };
-      
-      events.push(economicEvent);
+      // If we have a current date and this looks like an event line
+      if (currentDate && (firstColumn.includes('am') || firstColumn.includes('pm'))) {
+        console.log(`📊 Processing event: ${firstColumn} for date: ${currentDate}`);
+        const timeStr = firstColumn;
+        const eventName = columns[1] || '';
+        const period = columns[2] || '';
+        const actual = columns[3]?.trim() || null;
+        const forecast = columns[4]?.trim() || null;
+        const previous = columns[5]?.trim() || null;
+        
+        // Parse time
+        const timeMatch = timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+        let hours = 0, minutes = 0;
+        
+        if (timeMatch) {
+          hours = parseInt(timeMatch[1]);
+          minutes = parseInt(timeMatch[2]);
+          const period = timeMatch[3].toLowerCase();
+          
+          if (period === 'pm' && hours !== 12) hours += 12;
+          if (period === 'am' && hours === 12) hours = 0;
+        }
+        
+        const timeStrFormatted = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        
+        // Determine importance based on event type
+        const importance = determineImportance(eventName);
+        
+        // Map event to icon
+        const iconUrl = mapEventToIcon(eventName);
+        
+        const economicEvent: EconomicEvent = {
+          id: `economic_${Date.now()}_${i}`,
+          date: currentDate,
+          time: timeStrFormatted,
+          event: eventName,
+          country: 'US',
+          currency: 'USD',
+          importance,
+          actual,
+          forecast,
+          previous,
+          iconUrl,
+          type: 'economic'
+        };
+        
+        events.push(economicEvent);
+      }
     } catch (error) {
       console.error(`Error parsing line ${i + 1}:`, error);
       continue;
@@ -78,18 +101,40 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
 
 function parseDateTime(dateTimeStr: string): { date: string; time: string } | null {
   try {
-    // Handle various date formats from MarketWatch
+    // Handle MarketWatch format: "MONDAY, JULY 14" or "8:30 am"
     let date: Date;
+    const currentYear = new Date().getFullYear();
     
-    // Try different date formats
-    if (dateTimeStr.includes(',')) {
-      // Format: "Monday, Jan 15, 2024 8:30 AM"
-      date = new Date(dateTimeStr);
-    } else if (dateTimeStr.includes('/')) {
-      // Format: "1/15/2024 8:30 AM"
-      date = new Date(dateTimeStr);
+    // Check if it's a day header (e.g., "MONDAY, JULY 14")
+    if (dateTimeStr.includes(',') && dateTimeStr.includes('JULY')) {
+      // Extract month and day from "MONDAY, JULY 14"
+      const parts = dateTimeStr.split(',');
+      const monthDay = parts[1]?.trim(); // "JULY 14"
+      
+      if (monthDay) {
+        // Create date string with current year
+        const dateString = `${monthDay} ${currentYear}`;
+        date = new Date(dateString);
+      } else {
+        return null;
+      }
+    } else if (dateTimeStr.includes('am') || dateTimeStr.includes('pm')) {
+      // This is a time, not a date - we need to get the date from context
+      // For now, use today's date
+      date = new Date();
+      const timeMatch = dateTimeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i);
+      if (timeMatch) {
+        let hours = parseInt(timeMatch[1]);
+        const minutes = parseInt(timeMatch[2]);
+        const period = timeMatch[3].toLowerCase();
+        
+        if (period === 'pm' && hours !== 12) hours += 12;
+        if (period === 'am' && hours === 12) hours = 0;
+        
+        date.setHours(hours, minutes, 0, 0);
+      }
     } else {
-      // Try ISO format or other formats
+      // Try other date formats
       date = new Date(dateTimeStr);
     }
     
