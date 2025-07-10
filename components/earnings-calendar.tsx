@@ -65,20 +65,20 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
 
         const eventsRef = collection(db, 'earnings_calendar');
         
-        // Convert dates to ISO strings for proper querying since events are stored as ISO strings
-        const startISO = start.toISOString();
-        const endISO = end.toISOString();
+        // Convert dates to YYYY-MM-DD format for proper querying since events are stored as YYYY-MM-DD strings
+        const startDate = format(start, 'yyyy-MM-dd');
+        const endDate = format(end, 'yyyy-MM-dd');
         
         const q = query(
           eventsRef,
-          where('earningsDate', '>=', startISO),
-          where('earningsDate', '<=', endISO)
+          where('earningsDate', '>=', startDate),
+          where('earningsDate', '<=', endDate)
         );
 
         const querySnapshot = await getDocs(q);
         const newEvents: Record<string, EarningsEvent[]> = {};
 
-        console.log(`📅 Earnings Calendar: Querying from ${startISO} to ${endISO}`);
+        console.log(`📅 Earnings Calendar: Querying from ${startDate} to ${endDate}`);
         console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents`);
 
         querySnapshot.forEach((doc) => {

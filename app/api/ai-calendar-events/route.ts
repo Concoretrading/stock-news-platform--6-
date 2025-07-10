@@ -334,10 +334,19 @@ async function processEarningsText(text: string, db: any) {
               }
             }
             
-            // Fallback to native Date
+            // Fallback to native Date with timezone fix
             if (!parsedDate) {
               try {
-                parsedDate = new Date(dateStr)
+                // Handle MM/DD/YY format specifically to avoid timezone issues
+                if (/^\d{1,2}\/\d{1,2}\/\d{2}$/.test(dateStr)) {
+                  const [month, day, year] = dateStr.split('/')
+                  const fullYear = year.length === 2 ? '20' + year : year
+                  // Create date in local timezone to avoid UTC conversion
+                  parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day))
+                  console.log(`Created local date for MM/DD/YY format:`, parsedDate)
+                } else {
+                  parsedDate = new Date(dateStr)
+                }
                 if (isValid(parsedDate)) {
                   console.log(`Successfully parsed date with native Date:`, parsedDate)
                 }
@@ -366,12 +375,14 @@ async function processEarningsText(text: string, db: any) {
           earningsType = 'AMC'
         }
         
-        console.log(`Creating earnings event: ${ticker} on ${eventDate.toISOString().split('T')[0]} (${earningsType})`)
+        // Ensure the date is saved in the correct format (YYYY-MM-DD)
+        const dateString = eventDate.toISOString().split('T')[0]
+        console.log(`Creating earnings event: ${ticker} on ${dateString} (${earningsType})`)
         
         events.push({
           stockTicker: ticker,
           companyName: companyName,
-          earningsDate: eventDate.toISOString(),
+          earningsDate: dateString, // Save as YYYY-MM-DD string instead of ISO
           earningsType: earningsType,
           isConfirmed: true,
           estimatedEPS: null,
@@ -393,10 +404,11 @@ async function processEarningsText(text: string, db: any) {
           earningsType = 'AMC'
         }
         
+        const fallbackDateString = fallbackDate.toISOString().split('T')[0]
         events.push({
           stockTicker: ticker,
           companyName: companyName,
-          earningsDate: fallbackDate.toISOString(),
+          earningsDate: fallbackDateString, // Save as YYYY-MM-DD string
           earningsType: earningsType,
           isConfirmed: false, // Mark as unconfirmed since we don't have a real date
           estimatedEPS: null,
@@ -439,7 +451,20 @@ async function processEarningsText(text: string, db: any) {
             try {
               const dateMatch = trimmedLine.match(pattern);
               if (dateMatch && dateMatch[1]) {
-                const parsedDate = new Date(dateMatch[1])
+                const dateStr = dateMatch[1]
+                let parsedDate = null
+                
+                // Handle MM/DD/YY format specifically to avoid timezone issues
+                if (/^\d{1,2}\/\d{1,2}\/\d{2}$/.test(dateStr)) {
+                  const [month, day, year] = dateStr.split('/')
+                  const fullYear = year.length === 2 ? '20' + year : year
+                  // Create date in local timezone to avoid UTC conversion
+                  parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day))
+                  console.log(`Created local date for MM/DD/YY format:`, parsedDate)
+                } else {
+                  parsedDate = new Date(dateStr)
+                }
+                
                 if (isValid(parsedDate)) {
                   eventDate = parsedDate
                   break
@@ -458,10 +483,11 @@ async function processEarningsText(text: string, db: any) {
               earningsType = 'AMC'
             }
             
+            const fallbackDateString = eventDate.toISOString().split('T')[0]
             events.push({
               stockTicker: ticker,
               companyName: companyName,
-              earningsDate: eventDate.toISOString(),
+              earningsDate: fallbackDateString, // Save as YYYY-MM-DD string
               earningsType: earningsType,
               isConfirmed: true,
               estimatedEPS: null,
@@ -471,7 +497,7 @@ async function processEarningsText(text: string, db: any) {
               source: 'company_name_fallback'
             })
             
-            console.log(`Created fallback event: ${ticker} on ${eventDate.toISOString().split('T')[0]}`)
+            console.log(`Created fallback event: ${ticker} on ${fallbackDateString}`)
           }
           
           break // Only process first match per line
