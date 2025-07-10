@@ -31,7 +31,7 @@ class FirebaseAdmin {
 
   private async _doInitialize(): Promise<void> {
     try {
-      // Skip initialization during build time
+      // Skip initialization during build time (only for static export/build, not serverless prod)
       if (this.isBuildTime()) {
         console.log('Skipping Firebase initialization during build time');
         return;
@@ -50,8 +50,14 @@ class FirebaseAdmin {
                             process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
       if (!hasCredentials) {
-        console.warn('Firebase admin credentials not found');
-        return;
+        const msg = 'Firebase admin credentials not found';
+        if (process.env.NODE_ENV === 'production') {
+          console.error(msg);
+          throw new Error(msg);
+        } else {
+          console.warn(msg);
+          return;
+        }
       }
 
       // Initialize Firebase
@@ -59,20 +65,20 @@ class FirebaseAdmin {
         credential: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
           ? cert(JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON))
           : applicationDefault(),
-        storageBucket: 'concorenews.firebasestorage.app',
+        storageBucket: 'concorenews.appspot.com',
       });
 
       this.initialized = true;
     } catch (error) {
-      console.warn('Firebase admin initialization failed:', error);
-      // Don't throw - fail gracefully
+      console.error('Firebase admin initialization failed:', error);
+      throw error;
     }
   }
 
   private isBuildTime(): boolean {
+    // Only treat as build time if NEXT_PHASE is explicitly set, or if window is defined (client)
     return (
       process.env.NEXT_PHASE === 'phase-production-build' ||
-      process.env.NODE_ENV === 'production' && !process.env.VERCEL_ENV ||
       typeof window !== 'undefined'
     );
   }
