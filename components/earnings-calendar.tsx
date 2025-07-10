@@ -11,7 +11,7 @@ import { ChevronLeft, Calendar as CalendarIcon, ExternalLink, Clock } from 'luci
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
-type ViewMode = 'months' | 'month' | 'week';
+type ViewMode = 'months' | 'month' | 'week' | 'day';
 
 interface EarningsEvent {
   stockTicker: string;
@@ -281,6 +281,24 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
     </div>
   );
 
+  // Helper for toggles
+  const renderViewToggles = () => (
+    <div className="flex gap-2 mb-4 justify-center">
+      <Button
+        variant={viewMode === 'month' ? 'default' : 'outline'}
+        onClick={() => setViewMode('month')}
+      >Month</Button>
+      <Button
+        variant={viewMode === 'week' ? 'default' : 'outline'}
+        onClick={() => setViewMode('week')}
+      >Week</Button>
+      <Button
+        variant={viewMode === 'day' ? 'default' : 'outline'}
+        onClick={() => setViewMode('day')}
+      >Day</Button>
+    </div>
+  );
+
   const renderMonthView = () => {
     const days = eachDayOfInterval({
       start: startOfMonth(selectedDate),
@@ -300,6 +318,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           </Button>
           <h2 className="text-2xl font-bold">{format(selectedDate, 'MMMM yyyy')}</h2>
         </div>
+        {renderViewToggles()}
         <div className="grid grid-cols-7 gap-1">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
             <div key={day} className="p-2 text-center font-medium text-muted-foreground">
@@ -310,7 +329,6 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
             const dateKey = format(day, 'yyyy-MM-dd');
             const dayEvents = events[dateKey] || [];
             const isHoveredWeek = hoveredDate && isSameWeek(day, hoveredDate);
-            
             return (
               <div
                 key={dateKey}
@@ -325,6 +343,9 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                   if (isHoveredWeek) {
                     setSelectedDate(day);
                     setViewMode('week');
+                  } else {
+                    setSelectedDate(day);
+                    setViewMode('day');
                   }
                 }}
               >
@@ -335,7 +356,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                       key={i}
                       className="relative group"
                       onClick={(e: MouseEvent) => {
-                        e.stopPropagation(); // Prevent triggering week view
+                        e.stopPropagation(); // Prevent triggering week/day view
                         handleEventClick(event, e);
                       }}
                     >
@@ -406,6 +427,49 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
     );
   };
 
+  const renderDayView = () => {
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    const dayEvents = events[dateKey] || [];
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setViewMode('month')}
+            className="flex items-center gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Month
+          </Button>
+          <h2 className="text-2xl font-bold">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h2>
+        </div>
+        {renderViewToggles()}
+        <Card className="p-6">
+          <div className="flex flex-col items-center gap-4">
+            <CalendarIcon className="h-10 w-10 text-muted-foreground" />
+            {dayEvents.length > 0 ? (
+              dayEvents.map((event: EarningsEvent, i: number) => (
+                <div key={i} className="flex flex-col items-center gap-2">
+                  <CompanyLogo event={event} size="large" />
+                  <div className="text-lg font-semibold">{event.companyName}</div>
+                  <div className="text-sm text-muted-foreground">{event.stockTicker}</div>
+                  <Button
+                    variant="outline"
+                    onClick={(e) => handleEventClick(event, e as any)}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-muted-foreground">No Earnings Events</div>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -415,6 +479,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
       {viewMode === 'months' && renderMonthsView()}
       {viewMode === 'month' && renderMonthView()}
       {viewMode === 'week' && renderWeekView()}
+      {viewMode === 'day' && renderDayView()}
       <EarningsDialog />
     </div>
   );
