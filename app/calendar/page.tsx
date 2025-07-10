@@ -56,7 +56,7 @@ export default function CalendarPage() {
         <h1 className="text-xl sm:text-2xl font-bold">Calendar & Events</h1>
         <Button 
           variant="outline" 
-          onClick={() => router.push('/')}
+          onClick={() => router.push('/')} 
           className="flex items-center gap-2 w-full sm:w-auto"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -64,206 +64,96 @@ export default function CalendarPage() {
         </Button>
       </div>
 
-      {/* Mobile: Horizontal Tabs at Top */}
-      <div className="block sm:hidden mb-4">
-        <div className="flex w-full justify-center gap-2 border-b border-gray-200 dark:border-gray-700 pb-2">
-          <button
-            className={`flex-1 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === 'events' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
-            onClick={() => setActiveTab('events')}
-          >
-            <Calendar className="inline h-4 w-4 mr-1" /> Events
-          </button>
-          <button
-            className={`flex-1 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === 'earnings' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
-            onClick={() => setActiveTab('earnings')}
-          >
-            <BarChart2 className="inline h-4 w-4 mr-1" /> Earnings
-          </button>
-          <button
-            className={`flex-1 py-2 rounded-t-lg text-sm font-medium transition-colors ${activeTab === 'elite' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
-            onClick={() => setActiveTab('elite')}
-          >
-            <Star className="inline h-4 w-4 mr-1" /> Elite
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile: Drill-down Calendar */}
-      {isMobile ? (
-        <div>
-          {activeTab === 'events' ? (
+      {/* Always show desktop tab layout for all devices */}
+      <Tabs defaultValue="events" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="events">Events</TabsTrigger>
+          <TabsTrigger value="earnings">Earnings</TabsTrigger>
+          <TabsTrigger value="elite">Elite</TabsTrigger>
+          {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
+        </TabsList>
+        <TabsContent value="events">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+              Economic Events
+            </CardTitle>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Fed meetings, economic data releases, market holidays, and options expiration events
+            </p>
+          </CardHeader>
+          <CardContent className="pt-0">
             <ModernCalendar type="events" />
-          ) : activeTab === 'earnings' ? (
-            <div className="flex flex-col gap-2">
-              {months.map((m, i) => (
-                <div key={i}>
-                  <button
-                    className={`w-full text-left px-4 py-3 rounded-lg font-semibold text-base ${expandedMonth === i ? 'bg-primary/10' : 'bg-muted'}`}
-                    onClick={() => setExpandedMonth(expandedMonth === i ? null : i)}
-                  >
-                    {m.label}
-                  </button>
-                  {expandedMonth === i && (
-                    <div className="pl-4 pt-2 flex flex-col gap-1">
-                      {/* Show days for the selected month */}
-                      {Array.from({ length: 31 }, (_, dayIndex) => {
-                        const day = dayIndex + 1;
-                        return (
-                          <div key={day}>
-                            <button
-                              className={`w-full text-left px-3 py-2 rounded-md text-sm ${expandedDay === day ? 'bg-primary/5' : 'bg-muted/50'}`}
-                              onClick={() => setExpandedDay(expandedDay === day ? null : day)}
-                            >
-                              Day {day}
-                            </button>
-                            {expandedDay === day && (
-                              <div className="pl-4 pt-1">
-                                <EarningsCalendar type="earnings" />
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <div className="w-full py-8 px-6 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-xl shadow-lg relative overflow-hidden">
+          </CardContent>
+        </TabsContent>
+        <TabsContent value="earnings">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <BarChart2 className="h-4 w-4 sm:h-5 sm:w-5" />
+              Earnings Calendar
+            </CardTitle>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Company earnings, EPS estimates, and conference call times
+            </p>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <EarningsCalendar type="earnings" />
+          </CardContent>
+        </TabsContent>
+        <TabsContent value="elite">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Star className="h-4 w-4 sm:h-5 sm:w-5" />
+              Elite
+            </CardTitle>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Premium features and enhanced analysis
+            </p>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="text-center py-12">
+              <div className="w-full py-10 px-8 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg relative overflow-hidden">
                 {/* Decorative background elements */}
                 <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                  <div className="absolute top-3 right-3 w-16 h-16 bg-amber-300 rounded-full blur-lg"></div>
-                  <div className="absolute bottom-6 left-6 w-12 h-12 bg-orange-300 rounded-full blur-md"></div>
+                  <div className="absolute top-4 right-4 w-20 h-20 bg-amber-300 rounded-full blur-xl"></div>
+                  <div className="absolute bottom-8 left-8 w-16 h-16 bg-orange-300 rounded-full blur-lg"></div>
+                  <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-yellow-300 rounded-full blur-md"></div>
                 </div>
-                
-                <div className="relative z-10 max-w-sm mx-auto">
+                <div className="relative z-10 max-w-lg mx-auto">
                   {/* Enhanced star icon with glow effect */}
-                  <div className="mb-4 flex justify-center">
+                  <div className="mb-6 flex justify-center">
                     <div className="relative">
                       <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-pulse"></div>
-                      <Star className="h-12 w-12 text-amber-500 relative z-10 drop-shadow-lg" />
+                      <Star className="h-16 w-16 text-amber-500 relative z-10 drop-shadow-lg" />
                     </div>
                   </div>
-                  
                   {/* Main message with better typography */}
-                  <div className="space-y-3">
-                    <h3 className="text-amber-800 font-bold text-base leading-tight">
+                  <div className="space-y-4">
+                    <h3 className="text-amber-800 font-bold text-xl sm:text-2xl leading-tight">
                       This section here will be an absolute game changer for everyone in the family
                     </h3>
-                    <p className="text-amber-700 text-sm leading-relaxed font-medium">
+                    <p className="text-amber-700 text-base sm:text-lg leading-relaxed font-medium">
                       allowing you to draw from the past the future and give you the most for the present.
                     </p>
                   </div>
-                  
                   {/* Enhanced coming soon badge */}
-                  <div className="mt-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-200">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                  <div className="mt-8">
+                    <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-200">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                       Coming soon
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      ) : (
-        // Desktop: Restore original tab layout
-        <Tabs defaultValue="events" className="w-full">
-          <TabsList className="mb-4">
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
-            <TabsTrigger value="elite">Elite</TabsTrigger>
-            {isAdmin && <TabsTrigger value="admin">Admin</TabsTrigger>}
-          </TabsList>
-          <TabsContent value="events">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-                Economic Events
-              </CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Fed meetings, economic data releases, market holidays, and options expiration events
-              </p>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ModernCalendar type="events" />
-            </CardContent>
+          </CardContent>
+        </TabsContent>
+        {isAdmin && (
+          <TabsContent value="admin">
+            <AdminCalendarUpload />
           </TabsContent>
-          <TabsContent value="earnings">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <BarChart2 className="h-4 w-4 sm:h-5 sm:w-5" />
-                Earnings Calendar
-              </CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Company earnings, EPS estimates, and conference call times
-              </p>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <EarningsCalendar type="earnings" />
-            </CardContent>
-          </TabsContent>
-          <TabsContent value="elite">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Star className="h-4 w-4 sm:h-5 sm:w-5" />
-                Elite
-              </CardTitle>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Premium features and enhanced analysis
-              </p>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-center py-12">
-                <div className="w-full py-10 px-8 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg relative overflow-hidden">
-                  {/* Decorative background elements */}
-                  <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                    <div className="absolute top-4 right-4 w-20 h-20 bg-amber-300 rounded-full blur-xl"></div>
-                    <div className="absolute bottom-8 left-8 w-16 h-16 bg-orange-300 rounded-full blur-lg"></div>
-                    <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-yellow-300 rounded-full blur-md"></div>
-                  </div>
-                  
-                  <div className="relative z-10 max-w-lg mx-auto">
-                    {/* Enhanced star icon with glow effect */}
-                    <div className="mb-6 flex justify-center">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-amber-400 rounded-full blur-md opacity-30 animate-pulse"></div>
-                        <Star className="h-16 w-16 text-amber-500 relative z-10 drop-shadow-lg" />
-                      </div>
-                    </div>
-                    
-                    {/* Main message with better typography */}
-                    <div className="space-y-4">
-                      <h3 className="text-amber-800 font-bold text-xl sm:text-2xl leading-tight">
-                        This section here will be an absolute game changer for everyone in the family
-                      </h3>
-                      <p className="text-amber-700 text-base sm:text-lg leading-relaxed font-medium">
-                        allowing you to draw from the past the future and give you the most for the present.
-                      </p>
-                    </div>
-                    
-                    {/* Enhanced coming soon badge */}
-                    <div className="mt-8">
-                      <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-200">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        Coming soon
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </TabsContent>
-          {isAdmin && (
-            <TabsContent value="admin">
-              <AdminCalendarUpload />
-            </TabsContent>
-          )}
-        </Tabs>
-      )}
+        )}
+      </Tabs>
     </div>
   );
 } 
