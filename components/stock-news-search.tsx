@@ -180,15 +180,16 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
         ) : (
           <div className="space-y-4">
             {/* Log all ids before rendering */}
-            {(() => { console.log('Rendering catalyst entry ids:', filteredEntries.map(e => e && typeof e.id === 'string' ? e.id : '[INVALID]')); return null; })()}
+            {(() => { console.log('Rendering catalyst entry ids:', filteredEntries.map(e => e && typeof e.id === 'string' ? e.id : '[INVALID]'), 'Types:', filteredEntries.map(e => typeof e.id)); return null; })()}
             {filteredEntries.map((entry) => {
-              // Only render entries with a valid, unique string id
-              if (!entry || typeof entry.id !== 'string' || !entry.id.trim()) {
+              // Only render entries with a valid id (string or convertible)
+              let safeId = typeof entry.id === 'string' ? entry.id : ((entry as any).id && typeof (entry as any).id === 'object' && typeof (entry as any).id.toString === 'function' ? (entry as any).id.toString() : String((entry as any).id));
+              if (!entry || !safeId || typeof safeId !== 'string' || !safeId.trim()) {
                 console.warn('Skipping entry with invalid id:', entry);
                 return null;
               }
               return (
-                <Card key={entry.id} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
+                <Card key={safeId} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">

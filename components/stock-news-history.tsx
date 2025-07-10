@@ -479,6 +479,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   return (
     <div className="space-y-4">
       {/* Debug Panel - Remove this in production */}
+      {(() => { console.log('Rendering catalyst ids:', catalysts.map(c => c && typeof c.id === 'string' ? c.id : '[INVALID]'), 'Types:', catalysts.map(c => typeof c.id)); return null; })()}
       
       {error && (
         <Card className="border-red-200 bg-red-50">
@@ -633,123 +634,130 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                           </CollapsibleTrigger>
                           <CollapsibleContent className="pl-6 pt-2 space-y-2">
                             {weekResult.catalysts.length > 0 ? (
-                              weekResult.catalysts.map((catalyst) => (
-                                <div key={catalyst.id} className="border rounded-lg p-3 bg-gray-900">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        {editingId === catalyst.id ? (
-                                          <div className="flex items-center gap-4 w-full">
-                                            <input
-                                              type="date"
-                                              name="date"
-                                              value={editForm.date || catalyst.date}
-                                              onChange={e => setEditForm({ ...editForm, date: e.target.value })}
-                                              className="px-2 py-1 border rounded-md w-32"
-                                            />
-                                            <input
-                                              type="text"
-                                              name="title"
-                                              value={editForm.title}
-                                              onChange={e => setEditForm({ ...editForm, title: e.target.value })}
-                                              className="px-2 py-1 border rounded-md flex-1"
-                                              placeholder="Title"
-                                            />
-                                            <input
-                                              type="text"
-                                              name="description"
-                                              value={editForm.description || ''}
-                                              onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                                              className="px-2 py-1 border rounded-md flex-1"
-                                              placeholder="Description"
-                                            />
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={async () => {
-                                                const response = await fetchWithAuth(`/api/catalysts/${catalyst.id}`, {
-                                                  method: 'PUT',
-                                                  headers: {
-                                                    'Content-Type': 'application/json',
-                                                  },
-                                                  body: JSON.stringify({
-                                                    date: editForm.date || catalyst.date,
-                                                    title: editForm.title,
-                                                    description: editForm.description || '',
-                                                  }),
-                                                });
-                                                const result = await response.json();
-                                                if (result.success) {
-                                                  setEditingId(null);
-                                                  toast({ title: "Catalyst updated", description: "The news catalyst was updated successfully." });
-                                                } else {
-                                                  toast({ title: "Update failed", description: result.error || "Failed to update catalyst.", variant: "destructive" });
-                                                }
-                                              }}
-                                              className="h-6 w-6 p-0 text-green-600 hover:text-green-800"
-                                            >
-                                              Save
-                                            </Button>
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={() => setEditingId(null)}
-                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
-                                            >
-                                              Cancel
-                                            </Button>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => handleDeleteCatalyst(catalyst.id)}
-                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800 ml-2"
-                                            >
-                                              <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-start gap-4 w-full">
-                                            <span className="w-32 text-xs text-muted-foreground mt-1">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
-                                            <div className="flex-1">
-                                              <div className="flex items-center gap-2 mb-1">
-                                                <div className="font-medium text-sm">{catalyst.title}</div>
-                                                {formatPriceChange(catalyst.priceBefore, catalyst.priceAfter)}
-                                              </div>
-                                              {renderDescription(catalyst)}
+                              weekResult.catalysts.map((catalyst) => {
+                                let safeId = typeof catalyst.id === 'string' ? catalyst.id : ((catalyst as any).id && typeof (catalyst as any).id === 'object' && typeof (catalyst as any).id.toString === 'function' ? (catalyst as any).id.toString() : String((catalyst as any).id));
+                                if (!safeId || typeof safeId !== 'string' || !safeId.trim()) {
+                                  console.warn('Skipping catalyst with invalid id:', catalyst);
+                                  return null;
+                                }
+                                return (
+                                  <div key={safeId} className="border rounded-lg p-3 bg-gray-900">
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          {editingId === catalyst.id ? (
+                                            <div className="flex items-center gap-4 w-full">
+                                              <input
+                                                type="date"
+                                                name="date"
+                                                value={editForm.date || catalyst.date}
+                                                onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                                                className="px-2 py-1 border rounded-md w-32"
+                                              />
+                                              <input
+                                                type="text"
+                                                name="title"
+                                                value={editForm.title}
+                                                onChange={e => setEditForm({ ...editForm, title: e.target.value })}
+                                                className="px-2 py-1 border rounded-md flex-1"
+                                                placeholder="Title"
+                                              />
+                                              <input
+                                                type="text"
+                                                name="description"
+                                                value={editForm.description || ''}
+                                                onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                                                className="px-2 py-1 border rounded-md flex-1"
+                                                placeholder="Description"
+                                              />
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={async () => {
+                                                  const response = await fetchWithAuth(`/api/catalysts/${catalyst.id}`, {
+                                                    method: 'PUT',
+                                                    headers: {
+                                                      'Content-Type': 'application/json',
+                                                    },
+                                                    body: JSON.stringify({
+                                                      date: editForm.date || catalyst.date,
+                                                      title: editForm.title,
+                                                      description: editForm.description || '',
+                                                    }),
+                                                  });
+                                                  const result = await response.json();
+                                                  if (result.success) {
+                                                    setEditingId(null);
+                                                    toast({ title: "Catalyst updated", description: "The news catalyst was updated successfully." });
+                                                  } else {
+                                                    toast({ title: "Update failed", description: result.error || "Failed to update catalyst.", variant: "destructive" });
+                                                  }
+                                                }}
+                                                className="h-6 w-6 p-0 text-green-600 hover:text-green-800"
+                                              >
+                                                Save
+                                              </Button>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setEditingId(null)}
+                                                className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                                              >
+                                                Cancel
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDeleteCatalyst(catalyst.id)}
+                                                className="h-6 w-6 p-0 text-red-600 hover:text-red-800 ml-2"
+                                              >
+                                                <Trash2 className="h-4 w-4" />
+                                              </Button>
                                             </div>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => {
-                                                setEditingId(catalyst.id);
-                                                setEditForm({
-                                                  title: catalyst.title || "",
-                                                  description: catalyst.description || "",
-                                                  date: catalyst.date || ""
-                                                });
-                                              }}
-                                              className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800 mt-1"
-                                            >
-                                              <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              onClick={() => handleDeleteCatalyst(catalyst.id)}
-                                              className="h-6 w-6 p-0 text-red-600 hover:text-red-800 mt-1"
-                                            >
-                                              <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
-                                        {catalyst.source && <span>Source: {catalyst.source}</span>}
+                                          ) : (
+                                            <div className="flex items-start gap-4 w-full">
+                                              <span className="w-32 text-xs text-muted-foreground mt-1">{format(new Date(catalyst.date), "MMM d, yyyy")}</span>
+                                              <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                  <div className="font-medium text-sm">{catalyst.title}</div>
+                                                  {formatPriceChange(catalyst.priceBefore, catalyst.priceAfter)}
+                                                </div>
+                                                {renderDescription(catalyst)}
+                                              </div>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                  setEditingId(catalyst.id);
+                                                  setEditForm({
+                                                    title: catalyst.title || "",
+                                                    description: catalyst.description || "",
+                                                    date: catalyst.date || ""
+                                                  });
+                                                }}
+                                                className="h-6 w-6 p-0 text-blue-600 hover:text-blue-800 mt-1"
+                                              >
+                                                <Edit className="h-4 w-4" />
+                                              </Button>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => handleDeleteCatalyst(catalyst.id)}
+                                                className="h-6 w-6 p-0 text-red-600 hover:text-red-800 mt-1"
+                                              >
+                                                <Trash2 className="h-4 w-4" />
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
+                                          {catalyst.source && <span>Source: {catalyst.source}</span>}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))
+                                );
+                              })
                             ) : (
                               <div className="text-center py-4 text-sm text-muted-foreground">
                                 No catalysts for this week

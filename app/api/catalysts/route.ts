@@ -78,7 +78,13 @@ export async function GET(request: NextRequest) {
       .filter(c => {
         const cat = c as any;
         return cat && cat.id && cat.description && cat.isManual === true;
-      });
+      })
+      .map((c: any) => ({
+        ...c,
+        id: typeof c.id === 'string' ? c.id : (c.id && typeof c.id === 'object' && typeof c.id.toString === 'function' ? c.id.toString() : String(c.id)),
+      }));
+    // Log all ids and their types for debugging
+    console.log('Returning catalyst ids:', catalysts.map(c => c.id), 'Types:', catalysts.map(c => typeof c.id));
     return NextResponse.json({ success: true, data: catalysts })
   } catch (error) {
     console.error("Error in GET /api/catalysts:", error)
