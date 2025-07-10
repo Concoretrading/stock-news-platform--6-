@@ -189,6 +189,37 @@ export function AdminEarningsUpload() {
     }
   };
 
+  const handleDeleteEarningsByDate = async () => {
+    const dates = ['2025-01-16', '2025-01-17']; // January 16th and 17th
+    if (!confirm(`Are you sure you want to delete earnings events for January 16th and 17th, 2025? This action cannot be undone.`)) {
+      return;
+    }
+    
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/delete-earnings-by-date?dates=${dates.join(',')}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${await firebaseUser?.getIdToken()}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete earnings events');
+      }
+      toast.success(`🗑️ Successfully deleted ${data.deletedCount} earnings events for January 16th and 17th!`);
+      // Optionally refresh the page to show updated calendar
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      console.error('Delete earnings by date error:', error);
+      toast.error('Failed to delete earnings events');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200">
       <CardHeader>
@@ -227,6 +258,34 @@ export function AdminEarningsUpload() {
                 <>
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete All Earnings
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Delete Specific Dates Earnings Button */}
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-orange-800 mb-1">🗑️ Delete January 16th & 17th Earnings</h3>
+              <p className="text-sm text-orange-700">Remove only earnings events for January 16th and 17th, 2025</p>
+            </div>
+            <Button 
+              onClick={handleDeleteEarningsByDate}
+              disabled={isDeleting}
+              variant="destructive"
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {isDeleting ? (
+                <>
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Jan 16-17 Earnings
                 </>
               )}
             </Button>

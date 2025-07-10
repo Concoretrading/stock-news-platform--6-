@@ -287,6 +287,7 @@ function parseCalendarText(detectedText: string): Array<{company: string, ticker
 }
 
 export async function POST(request: NextRequest) {
+  console.log('POST /api/admin-earnings-upload called at', new Date().toISOString());
   try {
     // Check if this is a bulk paste request
     const contentType = request.headers.get('content-type') || '';
@@ -565,12 +566,14 @@ export async function POST(request: NextRequest) {
       message: `📅 Processed earnings calendar screenshot - found ${uniqueEvents.length} unique events (${logos.length} logo detections + ${calendarEvents?.length || 0} calendar text extractions)`
     });
 
-  } catch (error) {
-    console.error('Error processing earnings screenshot:', error);
-    return NextResponse.json({
-      success: false,
-      error: 'Failed to process earnings screenshot'
-    }, { status: 500 });
+  } catch (error: any) {
+    // Log the error and stack trace for debugging
+    console.error('Bulk earnings paste error:', error);
+    if (error && error.stack) {
+      console.error(error.stack);
+    }
+    // Return the error message in the response for debugging
+    return NextResponse.json({ error: error?.message || String(error) }, { status: 500 });
   }
 } 
 

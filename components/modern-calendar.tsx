@@ -41,11 +41,11 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
   // Memoize calendar calculations to prevent unnecessary recalculations
   const { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays } = useMemo(() => {
-    const monthStart = startOfMonth(currentDate);
-    const monthEnd = endOfMonth(currentDate);
-    const calendarStart = startOfWeek(monthStart);
-    const calendarEnd = endOfWeek(monthEnd);
-    const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  const calendarStart = startOfWeek(monthStart);
+  const calendarEnd = endOfWeek(monthEnd);
+  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
     
     return { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays };
   }, [currentDate]);
@@ -71,7 +71,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         
         // Create sample events for immediate testing
         const newEvents: Record<string, CalendarEvent[]> = {};
-        
+
         // Add sample events for the current month
         const today = new Date();
         
@@ -581,7 +581,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           const snapshot = await getDocs(simpleQuery);
           
           snapshot.forEach((doc) => {
-            const data = doc.data();
+          const data = doc.data();
             let dateString: string;
             
             if (type === 'earnings') {
@@ -622,17 +622,17 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
               if (data.date && typeof data.date === 'string') {
                 const dateString = data.date;
                 if (dateString >= startDate && dateString <= endDate) {
-                  const event: CalendarEvent = {
-                    id: doc.id,
+          const event: CalendarEvent = {
+            id: doc.id,
                     date: dateString,
                     ticker: data.ticker || 'ECO',
                     company_name: data.company_name || 'Economic Data',
                     event_type: data.event_type || 'Economic Event',
-                    confirmed: data.confirmed !== false,
-                    auto_generated: data.auto_generated || false,
-                    created_at: data.created_at
-                  };
-                  
+            confirmed: data.confirmed !== false,
+            auto_generated: data.auto_generated || false,
+            created_at: data.created_at
+          };
+          
                   if (!newEvents[dateString]) {
                     newEvents[dateString] = [];
                   }
@@ -840,8 +840,8 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
           setWeekStartDate(startOfWeek(selectedDate || currentDate));
         }}
       >Week</Button>
-    </div>
-  );
+      </div>
+    );
 
   const renderMonthView = () => (
     <>

@@ -312,6 +312,7 @@ async function processEarningsText(text: string, db: any) {
             let parsedDate: Date | null = null
             
             console.log(`Trying to parse date: "${dateStr}" from line: "${trimmedLine}"`)
+            console.log(`Date string length: ${dateStr.length}, Pattern: ${dateStr}`)
             
             // Try date-fns parse for common formats
             const formats = [
@@ -344,6 +345,8 @@ async function processEarningsText(text: string, db: any) {
                   // Create date in local timezone to avoid UTC conversion
                   parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day))
                   console.log(`Created local date for MM/DD/YY format:`, parsedDate)
+                  console.log(`Parsed components: month=${month}, day=${day}, year=${year}, fullYear=${fullYear}`)
+                  console.log(`Date constructor: new Date(${parseInt(fullYear)}, ${parseInt(month) - 1}, ${parseInt(day)})`)
                 } else {
                   parsedDate = new Date(dateStr)
                 }
@@ -376,8 +379,14 @@ async function processEarningsText(text: string, db: any) {
         }
         
         // Ensure the date is saved in the correct format (YYYY-MM-DD)
-        const dateString = eventDate.toISOString().split('T')[0]
+        // Use local date formatting to avoid timezone issues
+        const year = eventDate.getFullYear();
+        const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+        const day = String(eventDate.getDate()).padStart(2, '0');
+        const dateString = `${year}-${month}-${day}`;
+        
         console.log(`Creating earnings event: ${ticker} on ${dateString} (${earningsType})`)
+        console.log(`Original date: ${eventDate}, Parsed as: ${dateString}`)
         
         events.push({
           stockTicker: ticker,
@@ -404,7 +413,10 @@ async function processEarningsText(text: string, db: any) {
           earningsType = 'AMC'
         }
         
-        const fallbackDateString = fallbackDate.toISOString().split('T')[0]
+        const fallbackYear = fallbackDate.getFullYear();
+        const fallbackMonth = String(fallbackDate.getMonth() + 1).padStart(2, '0');
+        const fallbackDay = String(fallbackDate.getDate()).padStart(2, '0');
+        const fallbackDateString = `${fallbackYear}-${fallbackMonth}-${fallbackDay}`;
         events.push({
           stockTicker: ticker,
           companyName: companyName,
@@ -461,6 +473,8 @@ async function processEarningsText(text: string, db: any) {
                   // Create date in local timezone to avoid UTC conversion
                   parsedDate = new Date(parseInt(fullYear), parseInt(month) - 1, parseInt(day))
                   console.log(`Created local date for MM/DD/YY format:`, parsedDate)
+                  console.log(`Parsed components: month=${month}, day=${day}, year=${year}, fullYear=${fullYear}`)
+                  console.log(`Date constructor: new Date(${parseInt(fullYear)}, ${parseInt(month) - 1}, ${parseInt(day)})`)
                 } else {
                   parsedDate = new Date(dateStr)
                 }
@@ -483,7 +497,10 @@ async function processEarningsText(text: string, db: any) {
               earningsType = 'AMC'
             }
             
-            const fallbackDateString = eventDate.toISOString().split('T')[0]
+            const fallbackYear = eventDate.getFullYear();
+            const fallbackMonth = String(eventDate.getMonth() + 1).padStart(2, '0');
+            const fallbackDay = String(eventDate.getDate()).padStart(2, '0');
+            const fallbackDateString = `${fallbackYear}-${fallbackMonth}-${fallbackDay}`;
             events.push({
               stockTicker: ticker,
               companyName: companyName,
