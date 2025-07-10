@@ -1661,19 +1661,23 @@
   },
   {
     "ticker": "BLDR",
-    "name": "BLDR"
+    "name": "BLDR",
+    "logoUrl": "/images/logos/bldr.png"
   },
   {
     "ticker": "FI",
-    "name": "FI"
+    "name": "FI",
+    "logoUrl": "/images/logos/fi.png"
   },
   {
     "ticker": "HUM",
-    "name": "HUM"
+    "name": "HUM",
+    "logoUrl": "/images/logos/hum.png"
   },
   {
     "ticker": "SOFI",
-    "name": "SOFI"
+    "name": "SOFI",
+    "logoUrl": "/images/logos/sofi.png"
   },
   {
     "ticker": "SHEL",
@@ -1681,15 +1685,18 @@
   },
   {
     "ticker": "MARKET",
-    "name": "MARKET"
+    "name": "MARKET",
+    "logoUrl": "/images/logos/market.png"
   },
   {
     "ticker": "RDDT",
-    "name": "RDDT"
+    "name": "RDDT",
+    "logoUrl": "/images/logos/rddt.png"
   },
   {
     "ticker": "ADM",
-    "name": "ADM"
+    "name": "ADM",
+    "logoUrl": "/images/logos/adm.png"
   },
   {
     "ticker": "INOD",
@@ -1697,7 +1704,8 @@
   },
   {
     "ticker": "TRV",
-    "name": "TRV"
+    "name": "TRV",
+    "logoUrl": "/images/logos/trv.png"
   },
   {
     "ticker": "JBLU",
@@ -1705,7 +1713,8 @@
   },
   {
     "ticker": "MARA",
-    "name": "MARA"
+    "name": "MARA",
+    "logoUrl": "/images/logos/mara.png"
   },
   {
     "ticker": "TMUS",
@@ -1713,19 +1722,23 @@
   },
   {
     "ticker": "PRCT",
-    "name": "PRCT"
+    "name": "PRCT",
+    "logoUrl": "/images/logos/prct.png"
   },
   {
     "ticker": "NBIS",
-    "name": "NBIS"
+    "name": "NBIS",
+    "logoUrl": "/images/logos/nbis.png"
   },
   {
     "ticker": "FVRR",
-    "name": "FVRR"
+    "name": "FVRR",
+    "logoUrl": "/images/logos/fvrr.png"
   },
   {
     "ticker": "ALLY",
-    "name": "ALLY"
+    "name": "ALLY",
+    "logoUrl": "/images/logos/ally.png"
   },
   {
     "ticker": "ENVX",
@@ -1733,15 +1746,18 @@
   },
   {
     "ticker": "HWM",
-    "name": "HWM"
+    "name": "HWM",
+    "logoUrl": "/images/logos/hwm.png"
   },
   {
     "ticker": "HOOD",
-    "name": "HOOD"
+    "name": "HOOD",
+    "logoUrl": "/images/logos/hood.png"
   },
   {
     "ticker": "NOC",
-    "name": "NOC"
+    "name": "NOC",
+    "logoUrl": "/images/logos/noc.png"
   },
   {
     "ticker": "KNSL",
@@ -1749,11 +1765,13 @@
   },
   {
     "ticker": "ADP",
-    "name": "ADP"
+    "name": "ADP",
+    "logoUrl": "/images/logos/adp.png"
   },
   {
     "ticker": "MELI",
-    "name": "MELI"
+    "name": "MELI",
+    "logoUrl": "/images/logos/meli.png"
   },
   {
     "ticker": "ETN",
@@ -1761,23 +1779,28 @@
   },
   {
     "ticker": "SNAP",
-    "name": "SNAP"
+    "name": "SNAP",
+    "logoUrl": "/images/logos/snap.png"
   },
   {
     "ticker": "RIOT",
-    "name": "RIOT"
+    "name": "RIOT",
+    "logoUrl": "/images/logos/riot.png"
   },
   {
     "ticker": "WM",
-    "name": "WM"
+    "name": "WM",
+    "logoUrl": "/images/logos/wm.png"
   },
   {
     "ticker": "AMC",
-    "name": "AMC"
+    "name": "AMC",
+    "logoUrl": "/images/logos/amc.png"
   },
   {
     "ticker": "GD",
-    "name": "GD"
+    "name": "GD",
+    "logoUrl": "/images/logos/gd.png"
   },
   {
     "ticker": "WITCHING",
@@ -1785,7 +1808,8 @@
   },
   {
     "ticker": "RACE",
-    "name": "RACE"
+    "name": "RACE",
+    "logoUrl": "/images/logos/race.png"
   },
   {
     "ticker": "CTAS",
@@ -1793,7 +1817,8 @@
   },
   {
     "ticker": "MS",
-    "name": "MS"
+    "name": "MS",
+    "logoUrl": "/images/logos/ms.png"
   },
   {
     "ticker": "NFLX",
@@ -1801,7 +1826,8 @@
   },
   {
     "ticker": "SAP",
-    "name": "SAP"
+    "name": "SAP",
+    "logoUrl": "/images/logos/sap.png"
   },
   {
     "ticker": "SYK",
@@ -1813,7 +1839,8 @@
   },
   {
     "ticker": "HSY",
-    "name": "HSY"
+    "name": "HSY",
+    "logoUrl": "/images/logos/hsy.png"
   },
   {
     "ticker": "K",
@@ -1825,7 +1852,8 @@
   },
   {
     "ticker": "GSK",
-    "name": "GSK"
+    "name": "GSK",
+    "logoUrl": "/images/logos/gsk.png"
   },
   {
     "ticker": "EQIX",
@@ -1841,7 +1869,8 @@
   },
   {
     "ticker": "XYZ",
-    "name": "XYZ"
+    "name": "XYZ",
+    "logoUrl": "/images/logos/xyz.png"
   },
   {
     "ticker": "TXRH",
@@ -1849,11 +1878,13 @@
   },
   {
     "ticker": "ELV",
-    "name": "ELV"
+    "name": "ELV",
+    "logoUrl": "/images/logos/elv.png"
   },
   {
     "ticker": "RTX",
-    "name": "RTX"
+    "name": "RTX",
+    "logoUrl": "/images/logos/rtx.png"
   },
   {
     "ticker": "DLR",
@@ -1861,27 +1892,33 @@
   },
   {
     "ticker": "UL",
-    "name": "UL"
+    "name": "UL",
+    "logoUrl": "/images/logos/ul.png"
   },
   {
     "ticker": "AMT",
-    "name": "AMT"
+    "name": "AMT",
+    "logoUrl": "/images/logos/amt.png"
   },
   {
     "ticker": "RCL",
-    "name": "RCL"
+    "name": "RCL",
+    "logoUrl": "/images/logos/rcl.png"
   },
   {
     "ticker": "GOOG",
-    "name": "GOOG"
+    "name": "GOOG",
+    "logoUrl": "/images/logos/goog.png"
   },
   {
     "ticker": "CMCSA",
-    "name": "CMCSA"
+    "name": "CMCSA",
+    "logoUrl": "/images/logos/cmcsa.png"
   },
   {
     "ticker": "COKE",
-    "name": "COKE"
+    "name": "COKE",
+    "logoUrl": "/images/logos/coke.png"
   },
   {
     "ticker": "DXCM",
@@ -1889,7 +1926,8 @@
   },
   {
     "ticker": "SCHW",
-    "name": "SCHW"
+    "name": "SCHW",
+    "logoUrl": "/images/logos/schw.png"
   },
   {
     "ticker": "MCHP",
@@ -1897,7 +1935,8 @@
   },
   {
     "ticker": "MRNA",
-    "name": "MRNA"
+    "name": "MRNA",
+    "logoUrl": "/images/logos/mrna.png"
   },
   {
     "ticker": "CVNA",
@@ -1905,23 +1944,28 @@
   },
   {
     "ticker": "CL",
-    "name": "CL"
+    "name": "CL",
+    "logoUrl": "/images/logos/cl.png"
   },
   {
     "ticker": "TTE",
-    "name": "TTE"
+    "name": "TTE",
+    "logoUrl": "/images/logos/tte.png"
   },
   {
     "ticker": "KHC",
-    "name": "KHC"
+    "name": "KHC",
+    "logoUrl": "/images/logos/khc.png"
   },
   {
     "ticker": "LMT",
-    "name": "LMT"
+    "name": "LMT",
+    "logoUrl": "/images/logos/lmt.png"
   },
   {
     "ticker": "SYM",
-    "name": "SYM"
+    "name": "SYM",
+    "logoUrl": "/images/logos/sym.png"
   },
   {
     "ticker": "LMND",
@@ -1933,31 +1977,38 @@
   },
   {
     "ticker": "SIRI",
-    "name": "SIRI"
+    "name": "SIRI",
+    "logoUrl": "/images/logos/siri.png"
   },
   {
     "ticker": "PSA",
-    "name": "PSA"
+    "name": "PSA",
+    "logoUrl": "/images/logos/psa.png"
   },
   {
     "ticker": "CROX",
-    "name": "CROX"
+    "name": "CROX",
+    "logoUrl": "/images/logos/crox.png"
   },
   {
     "ticker": "EA",
-    "name": "EA"
+    "name": "EA",
+    "logoUrl": "/images/logos/ea.png"
   },
   {
     "ticker": "UPS",
-    "name": "UPS"
+    "name": "UPS",
+    "logoUrl": "/images/logos/ups.png"
   },
   {
     "ticker": "PINS",
-    "name": "PINS"
+    "name": "PINS",
+    "logoUrl": "/images/logos/pins.png"
   },
   {
     "ticker": "CAKE",
-    "name": "CAKE"
+    "name": "CAKE",
+    "logoUrl": "/images/logos/cake.png"
   },
   {
     "ticker": "TER",
@@ -1969,7 +2020,8 @@
   },
   {
     "ticker": "ASML",
-    "name": "ASML"
+    "name": "ASML",
+    "logoUrl": "/images/logos/asml.png"
   },
   {
     "ticker": "VKTX",
@@ -1977,19 +2029,23 @@
   },
   {
     "ticker": "CMI",
-    "name": "CMI"
+    "name": "CMI",
+    "logoUrl": "/images/logos/cmi.png"
   },
   {
     "ticker": "TDOC",
-    "name": "TDOC"
+    "name": "TDOC",
+    "logoUrl": "/images/logos/tdoc.png"
   },
   {
     "ticker": "GEHC",
-    "name": "GEHC"
+    "name": "GEHC",
+    "logoUrl": "/images/logos/gehc.png"
   },
   {
     "ticker": "CLS",
-    "name": "CLS"
+    "name": "CLS",
+    "logoUrl": "/images/logos/cls.png"
   },
   {
     "ticker": "TLRY",
@@ -1997,11 +2053,13 @@
   },
   {
     "ticker": "CI",
-    "name": "CI"
+    "name": "CI",
+    "logoUrl": "/images/logos/ci.png"
   },
   {
     "ticker": "GE",
-    "name": "GE"
+    "name": "GE",
+    "logoUrl": "/images/logos/ge.png"
   },
   {
     "ticker": "USB",
@@ -2009,11 +2067,13 @@
   },
   {
     "ticker": "DECK",
-    "name": "DECK"
+    "name": "DECK",
+    "logoUrl": "/images/logos/deck.png"
   },
   {
     "ticker": "SHW",
-    "name": "SHW"
+    "name": "SHW",
+    "logoUrl": "/images/logos/shw.png"
   },
   {
     "ticker": "LYG",
@@ -2021,15 +2081,18 @@
   },
   {
     "ticker": "MCO",
-    "name": "MCO"
+    "name": "MCO",
+    "logoUrl": "/images/logos/mco.png"
   },
   {
     "ticker": "BSX",
-    "name": "BSX"
+    "name": "BSX",
+    "logoUrl": "/images/logos/bsx.png"
   },
   {
     "ticker": "EVGO",
-    "name": "EVGO"
+    "name": "EVGO",
+    "logoUrl": "/images/logos/evgo.png"
   },
   {
     "ticker": "ISRG",
@@ -2037,27 +2100,33 @@
   },
   {
     "ticker": "BA",
-    "name": "BA"
+    "name": "BA",
+    "logoUrl": "/images/logos/ba.png"
   },
   {
     "ticker": "SFM",
-    "name": "SFM"
+    "name": "SFM",
+    "logoUrl": "/images/logos/sfm.png"
   },
   {
     "ticker": "CCI",
-    "name": "CCI"
+    "name": "CCI",
+    "logoUrl": "/images/logos/cci.png"
   },
   {
     "ticker": "IBKR",
-    "name": "IBKR"
+    "name": "IBKR",
+    "logoUrl": "/images/logos/ibkr.png"
   },
   {
     "ticker": "CALM",
-    "name": "CALM"
+    "name": "CALM",
+    "logoUrl": "/images/logos/calm.png"
   },
   {
     "ticker": "CVS",
-    "name": "CVS"
+    "name": "CVS",
+    "logoUrl": "/images/logos/cvs.png"
   },
   {
     "ticker": "VRT",
@@ -2065,23 +2134,28 @@
   },
   {
     "ticker": "ZETA",
-    "name": "ZETA"
+    "name": "ZETA",
+    "logoUrl": "/images/logos/zeta.png"
   },
   {
     "ticker": "AXP",
-    "name": "AXP"
+    "name": "AXP",
+    "logoUrl": "/images/logos/axp.png"
   },
   {
     "ticker": "CARR",
-    "name": "CARR"
+    "name": "CARR",
+    "logoUrl": "/images/logos/carr.png"
   },
   {
     "ticker": "CB",
-    "name": "CB"
+    "name": "CB",
+    "logoUrl": "/images/logos/cb.png"
   },
   {
     "ticker": "EPD",
-    "name": "EPD"
+    "name": "EPD",
+    "logoUrl": "/images/logos/epd.png"
   },
   {
     "ticker": "MBLY",
@@ -2089,11 +2163,13 @@
   },
   {
     "ticker": "KKR",
-    "name": "KKR"
+    "name": "KKR",
+    "logoUrl": "/images/logos/kkr.png"
   },
   {
     "ticker": "GEV",
-    "name": "GEV"
+    "name": "GEV",
+    "logoUrl": "/images/logos/gev.png"
   },
   {
     "ticker": "HCA",
@@ -2101,11 +2177,13 @@
   },
   {
     "ticker": "HSBC",
-    "name": "HSBC"
+    "name": "HSBC",
+    "logoUrl": "/images/logos/hsbc.png"
   },
   {
     "ticker": "FICO",
-    "name": "FICO"
+    "name": "FICO",
+    "logoUrl": "/images/logos/fico.png"
   },
   {
     "ticker": "DJT",
@@ -2121,19 +2199,23 @@
   },
   {
     "ticker": "MDLZ",
-    "name": "MDLZ"
+    "name": "MDLZ",
+    "logoUrl": "/images/logos/mdlz.png"
   },
   {
     "ticker": "TMO",
-    "name": "TMO"
+    "name": "TMO",
+    "logoUrl": "/images/logos/tmo.png"
   },
   {
     "ticker": "ARM",
-    "name": "ARM"
+    "name": "ARM",
+    "logoUrl": "/images/logos/arm.png"
   },
   {
     "ticker": "MSCI",
-    "name": "MSCI"
+    "name": "MSCI",
+    "logoUrl": "/images/logos/msci.png"
   },
   {
     "ticker": "GRMN",
@@ -2145,7 +2227,8 @@
   },
   {
     "ticker": "BN",
-    "name": "BN"
+    "name": "BN",
+    "logoUrl": "/images/logos/bn.png"
   },
   {
     "ticker": "IQV",
@@ -2153,11 +2236,13 @@
   },
   {
     "ticker": "DHI",
-    "name": "DHI"
+    "name": "DHI",
+    "logoUrl": "/images/logos/dhi.png"
   },
   {
     "ticker": "TM",
-    "name": "TM"
+    "name": "TM",
+    "logoUrl": "/images/logos/tm.png"
   },
   {
     "ticker": "NXT",
@@ -2165,11 +2250,13 @@
   },
   {
     "ticker": "AZN",
-    "name": "AZN"
+    "name": "AZN",
+    "logoUrl": "/images/logos/azn.png"
   },
   {
     "ticker": "WING",
-    "name": "WING"
+    "name": "WING",
+    "logoUrl": "/images/logos/wing.png"
   },
   {
     "ticker": "BAC",
@@ -2181,7 +2268,8 @@
   },
   {
     "ticker": "BLK",
-    "name": "BLK"
+    "name": "BLK",
+    "logoUrl": "/images/logos/blk.png"
   },
   {
     "ticker": "BBAI",
@@ -2197,7 +2285,8 @@
   },
   {
     "ticker": "ABT",
-    "name": "ABT"
+    "name": "ABT",
+    "logoUrl": "/images/logos/abt.png"
   },
   {
     "ticker": "TMDX",

@@ -57,7 +57,7 @@ async function fetchAndSaveLogo(ticker, companyName) {
 async function main() {
   // 1. Get all unique tickers from Firestore
   const admin = require('firebase-admin');
-  const serviceAccount = require('../serviceAccountKey.json');
+  const serviceAccount = require('../service-account-key.json');
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount)

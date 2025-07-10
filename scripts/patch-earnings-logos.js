@@ -27,6 +27,7 @@ async function patchEarningsLogos() {
   const earningsRef = db.collection('earnings_calendar');
   const snapshot = await earningsRef.get();
   let updated = 0, skipped = 0, missing = 0;
+  const missingLogoTickers = new Set();
 
   for (const doc of snapshot.docs) {
     const data = doc.data();
@@ -36,6 +37,7 @@ async function patchEarningsLogos() {
     if (!logoUrl) {
       console.warn(`No logo for ticker: ${ticker}`);
       missing++;
+      missingLogoTickers.add(ticker);
       continue;
     }
     if (data.logoUrl !== logoUrl) {
@@ -47,6 +49,15 @@ async function patchEarningsLogos() {
     }
   }
   console.log(`Done. Updated: ${updated}, Skipped (already correct): ${skipped}, Missing logo: ${missing}`);
+
+  // Now, print missing tickers
+  const missingTickers = Array.from(missingLogoTickers);
+  if (missingTickers.length) {
+    console.log('\nTickers missing logos:');
+    missingTickers.forEach(ticker => console.log(ticker));
+  } else {
+    console.log('All tickers have logos!');
+  }
 }
 
 patchEarningsLogos().catch(console.error); 
