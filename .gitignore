@@ -30,3 +30,4 @@ next-env.d.ts
 concorenews-firebase-adminsdk.json
 concorenews-firebase-earnings-adminsdk.json
 *-firebase-adminsdk*.json
+service-account-key.json

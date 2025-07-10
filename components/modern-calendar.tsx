@@ -44,11 +44,11 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
   // Memoize calendar calculations to prevent unnecessary recalculations
   const { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays } = useMemo(() => {
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(currentDate);
-  const calendarStart = startOfWeek(monthStart);
-  const calendarEnd = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+    const monthStart = startOfMonth(currentDate);
+    const monthEnd = endOfMonth(currentDate);
+    const calendarStart = startOfWeek(monthStart);
+    const calendarEnd = endOfWeek(monthEnd);
+    const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
     
     return { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays };
   }, [currentDate]);

@@ -201,7 +201,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   };
 
   const CompanyLogo = ({ event, size = "small" }: { event: EarningsEvent, size?: "small" | "large" }) => {
-    const sizeClasses = size === "small" ? "w-6 h-6" : "w-8 h-8";
+    const sizeClasses = size === "small" ? "w-8 h-8" : "w-10 h-10"; // Made small size bigger
     
     return (
       <div 
@@ -215,7 +215,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
             className="w-full h-full object-contain"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-xs bg-primary text-white rounded">
+          <div className="w-full h-full flex items-center justify-center text-sm bg-primary text-white rounded">
             {event.stockTicker.slice(0, 2)}
           </div>
         )}
@@ -451,7 +451,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
               <div
                 key={dateKey}
                 className={cn(
-                  "min-h-[120px] p-2 border rounded transition-colors duration-200",
+                  "min-h-[140px] p-2 border rounded transition-colors duration-200 relative",
                   isHoveredWeek && "bg-accent/50 cursor-pointer",
                   !dayEvents.length && "hover:bg-accent/25"
                 )}
@@ -467,12 +467,19 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                   }
                 }}
               >
+                {/* Event count in top-right corner */}
+                {dayEvents.length > 0 && (
+                  <div className="absolute top-1 right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
+                    {dayEvents.length}
+                  </div>
+                )}
+                
                 <div className="font-medium">{format(day, 'd')}</div>
                 {dayEvents.length > 0 && (
-                  <div className="mt-1">
-                    {/* First row of 4 logos */}
-                    <div className="grid grid-cols-4 gap-1 mb-1">
-                      {showEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
+                  <div className="mt-2">
+                    {/* First row of 3 logos (bigger spacing) */}
+                    <div className="grid grid-cols-3 gap-1.5 mb-1.5">
+                      {showEvents.slice(0, 3).map((event: EarningsEvent, i: number) => (
                         <div
                           key={i}
                           className="relative group"
@@ -489,11 +496,30 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                         </div>
                       ))}
                     </div>
-                    {/* Second row of 4 logos or overflow button */}
-                    <div className="grid grid-cols-4 gap-1">
-                      {showEvents.slice(4, 8).map((event: EarningsEvent, i: number) => (
+                    {/* Second row of 3 logos */}
+                    <div className="grid grid-cols-3 gap-1.5 mb-1.5">
+                      {showEvents.slice(3, 6).map((event: EarningsEvent, i: number) => (
                         <div
-                          key={i + 4}
+                          key={i + 3}
+                          className="relative group"
+                          onClick={(e: MouseEvent) => {
+                            e.stopPropagation();
+                            handleEventClick(event, e);
+                          }}
+                        >
+                          <CompanyLogo event={event} />
+                          {/* Hover tooltip */}
+                          <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-popover text-popover-foreground text-sm rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                            {event.companyName}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Third row for remaining 2 logos or overflow */}
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {showEvents.slice(6, 8).map((event: EarningsEvent, i: number) => (
+                        <div
+                          key={i + 6}
                           className="relative group"
                           onClick={(e: MouseEvent) => {
                             e.stopPropagation();
@@ -509,7 +535,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                       ))}
                       {overflowCount > 0 && (
                         <button
-                          className="w-6 h-6 flex items-center justify-center bg-gray-700 text-white text-xs rounded"
+                          className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white text-xs rounded hover:bg-gray-600"
                           onClick={e => {
                             e.stopPropagation();
                             setOverflowModal({ date: dateKey, events: dayEvents });
