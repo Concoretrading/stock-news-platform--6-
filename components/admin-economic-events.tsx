@@ -32,6 +32,7 @@ export default function AdminEconomicEvents() {
   } | null>(null);
 
   const handlePreview = () => {
+    alert('Button clicked!'); // Simple test to see if button works
     console.log('🔍 Preview button clicked');
     console.log('📝 Raw data:', rawData);
     
