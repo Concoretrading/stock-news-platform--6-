@@ -166,7 +166,7 @@ Monday, Jan 15, 2024 10:00 AM	Retail Sales	United States	USD	0.4%	0.3%	0.2%"
 
           <div className="flex gap-2">
             <Button onClick={handlePreview} disabled={!rawData.trim()}>
-              Preview Events
+              Enter
             </Button>
             <Button 
               onClick={handleUpload} 

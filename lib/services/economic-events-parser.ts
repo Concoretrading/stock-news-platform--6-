@@ -246,16 +246,16 @@ export function validateMarketWatchData(rawData: string): { isValid: boolean; er
       continue;
     }
     
-    // For event lines, we need at least 2 columns (time and event name)
-    if (columns.length < 2) {
-      errors.push(`Line ${i + 1}: Insufficient columns (expected 2+, got ${columns.length})`);
+    // For event lines, we need at least 1 column (time)
+    if (columns.length < 1) {
+      errors.push(`Line ${i + 1}: No data found`);
       continue;
     }
     
     // Check if first column is a time (e.g., "8:30 am")
     const timeStr = columns[0];
     if (!timeStr.match(/(\d{1,2}):(\d{2})\s*(am|pm)/i)) {
-      errors.push(`Line ${i + 1}: Invalid time format: "${timeStr}"`);
+      // Skip lines that don't look like time-based events
       continue;
     }
     
@@ -263,7 +263,7 @@ export function validateMarketWatchData(rawData: string): { isValid: boolean; er
   }
   
   if (validLines === 0) {
-    errors.push('No valid data lines found');
+    errors.push('No valid event lines found. Make sure you have time-based events (e.g., "8:30 am")');
   }
   
   return {
