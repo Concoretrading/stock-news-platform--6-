@@ -82,6 +82,13 @@ async function handleFileUpload(request: NextRequest, db: any) {
 
     const extractedText = visionData.responses?.[0]?.fullTextAnnotation?.text || ''
     
+    if (!extractedText) {
+      return NextResponse.json({ 
+        error: 'No text extracted from image',
+        visionData: visionData 
+      }, { status: 400 })
+    }
+    
     // Process the extracted text to find earnings events
     const events = await processEarningsText(extractedText, db)
     
@@ -92,7 +99,10 @@ async function handleFileUpload(request: NextRequest, db: any) {
     })
   } catch (error) {
     console.error('File upload error:', error)
-    return NextResponse.json({ error: 'Failed to process file', details: error instanceof Error ? error.message : error }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to process file', 
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
 
@@ -115,11 +125,20 @@ async function handleTextProcessing(request: NextRequest, db: any) {
     })
   } catch (error) {
     console.error('Text processing error:', error)
-    return NextResponse.json({ error: 'Failed to process text' }, { status: 500 })
+    return NextResponse.json({ 
+      error: 'Failed to process text', 
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 })
   }
 }
 
 async function processEarningsText(text: string, db: any) {
+  // Validate input
+  if (!text || typeof text !== 'string') {
+    console.warn('Invalid text input:', text)
+    return []
+  }
+  
   // Common company names and tickers for earnings detection
   const companyTickers: { [key: string]: string } = {
     'AAPL': 'Apple Inc.',
@@ -226,13 +245,20 @@ async function processEarningsText(text: string, db: any) {
   const lines = text.split('\n')
   
   for (const line of lines) {
-    if (typeof line !== 'string') continue;
+    if (typeof line !== 'string' || !line) continue;
     const trimmedLine = line.trim();
     if (!trimmedLine) continue;
     
     // Look for ticker patterns (1-5 letter codes, case-insensitive)
-    const tickerMatch = trimmedLine.match(/\b([A-Za-z]{1,5})\b/)
-    if (tickerMatch) {
+    let tickerMatch = null
+    try {
+      tickerMatch = trimmedLine.match(/\b([A-Za-z]{1,5})\b/)
+    } catch (tickerError) {
+      console.warn('Ticker match error:', tickerError, 'for line:', trimmedLine)
+      continue
+    }
+    
+    if (tickerMatch && tickerMatch[1]) {
       const ticker = tickerMatch[1].toUpperCase()
       const companyName = companyTickers[ticker] || `${ticker}`
       
@@ -247,28 +273,43 @@ async function processEarningsText(text: string, db: any) {
       let eventDate = null
       for (const pattern of datePatterns) {
         if (!(pattern instanceof RegExp)) continue;
-        if (typeof trimmedLine !== 'string') continue;
-        const dateMatch = trimmedLine.match(pattern);
-        if (dateMatch) {
-          let dateStr = dateMatch[1]
-          let parsedDate: Date | null = null
-          // Try date-fns parse for common formats
-          const formats = ['MM/dd/yy', 'MM-dd-yy', 'MM/dd/yyyy', 'MM-dd-yyyy']
-          for (const fmt of formats) {
-            const d = parse(dateStr, fmt, new Date())
-            if (isValid(d)) {
-              parsedDate = d
+        if (typeof trimmedLine !== 'string' || !trimmedLine) continue;
+        try {
+          const dateMatch = trimmedLine.match(pattern);
+          if (dateMatch && dateMatch[1]) {
+            let dateStr = dateMatch[1]
+            let parsedDate: Date | null = null
+            // Try date-fns parse for common formats
+            const formats = ['MM/dd/yy', 'MM-dd-yy', 'MM/dd/yyyy', 'MM-dd-yyyy']
+            for (const fmt of formats) {
+              try {
+                const d = parse(dateStr, fmt, new Date())
+                if (isValid(d)) {
+                  parsedDate = d
+                  break
+                }
+              } catch (parseError) {
+                console.warn('Date parse error:', parseError, 'for date:', dateStr, 'format:', fmt)
+                continue
+              }
+            }
+            // Fallback to native Date
+            if (!parsedDate) {
+              try {
+                parsedDate = new Date(dateStr)
+              } catch (dateError) {
+                console.warn('Native date parse error:', dateError, 'for date:', dateStr)
+                continue
+              }
+            }
+            if (parsedDate && isValid(parsedDate)) {
+              eventDate = parsedDate
               break
             }
           }
-          // Fallback to native Date
-          if (!parsedDate) {
-            parsedDate = new Date(dateStr)
-          }
-          if (parsedDate && isValid(parsedDate)) {
-            eventDate = parsedDate
-            break
-          }
+        } catch (matchError) {
+          console.warn('Pattern match error:', matchError, 'for line:', trimmedLine, 'pattern:', pattern)
+          continue
         }
       }
       
@@ -301,34 +342,44 @@ async function processEarningsText(text: string, db: any) {
   
   // Save events to Firebase if any found
   if (events.length > 0) {
-    const batch = db.batch()
-    let addedCount = 0
-    let skippedCount = 0
-    
-    for (const event of events) {
-      // Check for duplicates
-      const existingQuery = await db
-        .collection('earnings_calendar')
-        .where('stockTicker', '==', event.stockTicker)
-        .where('earningsDate', '==', event.earningsDate)
-        .get()
+    try {
+      const batch = db.batch()
+      let addedCount = 0
+      let skippedCount = 0
       
-      if (existingQuery.empty) {
-        const docRef = db.collection('earnings_calendar').doc()
-        batch.set(docRef, {
-          ...event,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        })
-        addedCount++
-      } else {
-        skippedCount++
+      for (const event of events) {
+        try {
+          // Check for duplicates
+          const existingQuery = await db
+            .collection('earnings_calendar')
+            .where('stockTicker', '==', event.stockTicker)
+            .where('earningsDate', '==', event.earningsDate)
+            .get()
+          
+          if (existingQuery.empty) {
+            const docRef = db.collection('earnings_calendar').doc()
+            batch.set(docRef, {
+              ...event,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            })
+            addedCount++
+          } else {
+            skippedCount++
+          }
+        } catch (eventError) {
+          console.warn('Error processing event:', eventError, 'for event:', event)
+          continue
+        }
       }
-    }
-    
-    if (addedCount > 0) {
-      await batch.commit()
-      console.log(`Added ${addedCount} earnings events, skipped ${skippedCount} duplicates`)
+      
+      if (addedCount > 0) {
+        await batch.commit()
+        console.log(`Added ${addedCount} earnings events, skipped ${skippedCount} duplicates`)
+      }
+    } catch (batchError) {
+      console.error('Error saving events to Firebase:', batchError)
+      // Don't fail the entire request if Firebase save fails
     }
   }
   
