@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, Calendar as CalendarIcon, ExternalLink, Clock } from 'lucide-react';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
 type ViewMode = 'months' | 'month' | 'week' | 'day';
@@ -64,17 +64,27 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         }
 
         const eventsRef = collection(db, 'earnings_calendar');
+        
+        // Convert dates to ISO strings for proper querying since events are stored as ISO strings
+        const startISO = start.toISOString();
+        const endISO = end.toISOString();
+        
         const q = query(
           eventsRef,
-          where('earningsDate', '>=', start),
-          where('earningsDate', '<=', end)
+          where('earningsDate', '>=', startISO),
+          where('earningsDate', '<=', endISO)
         );
 
         const querySnapshot = await getDocs(q);
         const newEvents: Record<string, EarningsEvent[]> = {};
 
+        console.log(`📅 Earnings Calendar: Querying from ${startISO} to ${endISO}`);
+        console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents`);
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
+          console.log(`📅 Earnings Calendar: Processing event:`, data);
+          
           const event: EarningsEvent = {
             stockTicker: data.stockTicker,
             companyName: data.companyName,
@@ -97,7 +107,24 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           newEvents[dateKey].push(event);
         });
 
+        console.log(`📅 Earnings Calendar: Processed ${Object.keys(newEvents).length} days with events`);
         setEvents(newEvents);
+        
+        // If no events found, try a simple query to see if there are any events at all
+        if (Object.keys(newEvents).length === 0) {
+          console.log('📅 Earnings Calendar: No events found in date range, checking if any events exist...');
+          try {
+            const simpleQuery = query(eventsRef, limit(5));
+            const simpleSnapshot = await getDocs(simpleQuery);
+            console.log(`📅 Earnings Calendar: Found ${simpleSnapshot.size} total events in database`);
+            simpleSnapshot.forEach((doc) => {
+              const data = doc.data();
+              console.log(`📅 Earnings Calendar: Sample event:`, data);
+            });
+          } catch (simpleError) {
+            console.error('📅 Earnings Calendar: Error checking for events:', simpleError);
+          }
+        }
       } catch (error) {
         console.error('Error fetching events:', error);
       } finally {
