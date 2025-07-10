@@ -179,15 +179,16 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredEntries.map((entry, index) => {
-              // Extra defensive checks for each entry
-              if (!entry || !entry.id) {
-                console.warn('Skipping invalid entry:', entry);
+            {/* Log all ids before rendering */}
+            {(() => { console.log('Rendering catalyst entry ids:', filteredEntries.map(e => e && typeof e.id === 'string' ? e.id : '[INVALID]')); return null; })()}
+            {filteredEntries.map((entry) => {
+              // Only render entries with a valid, unique string id
+              if (!entry || typeof entry.id !== 'string' || !entry.id.trim()) {
+                console.warn('Skipping entry with invalid id:', entry);
                 return null;
               }
-              console.log('Rendering catalyst entry:', entry);
               return (
-                <Card key={entry.id || index} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
+                <Card key={entry.id} className="hover:shadow-md transition-shadow bg-gray-50 dark:bg-card">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-lg">
