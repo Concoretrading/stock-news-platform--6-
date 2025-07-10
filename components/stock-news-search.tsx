@@ -62,15 +62,16 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   }, [ticker, toast])
 
   useEffect(() => {
-    // Only include user-entered entries
-    const userEntries = Array.isArray(allEntries) ? allEntries.filter(entry => entry.isManual) : [];
+    // Only include user-entered entries with a non-empty description
+    const userEntries = Array.isArray(allEntries)
+      ? allEntries.filter(entry => entry.isManual && typeof entry.description === 'string' && entry.description.trim().length > 0)
+      : [];
     if (!searchQuery.trim()) {
       setFilteredEntries(userEntries)
     } else {
       const q = searchQuery.toLowerCase().trim()
       const filtered = userEntries.filter(entry => {
-        const descriptionMatch = entry.description && entry.description.toLowerCase().includes(q)
-        return descriptionMatch
+        return (entry.description as string).toLowerCase().includes(q)
       })
       setFilteredEntries(filtered)
     }
