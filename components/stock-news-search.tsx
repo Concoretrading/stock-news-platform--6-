@@ -149,6 +149,15 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
   return (
     <SearchErrorBoundary>
       <div className="space-y-6">
+        {/* Debug Panel */}
+        <div className="bg-yellow-50 border border-yellow-300 rounded p-2 text-xs text-yellow-900 mb-2">
+          <div><strong>Debug Info:</strong></div>
+          <div>allEntries.length: {allEntries.length}</div>
+          <div>filteredEntries.length: {filteredEntries.length}</div>
+          <div>IDs: {filteredEntries.map(e => (e && typeof e.id === 'string' ? e.id : JSON.stringify(e.id))).join(', ')}</div>
+          <div>Types: {filteredEntries.map(e => typeof e.id).join(', ')}</div>
+          <div>Invalid entries: {filteredEntries.filter(e => !e || typeof e.id !== 'string' || !e.id.trim() || e.id === '[object Object]').length}</div>
+        </div>
         <div>
           <Input
             type="text"
@@ -156,6 +165,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full"
+            disabled={false}
           />
           {searchQuery && Array.isArray(filteredEntries) && (
             <p className="text-sm text-muted-foreground mt-2">
