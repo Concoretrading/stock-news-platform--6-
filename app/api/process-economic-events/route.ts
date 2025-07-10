@@ -35,32 +35,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Store events in Firestore with deduplication
+    // Store events in Firestore (no deduplication)
     const db = await getFirestore();
     const batch = db.batch();
     const newEvents = [];
-    const skippedEvents = [];
     
     for (const event of events) {
-      // Check for existing event with same date, time, and event name
-      const existingQuery = db.collection('economic_events')
-        .where('date', '==', event.date)
-        .where('time', '==', event.time)
-        .where('event', '==', event.event);
-      
-      const existingSnapshot = await existingQuery.get();
-      
-      if (!existingSnapshot.empty) {
-        // Event already exists, skip it
-        skippedEvents.push({
-          date: event.date,
-          time: event.time,
-          event: event.event,
-          reason: 'Duplicate event already exists'
-        });
-        continue;
-      }
-      
       // Create unique ID for new event
       const uniqueId = `economic_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const eventRef = db.collection('economic_events').doc(uniqueId);
@@ -91,10 +71,10 @@ export async function POST(request: NextRequest) {
 
     await batch.commit();
 
-    const totalProcessed = newEvents.length + skippedEvents.length;
+    const totalProcessed = newEvents.length;
     const message = newEvents.length > 0 
-      ? `Successfully added ${newEvents.length} new economic events${skippedEvents.length > 0 ? `, skipped ${skippedEvents.length} duplicates` : ''}`
-      : `No new events added - all ${skippedEvents.length} events were duplicates`;
+      ? `Successfully added ${newEvents.length} new economic events.`
+      : `No new events added.`;
     
     return NextResponse.json({
       success: true,
@@ -110,7 +90,7 @@ export async function POST(request: NextRequest) {
       stats: {
         total: totalProcessed,
         added: newEvents.length,
-        skipped: skippedEvents.length
+        skipped: 0
       }
     });
 

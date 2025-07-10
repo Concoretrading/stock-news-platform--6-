@@ -41,6 +41,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   const fetchingRef = useRef(false);
   const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
   const [weekStartDate, setWeekStartDate] = useState<Date>(startOfWeek(currentDate));
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Memoize calendar calculations to prevent unnecessary recalculations
   const { monthStart, monthEnd, calendarStart, calendarEnd, calendarDays } = useMemo(() => {
@@ -169,6 +170,32 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
     setSelectedDayEvents(dayEvents);
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    setDeletingId(eventId);
+    try {
+      const res = await fetch(`/api/delete-economic-event/${eventId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        // Remove from UI
+        setSelectedDayEvents((prev) => prev.filter((e) => e.id !== eventId));
+        setEvents((prev) => {
+          const newEvents = { ...prev };
+          Object.keys(newEvents).forEach((date) => {
+            newEvents[date] = newEvents[date].filter((e) => e.id !== eventId);
+          });
+          return newEvents;
+        });
+      } else {
+        alert('Failed to delete event');
+      }
+    } catch (err) {
+      alert('Error deleting event');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const getEventIcon = (event: CalendarEvent) => {
     // If event has an iconUrl, use it
     if (event.iconUrl) {
@@ -290,6 +317,18 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                             <Badge variant="destructive" className="text-[10px] sm:text-xs">
                               Unconfirmed
                             </Badge>
+                          )}
+                          {/* Delete button for economic events */}
+                          {event.type === 'economic' && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="ml-2"
+                              disabled={deletingId === event.id}
+                              onClick={() => handleDeleteEvent(event.id)}
+                            >
+                              {deletingId === event.id ? 'Deleting...' : 'Delete'}
+                            </Button>
                           )}
                         </div>
                         
