@@ -75,8 +75,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         start = startOfMonth(selectedDate);
         end = endOfMonth(selectedDate);
       } else {
-        start = startOfWeek(selectedDate);
-        end = endOfWeek(selectedDate);
+        start = startOfWeek(selectedDate, { weekStartsOn: 1 });
+        end = endOfWeek(selectedDate, { weekStartsOn: 1 });
       }
 
       const eventsRef = collection(db, 'earnings_calendar');
@@ -441,7 +441,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
             let dayEvents = events[dateKey] || [];
             // Sort by market cap descending
             dayEvents = [...dayEvents].sort((a, b) => getMarketCap(b.stockTicker) - getMarketCap(a.stockTicker));
-            const isHoveredWeek = hoveredDate && isSameWeek(day, hoveredDate);
+            const isHoveredWeek = hoveredDate && isSameWeek(day, hoveredDate, { weekStartsOn: 1 });
             const showEvents = dayEvents.slice(0, 6);
             const overflowCount = dayEvents.length - 6;
             return (
@@ -527,7 +527,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   };
 
   const renderWeekView = () => {
-    const weekStart = startOfWeek(selectedDate);
+    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
     const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i));
 
     return (
