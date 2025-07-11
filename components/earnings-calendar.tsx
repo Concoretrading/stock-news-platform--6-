@@ -203,22 +203,34 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const CompanyLogo = ({ event, size = "small" }: { event: EarningsEvent, size?: "small" | "large" }) => {
     const sizeClasses = size === "small" ? "w-8 h-8" : "w-10 h-10"; // Made small size bigger
     
+    // Use local logo file if available, otherwise fall back to event.logoUrl or ticker initials
+    const logoUrl = `/images/logos/${event.stockTicker}.png`;
+    
     return (
       <div 
         className={`${sizeClasses} cursor-pointer hover:opacity-80`}
         onClick={(e) => handleEventClick(event, e)}
       >
-        {event.logoUrl ? (
-          <img
-            src={event.logoUrl}
-            alt={event.companyName}
-            className="w-full h-full object-contain"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-sm bg-primary text-white rounded">
-            {event.stockTicker.slice(0, 2)}
-          </div>
-        )}
+        <img
+          src={logoUrl}
+          alt={event.companyName}
+          className="w-full h-full object-contain"
+          onError={(e) => {
+            // If logo fails to load, show ticker initials as fallback
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            const fallback = target.parentElement?.querySelector('.logo-fallback') as HTMLElement;
+            if (fallback) {
+              fallback.style.display = 'flex';
+            }
+          }}
+        />
+        <div 
+          className="logo-fallback w-full h-full flex items-center justify-center text-sm bg-primary text-white rounded"
+          style={{ display: 'none' }}
+        >
+          {event.stockTicker.slice(0, 2)}
+        </div>
       </div>
     );
   };
