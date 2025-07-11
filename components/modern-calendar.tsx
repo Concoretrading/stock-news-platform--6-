@@ -670,31 +670,31 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
               </div>
             )}
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="p-0.5 sm:p-1 rounded bg-green-100 text-green-800">
+              <div className="p-0.5 sm:p-1 rounded bg-green-100 text-green-600">
                 <DollarSign className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
               <span className="text-[10px] sm:text-xs md:text-sm">Economic Data</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="p-0.5 sm:p-1 rounded bg-blue-100 text-blue-800">
+              <div className="p-0.5 sm:p-1 rounded bg-blue-100 text-blue-600">
                 <Building2 className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
               <span className="text-[10px] sm:text-xs md:text-sm">Fed Events</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="p-0.5 sm:p-1 rounded bg-purple-100 text-purple-800">
+              <div className="p-0.5 sm:p-1 rounded bg-purple-100 text-purple-600">
                 <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
               <span className="text-[10px] sm:text-xs md:text-sm">Options Expiration</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="p-0.5 sm:p-1 rounded bg-orange-100 text-orange-800">
+              <div className="p-0.5 sm:p-1 rounded bg-orange-100 text-orange-600">
                 <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
               <span className="text-[10px] sm:text-xs md:text-sm">VIX Events</span>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <div className="p-0.5 sm:p-1 rounded bg-red-100 text-red-800">
+              <div className="p-0.5 sm:p-1 rounded bg-red-100 text-red-600">
                 <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </div>
               <span className="text-[10px] sm:text-xs md:text-sm">Market Closed</span>
