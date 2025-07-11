@@ -347,13 +347,7 @@ export default function SplitScreenPage() {
         >
           <div className="h-full flex flex-col relative">
             {/* ConcoreTwitter Logo and Description */}
-            <div className="p-6 text-center border-b">
-              <img 
-                src="/concoretwitter copy.png" 
-                alt="ConcoreTwitter" 
-                className="h-16 w-auto mx-auto mb-3"
-              />
-            </div>
+            {/* Removed ConcoreTwitter logo and its padding */}
 
             {/* Drop Zone Message */}
             {isDragOver && (
@@ -602,34 +596,37 @@ export default function SplitScreenPage() {
           style={{ width: `${100 - leftPanelWidth}%` }}
         >
           <div className="h-full flex flex-col">
-            <div className="p-6">
-              <div className="flex items-center space-x-2 mb-6">
-                <Twitter className="h-6 w-6 text-blue-400" />
-                <h2 className="text-xl font-semibold">X Integration</h2>
+            <div className="flex flex-col items-center justify-center mb-8 py-8">
+              <img 
+                src="/images/concoretwitter.png" 
+                alt="ConcoreTwitter" 
+                className="h-12 md:h-14 lg:h-16 w-auto mb-4"
+                style={{ background: 'transparent' }}
+              />
+              <div className="text-2xl md:text-3xl font-bold text-center">ConcoreNews + X Integration</div>
+            </div>
+            
+            <XAuth />
+            
+            <div className="mt-8 space-y-4">
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <h3 className="font-semibold mb-2">AI-Powered Features</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Automatic ticker detection from X posts</li>
+                  <li>• Content categorization and analysis</li>
+                  <li>• Drag & drop screenshots from X</li>
+                  <li>• Copy-paste article processing</li>
+                </ul>
               </div>
               
-              <XAuth />
-              
-              <div className="mt-8 space-y-4">
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <h3 className="font-semibold mb-2">AI-Powered Features</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Automatic ticker detection from X posts</li>
-                    <li>• Content categorization and analysis</li>
-                    <li>• Drag & drop screenshots from X</li>
-                    <li>• Copy-paste article processing</li>
-                  </ul>
-                </div>
-                
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <h3 className="font-semibold mb-2">Workflow Integration</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Seamless data flow between X and ConcoreNews</li>
-                    <li>• Real-time market analysis</li>
-                    <li>• Automated news processing</li>
-                    <li>• Unified trading calendar</li>
-                  </ul>
-                </div>
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <h3 className="font-semibold mb-2">Workflow Integration</h3>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Seamless data flow between X and ConcoreNews</li>
+                  <li>• Real-time market analysis</li>
+                  <li>• Automated news processing</li>
+                  <li>• Unified trading calendar</li>
+                </ul>
               </div>
             </div>
           </div>
