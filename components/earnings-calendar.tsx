@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/components/auth-provider';
 import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
+import tickers from '../lib/tickers.json';
 
 type ViewMode = 'months' | 'month' | 'week';
 
@@ -201,11 +202,17 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   };
 
   const CompanyLogo = ({ event, size = "small" }: { event: EarningsEvent, size?: "small" | "large" }) => {
-    const sizeClasses = size === "small" ? "w-8 h-8" : "w-10 h-10"; // Made small size bigger
-    
-    // Use local logo file if available, otherwise fall back to event.logoUrl or ticker initials
-    const logoUrl = `/images/logos/${event.stockTicker}.png`;
-    
+    // Make logos larger
+    const sizeClasses = size === "small" ? "w-14 h-14" : "w-20 h-20";
+    // Find logo URL from tickers.json (case-insensitive)
+    const tickerEntry = tickers.find(
+      (t) => t.ticker.toLowerCase() === event.stockTicker.toLowerCase()
+    );
+    let logoUrl = tickerEntry?.logoUrl;
+    // Fallback to lowercase PNG if not found
+    if (!logoUrl) {
+      logoUrl = `/images/logos/${event.stockTicker.toLowerCase()}.png`;
+    }
     return (
       <div 
         className={`${sizeClasses} cursor-pointer hover:opacity-80`}
@@ -226,7 +233,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           }}
         />
         <div 
-          className="logo-fallback w-full h-full flex items-center justify-center text-sm bg-primary text-white rounded"
+          className="logo-fallback w-full h-full flex items-center justify-center text-lg bg-primary text-white rounded"
           style={{ display: 'none' }}
         >
           {event.stockTicker.slice(0, 2)}
