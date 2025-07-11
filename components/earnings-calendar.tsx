@@ -13,7 +13,7 @@ import { useAuth } from '@/components/auth-provider';
 import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 
-type ViewMode = 'months' | 'month' | 'week' | 'day';
+type ViewMode = 'months' | 'month' | 'week';
 
 interface EarningsEvent {
   id: string; // Document ID for deletion
@@ -56,7 +56,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   // Add modal state for overflow
-  const [overflowModal, setOverflowModal] = useState<{date: string, events: EarningsEvent[]} | null>(null);
+  const [overflowModal, setOverflowModal] = useState<{date: string, events: EarningsEvent[], dayTitle?: string} | null>(null);
 
   // Generate 7 months starting from current month
   const months = Array.from({ length: 7 }, (_, i) => addMonths(startOfMonth(new Date()), i));
@@ -409,10 +409,6 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           setViewMode('week');
         }}
       >Week</Button>
-      <Button
-        variant={viewMode === 'day' ? 'default' : 'outline'}
-        onClick={() => setViewMode('day')}
-      >Day</Button>
     </div>
   );
 
@@ -562,7 +558,9 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           <Dialog open={!!overflowModal} onOpenChange={() => setOverflowModal(null)}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Earnings for {overflowModal.date}</DialogTitle>
+                <DialogTitle>
+                  {overflowModal.dayTitle ? overflowModal.dayTitle : `Earnings for ${overflowModal.date}`}
+                </DialogTitle>
               </DialogHeader>
               <ScrollArea className="max-h-[60vh]">
                 <div className="grid grid-cols-2 gap-4">
@@ -618,7 +616,12 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                 )}
                 onClick={() => {
                   setSelectedDate(day);
-                  setViewMode('day');
+                  // Show day details in a modal instead of switching view
+                  setOverflowModal({ 
+                    date: dateKey, 
+                    events: dayEvents,
+                    dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                  });
                 }}
               >
                 <div className="text-center mb-4">
@@ -654,48 +657,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
     );
   };
 
-  const renderDayView = () => {
-    const dateKey = format(selectedDate, 'yyyy-MM-dd');
-    const dayEvents = events[dateKey] || [];
-    return (
-      <div>
-        <div className="flex justify-between items-center mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => setViewMode('month')}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Back to Month
-          </Button>
-          <h2 className="text-2xl font-bold">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h2>
-        </div>
-        {renderViewToggles()}
-        <Card className="p-6">
-          <div className="flex flex-col items-center gap-4">
-            <CalendarIcon className="h-10 w-10 text-muted-foreground" />
-            {dayEvents.length > 0 ? (
-              dayEvents.map((event: EarningsEvent, i: number) => (
-                <div key={i} className="flex flex-col items-center gap-2">
-                  <CompanyLogo event={event} size="large" />
-                  <div className="text-lg font-semibold">{event.companyName}</div>
-                  <div className="text-sm text-muted-foreground">{event.stockTicker}</div>
-                  <Button
-                    variant="outline"
-                    onClick={(e) => handleEventClick(event, e as any)}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-muted-foreground">No Earnings Events</div>
-            )}
-          </div>
-        </Card>
-      </div>
-    );
-  };
+
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -706,7 +668,6 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
       {viewMode === 'months' && renderMonthsView()}
       {viewMode === 'month' && renderMonthView()}
       {viewMode === 'week' && renderWeekView()}
-      {viewMode === 'day' && renderDayView()}
       <EarningsDialog />
     </div>
   );
