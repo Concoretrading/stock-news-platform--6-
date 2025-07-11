@@ -45,9 +45,9 @@ export function AppHeader() {
                 variant="ghost"
                 size="icon"
                 className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400"
-                aria-label="X Integration"
+                aria-label="ConcoreTwitter Integration"
               >
-                <Image src="/images/x-logo.svg" alt="X" width={24} height={24} />
+                <Image src="/images/concoretwitter.png" alt="ConcoreTwitter" width={36} height={36} />
               </Button>
             </Link>
             <ThemeToggle />

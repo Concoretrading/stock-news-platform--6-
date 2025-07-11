@@ -58,6 +58,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   // Add modal state for overflow
   const [overflowModal, setOverflowModal] = useState<{date: string, events: EarningsEvent[], dayTitle?: string} | null>(null);
+  // Add state for tracking failed logo loads
+  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
 
   // Generate 7 months starting from current month
   const months = Array.from({ length: 7 }, (_, i) => addMonths(startOfMonth(new Date()), i));
@@ -246,33 +248,32 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
     if (!logoUrl) {
       logoUrl = `/images/logos/${event.stockTicker.toLowerCase()}.png`;
     }
+    
+    // Check if this logo has failed to load
+    const hasFailed = failedLogos.has(event.stockTicker.toLowerCase());
+    
     return (
       <div 
         className={`${sizeClasses} cursor-pointer hover:opacity-80`}
         onClick={(e) => handleEventClick(event, e)}
       >
-        <img
-          src={logoUrl}
-          alt={event.companyName}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            // If logo fails to load, show ticker initials as fallback
-            const target = e.target as HTMLImageElement;
-            target.style.display = 'none';
-            const fallback = target.parentElement?.querySelector('.logo-fallback') as HTMLElement;
-            if (fallback) {
-              fallback.style.display = 'flex';
-            }
-            // Log missing logo ticker
-            console.log('Missing logo for:', event.stockTicker, '| Company:', event.companyName);
-          }}
-        />
-        <div 
-          className="logo-fallback w-full h-full flex items-center justify-center text-lg bg-primary text-white rounded"
-          style={{ display: 'none' }}
-        >
-          {event.stockTicker.slice(0, 2)}
-        </div>
+        {hasFailed ? (
+          <div className="w-full h-full flex items-center justify-center text-lg bg-primary text-white rounded">
+            {event.stockTicker.slice(0, 2)}
+          </div>
+        ) : (
+          <img
+            src={logoUrl}
+            alt={event.companyName}
+            className="w-full h-full object-contain"
+            onError={(e) => {
+              // Add to failed logos set to prevent flickering
+              setFailedLogos(prev => new Set([...Array.from(prev), event.stockTicker.toLowerCase()]));
+              // Log missing logo ticker
+              console.log('Missing logo for:', event.stockTicker, '| Company:', event.companyName);
+            }}
+          />
+        )}
       </div>
     );
   };

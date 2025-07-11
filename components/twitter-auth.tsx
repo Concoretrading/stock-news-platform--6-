@@ -78,17 +78,6 @@ export function XAuth() {
             Sign in with X
           </Button>
         )}
-        {/* Workflow Integration Section */}
-        <div className="mt-8">
-          <h3 className="text-lg font-semibold mb-2">Workflow Integration</h3>
-          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-            <li>Seamless data flow between X and ConcoreNews</li>
-            <li>Drag &amp; drop news</li>
-            <li>Copy and paste article processing</li>
-            <li>Automated news processing</li>
-            <li>Content categorization</li>
-          </ul>
-        </div>
       </CardContent>
     </Card>
   );

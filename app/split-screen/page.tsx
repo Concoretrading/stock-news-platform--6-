@@ -51,6 +51,9 @@ export default function SplitScreenPage() {
   const [editStockSymbol, setEditStockSymbol] = useState('');
   const [editStockName, setEditStockName] = useState('');
 
+  // Add state for tracking failed logo loads
+  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
+
   // Load user's watchlist on component mount
   useEffect(() => {
     if (user) {
@@ -393,15 +396,21 @@ export default function SplitScreenPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center overflow-hidden">
-                            {/* Show logo if available, otherwise fallback to first letter */}
-                            <img
-                              src={`/images/logos/${stock.symbol.toUpperCase()}.png`}
-                              alt={stock.symbol}
-                              className="w-8 h-8 object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/images/placeholder-logo.png';
-                              }}
-                            />
+                            {/* Show logo if available and not failed, otherwise fallback to first letter */}
+                            {failedLogos.has(stock.symbol.toUpperCase()) ? (
+                              <span className="text-sm font-semibold text-blue-600">
+                                {stock.symbol.charAt(0)}
+                              </span>
+                            ) : (
+                              <img
+                                src={`/images/logos/${stock.symbol.toUpperCase()}.png`}
+                                alt={stock.symbol}
+                                className="w-8 h-8 object-contain"
+                                onError={(e) => {
+                                  setFailedLogos(prev => new Set([...Array.from(prev), stock.symbol.toUpperCase()]));
+                                }}
+                              />
+                            )}
                           </div>
                           <div className="flex-1">
                             <div className="font-semibold">{stock.symbol}</div>
