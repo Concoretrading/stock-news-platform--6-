@@ -65,7 +65,7 @@ class FirebaseAdmin {
         credential: process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON
           ? cert(JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON))
           : applicationDefault(),
-        storageBucket: 'concorenews.appspot.com',
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET || process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'concorenews.appspot.com',
       });
 
       this.initialized = true;
