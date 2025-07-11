@@ -7,7 +7,6 @@ export interface EconomicEvent {
   event: string;
   country: string;
   currency: string;
-  importance: 'HIGH' | 'MEDIUM' | 'LOW';
   actual?: string | null;
   forecast?: string | null;
   previous?: string | null;
@@ -90,9 +89,6 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
         }
         
         if (eventName) {
-          // Determine importance based on event type
-          const importance = determineImportance(eventName);
-          
           // Map event to icon
           const iconUrl = mapEventToIcon(eventName);
           
@@ -103,7 +99,6 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
             event: eventName,
             country: 'US',
             currency: 'USD',
-            importance,
             forecast: expectations || null,
             iconUrl: iconUrl || undefined,
             type: 'economic'
@@ -177,39 +172,6 @@ function parseDateTime(dateTimeStr: string): { date: string; time: string } | nu
     console.error('Error parsing date/time:', dateTimeStr, error);
     return null;
   }
-}
-
-function determineImportance(event: string): 'HIGH' | 'MEDIUM' | 'LOW' {
-  const eventLower = event.toLowerCase();
-  
-  // High importance events
-  const highImportance = [
-    'non-farm payrolls', 'unemployment rate', 'cpi', 'ppi', 'gdp',
-    'fomc', 'federal reserve', 'fed', 'interest rate', 'beige book',
-    'retail sales', 'housing starts', 'consumer confidence',
-    'ism manufacturing', 'ism services', 'industrial production'
-  ];
-  
-  // Medium importance events
-  const mediumImportance = [
-    'jobless claims', 'pce', 'trade balance', 'manufacturing',
-    'services', 'construction', 'durable goods', 'personal income',
-    'personal spending', 'business inventories', 'capacity utilization'
-  ];
-  
-  for (const highEvent of highImportance) {
-    if (eventLower.includes(highEvent)) {
-      return 'HIGH';
-    }
-  }
-  
-  for (const mediumEvent of mediumImportance) {
-    if (eventLower.includes(mediumEvent)) {
-      return 'MEDIUM';
-    }
-  }
-  
-  return 'LOW';
 }
 
 function mapEventToIcon(event: string): string | undefined {

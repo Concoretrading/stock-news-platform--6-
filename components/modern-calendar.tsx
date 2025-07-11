@@ -266,6 +266,40 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
     return Array.from(eventTypes.values());
   };
 
+  // Function to prioritize important events for display
+  const getPrioritizedEvents = (events: CalendarEvent[]) => {
+    if (events.length === 0) return [];
+    
+    // Define priority order (higher index = higher priority)
+    const priorityOrder = [
+      'CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE', // Economic data
+      'FOMC', 'BEIGE', 'MINUTES', // Fed events
+      'VIX', // VIX events
+      'WITCHING', // Options expiration
+      'MARKET' // Market closed
+    ];
+    
+    // Sort events by priority
+    const sortedEvents = [...events].sort((a, b) => {
+      const aPriority = priorityOrder.indexOf(a.ticker);
+      const bPriority = priorityOrder.indexOf(b.ticker);
+      
+      // If both are in priority list, sort by priority (higher index = higher priority)
+      if (aPriority !== -1 && bPriority !== -1) {
+        return bPriority - aPriority;
+      }
+      
+      // If only one is in priority list, prioritize it
+      if (aPriority !== -1 && bPriority === -1) return -1;
+      if (aPriority === -1 && bPriority !== -1) return 1;
+      
+      // If neither is in priority list, maintain original order
+      return 0;
+    });
+    
+    return sortedEvents;
+  };
+
   const renderDayDetailDialog = () => {
     if (!selectedDate) return null;
 
@@ -284,7 +318,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="max-h-[60vh] sm:max-h-[500px] mt-3 sm:mt-4">
+          <div className="mt-3 sm:mt-4">
             {selectedDayEvents.length === 0 ? (
               <div className="text-center py-8 sm:py-12 text-muted-foreground">
                 <CalendarIcon className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
@@ -292,7 +326,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                 <p className="text-xs sm:text-sm">This day is clear of major market events.</p>
               </div>
             ) : (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {selectedDayEvents.map((event, index) => (
                   <Card key={`${event.date}-${index}`} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-start gap-3 sm:gap-4">
@@ -382,7 +416,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                 ))}
               </div>
             )}
-          </ScrollArea>
+          </div>
         </DialogContent>
       </Dialog>
     );
@@ -481,7 +515,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                     </div>
                     
                     <div className="space-y-0.5 sm:space-y-1">
-                      {dayEvents.slice(0, 1).map((event, index) => (
+                      {getPrioritizedEvents(dayEvents).slice(0, 1).map((event, index) => (
                         <div
                           key={`${event.date}-${index}`}
                           className={cn(
@@ -566,7 +600,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                     {dayEvents.length > 0 ? (
                       <>
                         {/* Event Details */}
-                        {dayEvents.slice(0, 2).map((event, i) => (
+                        {getPrioritizedEvents(dayEvents).slice(0, 2).map((event, i) => (
                           <div key={i} className="flex flex-col items-center gap-1">
                             <span className="font-semibold text-xs">{event.company_name}</span>
                             <span className="text-xs text-muted-foreground">{event.ticker}</span>

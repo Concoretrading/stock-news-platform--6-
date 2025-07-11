@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
         date: event.date,
         time: event.time,
         event: event.event,
-        importance: event.importance,
         iconUrl: event.iconUrl
       })),
       stats: {
