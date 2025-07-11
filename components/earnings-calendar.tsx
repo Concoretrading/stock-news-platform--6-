@@ -401,7 +401,13 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
       >Month</Button>
       <Button
         variant={viewMode === 'week' ? 'default' : 'outline'}
-        onClick={() => setViewMode('week')}
+        onClick={() => {
+          // When switching to week view, set the selected date to the current week
+          const today = new Date();
+          const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+          setSelectedDate(currentWeekStart);
+          setViewMode('week');
+        }}
       >Week</Button>
       <Button
         variant={viewMode === 'day' ? 'default' : 'outline'}
@@ -604,20 +610,38 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
             const dayEvents = events[dateKey] || [];
 
             return (
-              <Card key={dateKey} className="p-4">
+              <Card 
+                key={dateKey} 
+                className={cn(
+                  "p-4 cursor-pointer transition-colors duration-200 hover:bg-accent/50",
+                  dayEvents.length > 0 && "border-primary/20"
+                )}
+                onClick={() => {
+                  setSelectedDate(day);
+                  setViewMode('day');
+                }}
+              >
                 <div className="text-center mb-4">
                   <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
                   <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                  {/* Event count badge */}
+                  {dayEvents.length > 0 && (
+                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
+                      {dayEvents.length}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <CalendarIcon className="h-8 w-8 text-muted-foreground" />
                   {dayEvents.length > 0 ? (
-                    dayEvents.map((event: EarningsEvent, i: number) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <CompanyLogo event={event} size="large" />
-                        <div className="text-sm">{event.stockTicker}</div>
-                      </div>
-                    ))
+                    <div className="grid grid-cols-2 gap-1">
+                      {dayEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
+                        <div key={i} className="flex flex-col items-center gap-1">
+                          <CompanyLogo event={event} size="small" />
+                          <div className="text-xs text-center">{event.stockTicker}</div>
+                        </div>
+                      ))}
+                    </div>
                   ) : (
                     <div className="text-sm text-muted-foreground">No Earnings</div>
                   )}
