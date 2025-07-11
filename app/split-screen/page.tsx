@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText } from 'lucide-react';
+import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X } from 'lucide-react';
 import { XAuth } from '@/components/twitter-auth';
 
 interface Stock {
@@ -17,6 +17,8 @@ interface Stock {
 export default function SplitScreenPage() {
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [activeTab, setActiveTab] = useState<'history' | 'search' | 'news'>('history');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   
   // Mock watchlist data
   const watchlist: Stock[] = [
@@ -29,6 +31,32 @@ export default function SplitScreenPage() {
     { ticker: 'AMZN', name: 'Amazon.com Inc.', price: '$178.12', change: '+2.89', changePercent: '+1.65%', isPositive: true },
     { ticker: 'NFLX', name: 'Netflix Inc.', price: '$612.45', change: '-4.32', changePercent: '-0.70%', isPositive: false },
   ];
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      setUploadedFiles(prev => [...prev, ...files]);
+      // Here you would process the files like on the main dashboard
+      console.log('Files dropped:', files);
+    }
+  }, []);
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -65,6 +93,44 @@ export default function SplitScreenPage() {
               <Activity className="h-4 w-4" />
               <span>8 stocks • Last updated 2 min ago</span>
             </div>
+          </div>
+
+          {/* Drag & Drop Zone */}
+          <div
+            className={`p-4 border-b border-gray-200 transition-colors ${
+              isDragOver ? 'bg-blue-50 border-blue-300' : 'bg-gray-50'
+            }`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <Upload className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">Drop Zone</span>
+            </div>
+            <p className="text-xs text-gray-600 mb-3">
+              Drag & drop screenshots or articles here for processing
+            </p>
+            
+            {/* Uploaded Files */}
+            {uploadedFiles.length > 0 && (
+              <div className="space-y-2">
+                {uploadedFiles.map((file, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-3 w-3 text-blue-500" />
+                      <span className="text-xs text-gray-700">{file.name}</span>
+                    </div>
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Watchlist */}
@@ -109,7 +175,7 @@ export default function SplitScreenPage() {
             </div>
           </div>
 
-          {/* Selected Stock Details */}
+          {/* Selected Stock Details - Collapsible */}
           {selectedStock && (
             <div className="border-t border-gray-200 bg-gray-50">
               <div className="p-4 border-b border-gray-200">
@@ -125,9 +191,10 @@ export default function SplitScreenPage() {
                   </div>
                   <button
                     onClick={() => setSelectedStock(null)}
-                    className="text-sm text-gray-500 hover:text-gray-700"
+                    className="flex items-center gap-2 px-3 py-1 text-sm text-gray-600 hover:text-gray-800 bg-white rounded border hover:bg-gray-50"
                   >
-                    Close
+                    <ChevronRight className="h-4 w-4 rotate-180" />
+                    Push Back
                   </button>
                 </div>
               </div>
