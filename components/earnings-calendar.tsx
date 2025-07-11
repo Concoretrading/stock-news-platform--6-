@@ -82,29 +82,59 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
 
       const eventsRef = collection(db, 'earnings_calendar');
       
-      // Convert dates to YYYY-MM-DD format for proper querying since events are stored as YYYY-MM-DD strings
+      // Convert dates to YYYY-MM-DD format for proper querying
       const startDate = format(start, 'yyyy-MM-dd');
       const endDate = format(end, 'yyyy-MM-dd');
       
-      const q = query(
+      console.log(`📅 Earnings Calendar: Querying from ${startDate} to ${endDate}`);
+      console.log(`📅 Earnings Calendar: Current view mode: ${viewMode}`);
+      console.log(`📅 Earnings Calendar: Selected date: ${format(selectedDate, 'yyyy-MM-dd')}`);
+      
+      // Try querying with string dates first (for newer data)
+      let q = query(
         eventsRef,
         where('earningsDate', '>=', startDate),
         where('earningsDate', '<=', endDate)
       );
 
-      const querySnapshot = await getDocs(q);
-      const newEvents: Record<string, EarningsEvent[]> = {};
+      let querySnapshot = await getDocs(q);
+      console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents with string date query`);
 
-      console.log(`📅 Earnings Calendar: Querying from ${startDate} to ${endDate}`);
-      console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents`);
+      // If no results, try with Date objects (for older data)
+      if (querySnapshot.empty) {
+        console.log('📅 Earnings Calendar: No results with string query, trying Date object query...');
+        q = query(
+          eventsRef,
+          where('earningsDate', '>=', start),
+          where('earningsDate', '<=', end)
+        );
+        querySnapshot = await getDocs(q);
+        console.log(`📅 Earnings Calendar: Found ${querySnapshot.size} documents with Date object query`);
+      }
+
+      const newEvents: Record<string, EarningsEvent[]> = {};
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         console.log(`📅 Earnings Calendar: Processing event:`, data);
         
-        // Create date in local timezone to avoid UTC conversion issues
-        const [year, month, day] = data.earningsDate.split('-').map(Number);
-        const localEventDate = new Date(year, month - 1, day);
+        let localEventDate: Date;
+        
+        // Handle both string and Date object formats
+        if (typeof data.earningsDate === 'string') {
+          // Handle string date (YYYY-MM-DD format)
+          const [year, month, day] = data.earningsDate.split('-').map(Number);
+          localEventDate = new Date(year, month - 1, day);
+        } else if (data.earningsDate instanceof Date) {
+          // Handle Date object
+          localEventDate = data.earningsDate;
+        } else if (data.earningsDate?.toDate) {
+          // Handle Firestore Timestamp
+          localEventDate = data.earningsDate.toDate();
+        } else {
+          console.warn('📅 Earnings Calendar: Unknown earningsDate format:', data.earningsDate);
+          return; // Skip this event
+        }
         
         const event: EarningsEvent = {
           id: doc.id, // Add document ID for deletion
@@ -130,6 +160,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
       });
 
       console.log(`📅 Earnings Calendar: Processed ${Object.keys(newEvents).length} days with events`);
+      console.log(`📅 Earnings Calendar: Events by date:`, Object.keys(newEvents));
       setEvents(newEvents);
       
       // If no events found, try a simple query to see if there are any events at all
@@ -142,6 +173,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           simpleSnapshot.forEach((doc) => {
             const data = doc.data();
             console.log(`📅 Earnings Calendar: Sample event:`, data);
+            console.log(`📅 Earnings Calendar: earningsDate type:`, typeof data.earningsDate);
+            console.log(`📅 Earnings Calendar: earningsDate value:`, data.earningsDate);
           });
         } catch (simpleError) {
           console.error('📅 Earnings Calendar: Error checking for events:', simpleError);
