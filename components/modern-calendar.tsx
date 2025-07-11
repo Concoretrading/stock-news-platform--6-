@@ -530,7 +530,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                       ))}
                       {dayEvents.length > 1 && (
                         <div className={cn(
-                          "text-[8px] sm:text-xs text-muted-foreground px-0.5 sm:px-1 md:px-2 py-0.5 sm:py-1",
+                          "text-[8px] sm:text-xs bg-gray-100 text-red-600 font-medium px-1 sm:px-2 py-0.5 sm:py-1 rounded",
                           isDayPast && "opacity-60"
                         )}>
                           +{dayEvents.length - 1} more
@@ -609,7 +609,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                           ))}
                         </div>
                         {dayEvents.length > 4 && (
-                          <div className="text-[8px] text-muted-foreground">
+                          <div className="text-[8px] bg-gray-100 text-red-600 font-medium px-1 py-0.5 rounded">
                             +{dayEvents.length - 4} more
                           </div>
                         )}
