@@ -54,10 +54,17 @@ export function AppHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400"
+                className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400 p-0 flex items-center justify-center"
                 aria-label="ConcoreTwitter Integration"
               >
-                <Image src="/images/concoretwitter.png" alt="ConcoreTwitter" width={36} height={36} />
+                <Image
+                  src="/images/concoretwitter.png"
+                  alt="ConcoreTwitter"
+                  width={32}
+                  height={32}
+                  style={{ background: 'transparent', objectFit: 'contain', display: 'block' }}
+                  onError={(e) => { e.currentTarget.src = '/images/x-logo.svg'; }}
+                />
               </Button>
             </Link>
             <ThemeToggle />
