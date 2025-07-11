@@ -1,7 +1,7 @@
 "use client"
 
 import { ThemeToggle } from "@/components/theme-toggle"
-import { TrendingUp, LogOut, Calendar as CalendarIcon, Twitter } from "lucide-react"
+import { TrendingUp, LogOut, Calendar as CalendarIcon, Twitter, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
@@ -38,6 +38,16 @@ export function AppHeader() {
                 aria-label="Calendar"
               >
                 <CalendarIcon className="h-[1.5rem] w-[1.5rem]" />
+              </Button>
+            </Link>
+            <Link href="/trade-reviews" passHref legacyBehavior>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-green-500 hover:bg-green-900/20 hover:text-green-400 focus-visible:ring-green-500"
+                aria-label="Trade Reviews"
+              >
+                <FileText className="h-[1.5rem] w-[1.5rem]" />
               </Button>
             </Link>
             <Link href="/split-screen" passHref legacyBehavior>
