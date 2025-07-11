@@ -230,6 +230,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
             if (fallback) {
               fallback.style.display = 'flex';
             }
+            // Log missing logo ticker
+            console.log('Missing logo for:', event.stockTicker, '| Company:', event.companyName);
           }}
         />
         <div 
@@ -240,6 +242,14 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         </div>
       </div>
     );
+  };
+
+  // Helper function to check if a company has a logo
+  const hasLogo = (event: EarningsEvent) => {
+    const tickerEntry = tickers.find(
+      (t) => t.ticker.toLowerCase() === event.stockTicker.toLowerCase()
+    );
+    return !!tickerEntry?.logoUrl;
   };
 
   const EarningsDialog = () => {
@@ -463,8 +473,18 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           }).map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
             let dayEvents = events[dateKey] || [];
-            // Sort by market cap descending
-            dayEvents = [...dayEvents].sort((a, b) => getMarketCap(b.stockTicker) - getMarketCap(a.stockTicker));
+            // Sort by: 1) Has logo (prioritize), 2) Market cap descending
+            dayEvents = [...dayEvents].sort((a, b) => {
+              const aHasLogo = hasLogo(a);
+              const bHasLogo = hasLogo(b);
+              
+              // First priority: companies with logos come first
+              if (aHasLogo && !bHasLogo) return -1;
+              if (!aHasLogo && bHasLogo) return 1;
+              
+              // Second priority: market cap (if both have logos or both don't)
+              return getMarketCap(b.stockTicker) - getMarketCap(a.stockTicker);
+            });
             const isHoveredWeek = hoveredDate && isSameWeek(day, hoveredDate, { weekStartsOn: 1 });
             const showEvents = dayEvents.slice(0, 8);
             const overflowCount = dayEvents.length - 8;
@@ -629,7 +649,19 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         <div className="grid grid-cols-5 gap-4">
           {weekDays.map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
-            const dayEvents = events[dateKey] || [];
+            let dayEvents = events[dateKey] || [];
+            // Sort by: 1) Has logo (prioritize), 2) Market cap descending
+            dayEvents = [...dayEvents].sort((a, b) => {
+              const aHasLogo = hasLogo(a);
+              const bHasLogo = hasLogo(b);
+              
+              // First priority: companies with logos come first
+              if (aHasLogo && !bHasLogo) return -1;
+              if (!aHasLogo && bHasLogo) return 1;
+              
+              // Second priority: market cap (if both have logos or both don't)
+              return getMarketCap(b.stockTicker) - getMarketCap(a.stockTicker);
+            });
 
             return (
               <Card 
