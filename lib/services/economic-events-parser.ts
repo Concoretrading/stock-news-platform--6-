@@ -12,6 +12,7 @@ export interface EconomicEvent {
   previous?: string | null;
   iconUrl?: string;
   type: 'economic';
+  importance: 'HIGH' | 'MEDIUM' | 'LOW';
 }
 
 export function parseMarketWatchData(rawData: string): EconomicEvent[] {
@@ -101,7 +102,8 @@ export function parseMarketWatchData(rawData: string): EconomicEvent[] {
             currency: 'USD',
             forecast: expectations || null,
             iconUrl: iconUrl || undefined,
-            type: 'economic'
+            type: 'economic',
+            importance: determineImportance(eventName)
           };
           
           events.push(economicEvent);
@@ -172,6 +174,39 @@ function parseDateTime(dateTimeStr: string): { date: string; time: string } | nu
     console.error('Error parsing date/time:', dateTimeStr, error);
     return null;
   }
+}
+
+function determineImportance(event: string): 'HIGH' | 'MEDIUM' | 'LOW' {
+  const eventLower = event.toLowerCase();
+  
+  // High importance events
+  const highImportanceEvents = [
+    'cpi', 'consumer price index', 'fomc', 'federal reserve', 'non-farm payrolls', 'nfp',
+    'gdp', 'retail sales', 'unemployment rate', 'fed', 'federal open market committee'
+  ];
+  
+  // Medium importance events
+  const mediumImportanceEvents = [
+    'ppi', 'producer price index', 'housing starts', 'industrial production', 'consumer confidence',
+    'ism', 'pmi', 'beige book', 'minutes', 'speech'
+  ];
+  
+  // Check for high importance events
+  for (const highEvent of highImportanceEvents) {
+    if (eventLower.includes(highEvent)) {
+      return 'HIGH';
+    }
+  }
+  
+  // Check for medium importance events
+  for (const mediumEvent of mediumImportanceEvents) {
+    if (eventLower.includes(mediumEvent)) {
+      return 'MEDIUM';
+    }
+  }
+  
+  // Default to low importance
+  return 'LOW';
 }
 
 function mapEventToIcon(event: string): string | undefined {
