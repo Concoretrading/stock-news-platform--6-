@@ -44,8 +44,8 @@ export function AppHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-blue-400 hover:bg-blue-900/20 hover:text-blue-300 focus-visible:ring-blue-400"
-                aria-label="Split Screen Mode"
+                className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400"
+                aria-label="X Integration"
               >
                 <Twitter className="h-[1.5rem] w-[1.5rem]" />
               </Button>
