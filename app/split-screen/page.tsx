@@ -368,13 +368,10 @@ export default function SplitScreenPage() {
           className="w-1 bg-border hover:bg-blue-500 cursor-col-resize relative group"
           onMouseDown={handleMouseDown}
         >
+          {/* Grab Block */}
           <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-8 -ml-4 flex items-center justify-center">
-            <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-blue-500 transition-colors" />
-          </div>
-          {/* Grab and Slide Indicator */}
-          <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-16 -ml-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-              Grab & Slide
+            <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium">
+              Grab
             </div>
           </div>
         </div>
