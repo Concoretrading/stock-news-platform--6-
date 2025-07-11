@@ -80,15 +80,31 @@ export function AdminEarningsUpload() {
     const formData = new FormData();
     formData.append('ticker', ticker);
     formData.append('file', file);
+    
     try {
-      const res = await fetch('/api/upload-logo', { method: 'POST', body: formData });
+      console.log('Uploading logo for ticker:', ticker, 'File:', file.name, 'Size:', file.size);
+      
+      const res = await fetch('/api/upload-logo', { 
+        method: 'POST', 
+        body: formData 
+      });
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Upload failed');
+      
+      if (!res.ok) {
+        console.error('Upload failed:', data);
+        throw new Error(data.error || 'Upload failed');
+      }
+      
+      console.log('Upload successful:', data);
       toast.success(`Logo updated for ${ticker}`);
       setLogoPreviews(prev => ({ ...prev, [ticker]: data.logoUrl }));
-      setTickers(tickers => tickers.map(t => t.ticker === ticker ? { ...t, logoUrl: data.logoUrl } : t));
-    } catch (e) {
-      toast.error('Failed to upload logo');
+      setTickers(tickers => tickers.map(t => 
+        t.ticker === ticker ? { ...t, logoUrl: data.logoUrl } : t
+      ));
+    } catch (e: any) {
+      console.error('Logo upload error:', e);
+      toast.error(`Failed to upload logo for ${ticker}: ${e.message}`);
     } finally {
       setLogoUploading(null);
     }
@@ -286,7 +302,23 @@ export function AdminEarningsUpload() {
                   disabled={logoUploading === ticker}
                   onChange={e => {
                     const file = e.target.files?.[0];
-                    if (file) handleLogoUpload(ticker, file);
+                    if (file) {
+                      // Validate file type
+                      if (!file.type.startsWith('image/')) {
+                        toast.error('Please select an image file');
+                        return;
+                      }
+                      
+                      // Validate file size (max 5MB)
+                      if (file.size > 5 * 1024 * 1024) {
+                        toast.error('File size must be less than 5MB');
+                        return;
+                      }
+                      
+                      handleLogoUpload(ticker, file);
+                    }
+                    // Reset the input
+                    e.target.value = '';
                   }}
                 />
                 

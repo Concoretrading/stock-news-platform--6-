@@ -10,22 +10,27 @@ const TICKERS_JSON = path.join(process.cwd(), 'lib/tickers.json');
 
 export async function POST(req: NextRequest) {
   try {
+    // Parse form data
     const formData = await req.formData();
     const ticker = formData.get('ticker') as string;
     const file = formData.get('file') as File;
     
     if (!ticker || !file) {
-      return NextResponse.json({ error: 'Missing ticker or file' }, { status: 400 });
+      return NextResponse.json({ 
+        error: 'Missing ticker or file' 
+      }, { status: 400 });
     }
     
     const tickerUpper = ticker.toUpperCase();
     
-    // Check file type
+    // Validate file type
     if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: 'Only image files allowed' }, { status: 400 });
+      return NextResponse.json({ 
+        error: 'Only image files allowed' 
+      }, { status: 400 });
     }
     
-    // Ensure logo dir exists
+    // Ensure logo directory exists
     if (!fs.existsSync(LOGO_DIR)) {
       fs.mkdirSync(LOGO_DIR, { recursive: true });
     }
@@ -33,7 +38,10 @@ export async function POST(req: NextRequest) {
     const outPath = path.join(LOGO_DIR, `${tickerUpper}.png`);
     
     // Convert File to Buffer and resize
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Resize and save image
     await sharp(buffer)
       .resize(64, 64, { fit: 'cover' })
       .png()
@@ -42,9 +50,11 @@ export async function POST(req: NextRequest) {
     // Update tickers.json
     let tickers = [];
     if (fs.existsSync(TICKERS_JSON)) {
-      tickers = JSON.parse(fs.readFileSync(TICKERS_JSON, 'utf8'));
+      const tickersData = fs.readFileSync(TICKERS_JSON, 'utf8');
+      tickers = JSON.parse(tickersData);
     }
     
+    // Find and update existing ticker or add new one
     let found = false;
     for (const t of tickers) {
       if (t.ticker.toUpperCase() === tickerUpper) {
@@ -55,14 +65,19 @@ export async function POST(req: NextRequest) {
     }
     
     if (!found) {
-      tickers.push({ ticker: tickerUpper, logoUrl: `/images/logos/${tickerUpper}.png` });
+      tickers.push({ 
+        ticker: tickerUpper, 
+        logoUrl: `/images/logos/${tickerUpper}.png` 
+      });
     }
     
+    // Write updated tickers.json
     fs.writeFileSync(TICKERS_JSON, JSON.stringify(tickers, null, 2));
     
     return NextResponse.json({ 
       success: true, 
-      logoUrl: `/images/logos/${tickerUpper}.png` 
+      logoUrl: `/images/logos/${tickerUpper}.png`,
+      ticker: tickerUpper
     });
     
   } catch (err: any) {
