@@ -465,13 +465,18 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                     setViewMode('week');
                   } else {
                     setSelectedDate(day);
-                    setViewMode('day');
+                    // Show day details in a modal instead of switching view
+                    setOverflowModal({ 
+                      date: dateKey, 
+                      events: dayEvents,
+                      dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                    });
                   }
                 }}
               >
                 {/* Event count in top-right corner */}
                 {dayEvents.length > 0 && (
-                  <div className="absolute top-1 right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
+                  <div className="absolute top-1 right-1 bg-gray-500 text-red-500 text-xs px-1.5 py-0.5 rounded font-medium">
                     {dayEvents.length}
                   </div>
                 )}
@@ -537,7 +542,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                       ))}
                       {overflowCount > 0 && (
                         <button
-                          className="w-8 h-8 flex items-center justify-center bg-gray-700 text-white text-xs rounded hover:bg-gray-600"
+                          className="w-8 h-8 flex items-center justify-center bg-gray-500 text-red-500 text-xs rounded hover:bg-gray-600"
                           onClick={e => {
                             e.stopPropagation();
                             setOverflowModal({ date: dateKey, events: dayEvents });
@@ -629,7 +634,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                   <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
                   {/* Event count badge */}
                   {dayEvents.length > 0 && (
-                    <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
+                    <div className="absolute top-2 right-2 bg-gray-500 text-red-500 text-xs px-1.5 py-0.5 rounded font-medium">
                       {dayEvents.length}
                     </div>
                   )}
