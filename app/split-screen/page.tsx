@@ -11,6 +11,7 @@ import { StockAlertTab } from '@/components/stock-alert-tab';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/components/auth-provider';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import { useToast } from '@/hooks/use-toast';
 
 interface Stock {
   id?: string;
@@ -29,6 +30,7 @@ export default function SplitScreenPage() {
   const [isLoadingStocks, setIsLoadingStocks] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const { user } = useAuth();
+  const { toast } = useToast();
   
   // Mock watchlist data - in real implementation, this would come from user's watchlist
   const mockWatchlist: Stock[] = [
@@ -150,17 +152,86 @@ export default function SplitScreenPage() {
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
+      // Check for image files first (screenshots should be processed as images)
+      const imageFiles = files.filter(file => file.type.startsWith('image/'));
+      
+      if (imageFiles.length > 0) {
+        console.log('🖼️ Image files dropped, processing as screenshots');
+        
+        // Check authentication
+        if (!user) {
+          console.log('❌ User not authenticated');
+          toast({
+            title: "Authentication Required", 
+            description: "Please log in to process screenshots",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Process each image file
+        for (const file of imageFiles) {
+          console.log('🔄 Processing file:', file.name, file.type);
+          await processScreenshot(file);
+        }
+        return;
+      }
+      
+      // If no image files, store them for display
       setUploadedFiles(prev => [...prev, ...files]);
       console.log('Files dropped:', files);
-      // Here you would process the files like in the main dashboard
     }
-  }, []);
+  }, [user, toast]);
+
+  const processScreenshot = async (file: File) => {
+    console.log('🔄 Starting screenshot processing...');
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      console.log('📤 Sending request to /api/analyze-screenshot');
+
+      const response = await fetchWithAuth("/api/analyze-screenshot", {
+        method: "POST",
+        body: formData,
+      });
+
+      console.log('📥 Response status:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ API Error:', errorData);
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Screenshot analysis result:', data);
+      
+      const successCount = data.newsEntryResults?.filter((r: any) => r.success).length || 0;
+      const tickers = data.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || [];
+      
+      toast({
+        title: "Screenshot Processed! 📸",
+        description: successCount > 0 
+          ? `Catalyst(s) added for: ${tickers.join(", ")}`
+          : 'No matching stocks found in your watchlist',
+        variant: successCount > 0 ? 'default' : 'destructive',
+      });
+      
+    } catch (error) {
+      console.error('❌ Screenshot processing error:', error);
+      toast({
+        title: "Screenshot Analysis Failed",
+        description: error instanceof Error ? error.message : "Unable to analyze the screenshot. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const removeFile = useCallback((index: number) => {
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
@@ -275,12 +346,21 @@ export default function SplitScreenPage() {
           onDrop={handleDrop}
         >
           <div className="h-full flex flex-col relative">
+            {/* ConcoreTwitter Logo and Description */}
+            <div className="p-6 text-center border-b">
+              <img 
+                src="/concoretwitter copy.png" 
+                alt="ConcoreTwitter" 
+                className="h-16 w-auto mx-auto mb-3"
+              />
+            </div>
+
             {/* Drop Zone Message */}
             {isDragOver && (
               <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 backdrop-blur-sm z-10">
                 <div className="text-center">
                   <Upload className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-                  <p className="text-lg font-semibold text-blue-700">Drop news anywhere on the screen</p>
+                  <p className="text-lg font-semibold text-blue-700">Drop news anywhere on ConcoreNews section</p>
                   <p className="text-sm text-blue-600">Screenshots, articles, or documents</p>
                 </div>
               </div>
@@ -308,7 +388,7 @@ export default function SplitScreenPage() {
             {/* Small Drop Message */}
             {!isDragOver && uploadedFiles.length === 0 && (
               <div className="p-4 text-center">
-                <p className="text-xs text-muted-foreground">Drop news anywhere on the screen</p>
+                <p className="text-xs text-muted-foreground">Drop news anywhere on ConcoreNews section</p>
               </div>
             )}
 
