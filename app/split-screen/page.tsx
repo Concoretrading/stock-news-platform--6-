@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X, GripVertical, Bell } from 'lucide-react';
+import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X, GripVertical, Bell, PlusCircle, Trash2, Edit2 } from 'lucide-react';
 import { XAuth } from '@/components/twitter-auth';
 import { StockNewsHistory } from '@/components/stock-news-history';
 import { StockNewsSearch } from '@/components/stock-news-search';
@@ -43,6 +43,13 @@ export default function SplitScreenPage() {
     { symbol: 'AMD', name: 'Advanced Micro Devices Inc.' },
     { symbol: 'INTC', name: 'Intel Corporation' },
   ];
+
+  // Add state for new stock input and editing
+  const [newStockSymbol, setNewStockSymbol] = useState('');
+  const [newStockName, setNewStockName] = useState('');
+  const [editingStock, setEditingStock] = useState<Stock | null>(null);
+  const [editStockSymbol, setEditStockSymbol] = useState('');
+  const [editStockName, setEditStockName] = useState('');
 
   // Load user's watchlist on component mount
   useEffect(() => {
@@ -165,6 +172,48 @@ export default function SplitScreenPage() {
     setSelectedStock(null);
   }, []);
 
+  // Add stock to watchlist
+  const handleAddStock = () => {
+    if (newStockSymbol.trim() && newStockName.trim()) {
+      setWatchlist(prev => [
+        ...prev,
+        { symbol: newStockSymbol.toUpperCase(), name: newStockName }
+      ]);
+      setNewStockSymbol('');
+      setNewStockName('');
+    }
+  };
+  // Remove stock from watchlist
+  const handleRemoveStock = (symbol: string) => {
+    setWatchlist(prev => prev.filter(stock => stock.symbol !== symbol));
+    if (selectedStock?.symbol === symbol) setSelectedStock(null);
+  };
+  // Start editing a stock
+  const handleEditStock = (stock: Stock) => {
+    setEditingStock(stock);
+    setEditStockSymbol(stock.symbol);
+    setEditStockName(stock.name);
+  };
+  // Save edited stock
+  const handleSaveEditStock = () => {
+    if (editingStock && editStockSymbol.trim() && editStockName.trim()) {
+      setWatchlist(prev => prev.map(stock =>
+        stock.symbol === editingStock.symbol
+          ? { symbol: editStockSymbol.toUpperCase(), name: editStockName }
+          : stock
+      ));
+      setEditingStock(null);
+      setEditStockSymbol('');
+      setEditStockName('');
+    }
+  };
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditingStock(null);
+    setEditStockSymbol('');
+    setEditStockName('');
+  };
+
   const renderTabContent = (tabName: string, content: React.ReactNode) => {
     try {
       return content;
@@ -228,7 +277,7 @@ export default function SplitScreenPage() {
               <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 backdrop-blur-sm z-10">
                 <div className="text-center">
                   <Upload className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-                  <p className="text-lg font-semibold text-blue-700">Drop files here</p>
+                  <p className="text-lg font-semibold text-blue-700">Drop news anywhere on the screen</p>
                   <p className="text-sm text-blue-600">Screenshots, articles, or documents</p>
                 </div>
               </div>
@@ -256,13 +305,73 @@ export default function SplitScreenPage() {
             {/* Small Drop Message */}
             {!isDragOver && uploadedFiles.length === 0 && (
               <div className="p-4 text-center">
-                <p className="text-xs text-muted-foreground">Drop anywhere on the left side</p>
+                <p className="text-xs text-muted-foreground">Drop news anywhere on the screen</p>
               </div>
             )}
 
-            {/* Stock Watchlist */}
+            {/* Stock Watchlist Management */}
             <div className="flex-1 overflow-y-auto p-4">
               <h2 className="text-lg font-semibold mb-4">Watchlist</h2>
+              {/* Add Stock Form */}
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="Symbol"
+                  value={newStockSymbol}
+                  onChange={e => setNewStockSymbol(e.target.value)}
+                  className="border rounded px-2 py-1 text-xs w-20"
+                />
+                <input
+                  type="text"
+                  placeholder="Company Name"
+                  value={newStockName}
+                  onChange={e => setNewStockName(e.target.value)}
+                  className="border rounded px-2 py-1 text-xs flex-1"
+                />
+                <button
+                  onClick={handleAddStock}
+                  className="bg-blue-500 text-white rounded px-2 py-1 text-xs flex items-center gap-1 hover:bg-blue-600"
+                  aria-label="Add Stock"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  Add
+                </button>
+              </div>
+              {/* Edit Stock Form */}
+              {editingStock && (
+                <div className="flex gap-2 mb-4 bg-blue-50 p-2 rounded">
+                  <input
+                    type="text"
+                    placeholder="Symbol"
+                    value={editStockSymbol}
+                    onChange={e => setEditStockSymbol(e.target.value)}
+                    className="border rounded px-2 py-1 text-xs w-20"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Company Name"
+                    value={editStockName}
+                    onChange={e => setEditStockName(e.target.value)}
+                    className="border rounded px-2 py-1 text-xs flex-1"
+                  />
+                  <button
+                    onClick={handleSaveEditStock}
+                    className="bg-green-500 text-white rounded px-2 py-1 text-xs flex items-center gap-1 hover:bg-green-600"
+                    aria-label="Save"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                    Save
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className="bg-gray-300 text-gray-700 rounded px-2 py-1 text-xs flex items-center gap-1 hover:bg-gray-400"
+                    aria-label="Cancel"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
+              {/* Watchlist Items */}
               {isLoadingStocks ? (
                 <div className="space-y-2">
                   {[...Array(6)].map((_, i) => (
@@ -283,17 +392,39 @@ export default function SplitScreenPage() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                              {stock.symbol.charAt(0)}
-                            </span>
+                          <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center overflow-hidden">
+                            {/* Show logo if available, otherwise fallback to first letter */}
+                            <img
+                              src={`/images/logos/${stock.symbol.toUpperCase()}.png`}
+                              alt={stock.symbol}
+                              className="w-8 h-8 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/images/placeholder-logo.png';
+                              }}
+                            />
                           </div>
                           <div className="flex-1">
                             <div className="font-semibold">{stock.symbol}</div>
                             <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
                           </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={e => { e.stopPropagation(); handleEditStock(stock); }}
+                            className="text-blue-500 hover:text-blue-700"
+                            aria-label="Edit"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={e => { e.stopPropagation(); handleRemoveStock(stock.symbol); }}
+                            className="text-red-500 hover:text-red-700"
+                            aria-label="Remove"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
                       </div>
                     </div>
                   ))}

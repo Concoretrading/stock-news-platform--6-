@@ -47,7 +47,7 @@ export function AppHeader() {
                 className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400"
                 aria-label="X Integration"
               >
-                <Twitter className="h-[1.5rem] w-[1.5rem]" />
+                <Image src="/images/x-logo.svg" alt="X" width={24} height={24} />
               </Button>
             </Link>
             <ThemeToggle />
