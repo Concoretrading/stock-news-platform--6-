@@ -128,8 +128,8 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
             const event: CalendarEvent = {
               id: doc.id,
               date: eventData.earningsDate,
-              ticker: eventData.ticker || 'STOCK',
-              company_name: eventData.company_name || 'Company',
+              ticker: eventData.stockTicker || eventData.ticker || 'STOCK',
+              company_name: eventData.companyName || eventData.company_name || 'Company',
               event_type: eventData.earningsType || 'Earnings',
               confirmed: eventData.isConfirmed || false,
               auto_generated: eventData.auto_generated || false,

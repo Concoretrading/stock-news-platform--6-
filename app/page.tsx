@@ -6,7 +6,8 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { TrendingUp, ChevronLeft, ChevronRight, Settings, Upload, Calendar } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TrendingUp, ChevronLeft, ChevronRight, Settings, Upload, Calendar, Twitter, Monitor } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
@@ -379,97 +380,144 @@ export default function HomePage() {
           </CardContent>
         </Card>
 
-        {/* Three Aspects of Time Section */}
+        {/* Main Content Tabs */}
         <div className="mb-8">
-          <div className="text-center mb-8">
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-2">
-              We as traders need to master
-            </h2>
-            <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
-              All three aspects of time
-            </h2>
-            <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* The Past */}
-            <Card className="border-amber-200 hover:border-amber-400 transition-colors flex flex-col">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-amber-700 dark:text-amber-300">
-                  The Past
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  • Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history
-                </p>
-                <p className="text-center text-sm font-medium text-amber-600 dark:text-amber-400">
-                  as long as its a stock in your watch list
-                </p>
-                <Dialog open={showPastInstructions} onOpenChange={setShowPastInstructions}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 mt-auto">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Try It
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-amber-700">📸 Drop Screenshot Instructions</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                        <h3 className="font-semibold text-amber-800 mb-2">How to use screenshot dropping:</h3>
-                        <ol className="list-decimal list-inside space-y-2 text-amber-700">
-                          <li>Take a screenshot of news about any stock in your watchlist</li>
-                          <li>Drag and drop the image <strong>anywhere</strong> on this website</li>
-                          <li>Our AI will automatically extract the news and create a catalyst</li>
-                          <li>The catalyst will be stored in your stock's history</li>
-                        </ol>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
+          <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="calendar" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Calendar
+              </TabsTrigger>
+            </TabsList>
 
-            {/* The Present */}
-            <Card className="border-green-200 hover:border-green-400 transition-colors flex flex-col">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-300">
-                  The Present
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  • We are building some incredibly powerful tools that will be available to the Concore family very soon.
-                </p>
-                <div className="w-full py-3 px-4 bg-green-50 border border-green-200 rounded-lg mt-auto">
-                  <span className="text-green-700 font-medium">Coming Soon</span>
+            {/* Dashboard Tab */}
+            <TabsContent value="dashboard" className="space-y-8">
+              {/* Three Aspects of Time Section */}
+              <div>
+                <div className="text-center mb-8">
+                  <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-2">
+                    We as traders need to master
+                  </h2>
+                  <h2 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+                    All three aspects of time
+                  </h2>
+                  <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
                 </div>
-              </CardContent>
-            </Card>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {/* The Past */}
+                  <Card className="border-amber-200 hover:border-amber-400 transition-colors flex flex-col">
+                    <CardHeader className="text-center pb-4">
+                      <CardTitle className="text-2xl font-bold text-amber-700 dark:text-amber-300">
+                        The Past
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        • Drop news anywhere on the dashboard where it then automatically fills in and stores your catalyst within your specific stocks history
+                      </p>
+                      <p className="text-center text-sm font-medium text-amber-600 dark:text-amber-400">
+                        as long as its a stock in your watch list
+                      </p>
+                      <Dialog open={showPastInstructions} onOpenChange={setShowPastInstructions}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 mt-auto">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Try It
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle className="text-amber-700">📸 Drop Screenshot Instructions</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                              <h3 className="font-semibold text-amber-800 mb-2">How to use screenshot dropping:</h3>
+                              <ol className="list-decimal list-inside space-y-2 text-amber-700">
+                                <li>Take a screenshot of news about any stock in your watchlist</li>
+                                <li>Drag and drop the image <strong>anywhere</strong> on this website</li>
+                                <li>Our AI will automatically extract the news and create a catalyst</li>
+                                <li>The catalyst will be stored in your stock's history</li>
+                              </ol>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </CardContent>
+                  </Card>
 
-            {/* The Future */}
-            <Card className="border-purple-200 hover:border-purple-400 transition-colors flex flex-col">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                  The Future
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  • We have built a multi-functional calendar to keep us completely prepared for any future upcoming events.
+                  {/* The Present */}
+                  <Card className="border-green-200 hover:border-green-400 transition-colors flex flex-col">
+                    <CardHeader className="text-center pb-4">
+                      <CardTitle className="text-2xl font-bold text-green-700 dark:text-green-300">
+                        The Present
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        • We are building some incredibly powerful tools that will be available to the Concore family very soon.
+                      </p>
+                      <div className="w-full py-3 px-4 bg-green-50 border border-green-200 rounded-lg mt-auto">
+                        <span className="text-green-700 font-medium">Coming Soon</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* The Future */}
+                  <Card className="border-purple-200 hover:border-purple-400 transition-colors flex flex-col">
+                    <CardHeader className="text-center pb-4">
+                      <CardTitle className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                        The Future
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-center space-y-4 flex-1 flex flex-col justify-between">
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                        • We have built a multi-functional calendar to keep us completely prepared for any future upcoming events.
+                      </p>
+                      <Link href="/calendar" className="mt-auto">
+                        <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50">
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Open Calendar
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Calendar Tab */}
+            <TabsContent value="calendar" className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+                  Market Calendar
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
+                  Track earnings, economic events, and market catalysts
                 </p>
-                <Link href="/calendar" className="mt-auto">
-                  <Button variant="outline" className="w-full border-purple-300 text-purple-700 hover:bg-purple-50">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    Open Calendar
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="w-24 h-1 bg-blue-600 mx-auto rounded-full"></div>
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
+                <div className="text-center py-12">
+                  <Calendar className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-xl font-semibold mb-2">Calendar View</h3>
+                  <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    View the full calendar with all market events
+                  </p>
+                  <Link href="/calendar">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Open Full Calendar
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Stock Selector Modal */}
