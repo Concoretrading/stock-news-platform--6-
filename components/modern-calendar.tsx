@@ -599,16 +599,18 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                   <div className="flex flex-col items-center gap-2">
                     {dayEvents.length > 0 ? (
                       <>
-                        {/* Event Details */}
-                        {getPrioritizedEvents(dayEvents).slice(0, 2).map((event, i) => (
-                          <div key={i} className="flex flex-col items-center gap-1">
-                            <span className="font-semibold text-xs">{event.company_name}</span>
-                            <span className="text-xs text-muted-foreground">{event.ticker}</span>
-                          </div>
-                        ))}
-                        {dayEvents.length > 2 && (
-                          <div className="text-xs text-muted-foreground">
-                            +{dayEvents.length - 2} more
+                        {/* Event Details - 2x2 Grid Layout */}
+                        <div className="grid grid-cols-2 gap-1 w-full">
+                          {getPrioritizedEvents(dayEvents).slice(0, 4).map((event, i) => (
+                            <div key={i} className="flex flex-col items-center gap-0.5 text-center">
+                              <span className="font-semibold text-[10px] leading-tight">{event.company_name}</span>
+                              <span className="text-[8px] text-muted-foreground leading-tight">{event.ticker}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {dayEvents.length > 4 && (
+                          <div className="text-[8px] text-muted-foreground">
+                            +{dayEvents.length - 4} more
                           </div>
                         )}
                       </>
