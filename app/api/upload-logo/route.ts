@@ -5,15 +5,24 @@ import sharp from 'sharp';
 
 export const runtime = 'nodejs';
 
+// Disable body parsing for file uploads
+export const dynamic = 'force-dynamic';
+
 const LOGO_DIR = path.join(process.cwd(), 'public/images/logos');
 const TICKERS_JSON = path.join(process.cwd(), 'lib/tickers.json');
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('Upload route called');
+    
     // Parse form data
     const formData = await req.formData();
+    console.log('Form data parsed');
+    
     const ticker = formData.get('ticker') as string;
     const file = formData.get('file') as File;
+    
+    console.log('Ticker:', ticker, 'File:', file?.name, 'Size:', file?.size);
     
     if (!ticker || !file) {
       return NextResponse.json({ 
@@ -36,16 +45,20 @@ export async function POST(req: NextRequest) {
     }
     
     const outPath = path.join(LOGO_DIR, `${tickerUpper}.png`);
+    console.log('Output path:', outPath);
     
     // Convert File to Buffer and resize
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    console.log('Buffer created, size:', buffer.length);
     
     // Resize and save image
     await sharp(buffer)
       .resize(64, 64, { fit: 'cover' })
       .png()
       .toFile(outPath);
+    
+    console.log('Image processed and saved');
     
     // Update tickers.json
     let tickers = [];
@@ -73,6 +86,7 @@ export async function POST(req: NextRequest) {
     
     // Write updated tickers.json
     fs.writeFileSync(TICKERS_JSON, JSON.stringify(tickers, null, 2));
+    console.log('Tickers.json updated');
     
     return NextResponse.json({ 
       success: true, 
