@@ -23,6 +23,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
+// Force dynamic rendering to prevent static generation issues
+export const dynamic = 'force-dynamic'
+
 interface Stock {
   id?: string
   symbol: string
