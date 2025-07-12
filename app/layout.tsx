@@ -37,12 +37,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <>
+            <div>
               {children}
               <Toaster />
               <ScreenshotButton />
               <VersionDisplay />
-            </>
+            </div>
           </AuthProvider>
         </ThemeProvider>
       </body>

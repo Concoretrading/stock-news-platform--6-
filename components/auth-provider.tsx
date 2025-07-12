@@ -22,6 +22,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  if (process.env.NODE_ENV !== 'production' && Array.isArray(children)) {
+    console.warn('AuthProvider received multiple children. Only a single child is allowed. Wrap children in a <div> or <>...</>.');
+  }
   const [user, setUser] = useState<User | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
