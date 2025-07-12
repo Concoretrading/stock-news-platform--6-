@@ -16,17 +16,6 @@ interface Section {
   }>;
 }
 
-const DEFAULT_SECTIONS = [
-  'Overview',
-  'Emotions', 
-  'Momentum',
-  'Key Levels',
-  'Volume',
-  'Keltners',
-  'What I Need to Improve On',
-  'Final Notes'
-];
-
 export default function NewTradeReviewPage() {
   const [ticker, setTicker] = useState('');
   const [tradeDate, setTradeDate] = useState('');
@@ -226,18 +215,13 @@ export default function NewTradeReviewPage() {
             <div className="bg-card border rounded-lg p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Sections ({sections.length}/8)</h2>
-                <div className="flex items-center space-x-2">
-                  {DEFAULT_SECTIONS.map((sectionName) => (
-                    <button
-                      key={sectionName}
-                      onClick={() => addSection(sectionName)}
-                      disabled={sections.length >= 8 || sections.some(s => s.name === sectionName)}
-                      className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {sectionName}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  onClick={() => addSection('')}
+                  disabled={sections.length >= 8}
+                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  + Add New Section
+                </button>
               </div>
 
               {sections.length === 0 ? (
@@ -247,38 +231,50 @@ export default function NewTradeReviewPage() {
                   <p className="text-muted-foreground">
                     Add sections to start building your trade review
                   </p>
+                  <button
+                    onClick={() => addSection('')}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
+                    Add First Section
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {sections.map((section, index) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-medium">{section.name}</h3>
-                        <button
-                          onClick={() => removeSection(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
+                        <input
+                          type="text"
+                          value={section.name}
+                          onChange={e => updateSection(index, 'name', e.target.value)}
+                          placeholder="Section Headline"
+                          className="text-lg font-semibold w-full max-w-xs border-b focus:outline-none focus:border-blue-500 bg-transparent"
+                        />
+                        {sections.length > 1 && (
+                          <button
+                            onClick={() => removeSection(index)}
+                            className="text-red-500 hover:text-red-700 ml-4"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
-                      
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Content</label>
+                          <label className="block text-sm font-medium mb-2">Notes</label>
                           <textarea
                             value={section.content}
-                            onChange={(e) => updateSection(index, 'content', e.target.value)}
-                            placeholder={`Describe your ${section.name.toLowerCase()} analysis...`}
+                            onChange={e => updateSection(index, 'content', e.target.value)}
+                            placeholder="Add your notes here..."
                             rows={4}
                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
-
                         <div>
                           <label className="block text-sm font-medium mb-2">
-                            Images ({section.images.length}/5)
+                            Images ({section.images.length}/3)
                           </label>
-                          <div className="grid grid-cols-5 gap-2">
+                          <div className="grid grid-cols-3 gap-2">
                             {section.images.map((image, imgIndex) => (
                               <div key={imgIndex} className="relative">
                                 <img
@@ -296,12 +292,12 @@ export default function NewTradeReviewPage() {
                                 </button>
                               </div>
                             ))}
-                            {section.images.length < 5 && (
+                            {section.images.length < 3 && (
                               <label className="w-full h-20 border-2 border-dashed border-muted-foreground/25 rounded flex items-center justify-center cursor-pointer hover:border-blue-300 transition-colors">
                                 <input
                                   type="file"
                                   accept="image/*"
-                                  onChange={(e) => {
+                                  onChange={e => {
                                     const file = e.target.files?.[0];
                                     if (file) handleImageUpload(file, index);
                                   }}
