@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react"
 import { AuthProvider } from "@/components/auth-provider"
-import { Toaster } from "@/components/ui/toaster"
 import ScreenshotButton from "@/components/ScreenshotButton"
 import { NewsPasteButton } from "@/components/news-paste-button"
 import { useToast } from "@/hooks/use-toast"
