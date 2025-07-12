@@ -60,8 +60,8 @@ export function AppHeader() {
                 <Image
                   src="/images/concoretwitter.png"
                   alt="ConcoreTwitter Split Screen"
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   style={{ background: 'transparent', objectFit: 'contain', display: 'block' }}
                 />
               </Button>
