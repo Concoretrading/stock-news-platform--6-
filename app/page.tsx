@@ -26,6 +26,7 @@ import {
 
 // Force dynamic rendering to prevent static generation issues
 export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 interface Stock {
   id?: string
@@ -52,6 +53,7 @@ function useIsMobile() {
 }
 
 export default function HomePage() {
+  const [mounted, setMounted] = useState(false)
   const [watchlist, setWatchlist] = useState<Stock[]>([])
   const [isLoadingStocks, setIsLoadingStocks] = useState(true)
   const [showStockSelector, setShowStockSelector] = useState(false)
@@ -73,6 +75,11 @@ export default function HomePage() {
   const { toast } = useToast()
   const router = useRouter()
   const isMobile = useIsMobile()
+
+  // Ensure component only renders on client side
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Carousel settings - show 5 stocks per page on mobile, 8 on desktop (2 rows of 4), max 10 total
   const stocksPerPage = isMobile ? 5 : 8
@@ -457,6 +464,11 @@ export default function HomePage() {
 
   const handleStockClick = (stock: Stock) => {
     router.push(`/stocks/${stock.symbol}#history`)
+  }
+
+  // Don't render anything until mounted to prevent SSR issues
+  if (!mounted) {
+    return null
   }
 
   return (
