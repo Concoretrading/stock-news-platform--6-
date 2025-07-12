@@ -55,15 +55,15 @@ export function AppHeader() {
                 variant="ghost"
                 size="icon"
                 className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400 p-0 flex items-center justify-center"
-                aria-label="ConcoreTwitter Integration"
+                aria-label="Split Screen"
               >
                 <Image
-                  src="/images/concoretwitter.png"
-                  alt="ConcoreTwitter"
+                  src="/images/concore-logo.png"
+                  alt="ConcoreNews Split Screen"
                   width={32}
                   height={32}
-                  style={{ background: 'transparent', objectFit: 'contain', display: 'block' }}
-                  onError={(e) => { e.currentTarget.src = '/images/x-logo.svg'; }}
+                  className="rounded-full bg-white/10 p-1"
+                  style={{ objectFit: 'contain', display: 'block' }}
                 />
               </Button>
             </Link>
