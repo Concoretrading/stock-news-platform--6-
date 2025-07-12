@@ -38,12 +38,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <ClientLayout>
-              {children}
-            </ClientLayout>
-            <Toaster />
-            <ScreenshotButton />
-            <VersionDisplay />
+            <>
+              <ClientLayout>
+                {children}
+              </ClientLayout>
+              <Toaster />
+              <ScreenshotButton />
+              <VersionDisplay />
+            </>
           </AuthProvider>
         </ThemeProvider>
       </body>
