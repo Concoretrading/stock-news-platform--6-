@@ -57,12 +57,18 @@ export function AppHeader() {
                 className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400 p-0 flex items-center justify-center"
                 aria-label="Split Screen"
               >
-                <Image
+                <img
                   src="/images/concoretwitter.png"
                   alt="ConcoreTwitter Split Screen"
                   width={40}
                   height={40}
-                  style={{ background: 'transparent', objectFit: 'contain', display: 'block' }}
+                  style={{ 
+                    background: 'transparent', 
+                    objectFit: 'contain', 
+                    display: 'block',
+                    maxWidth: '40px',
+                    maxHeight: '40px'
+                  }}
                 />
               </Button>
             </Link>

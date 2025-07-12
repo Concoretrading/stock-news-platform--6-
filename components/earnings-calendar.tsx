@@ -634,14 +634,14 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         {/* Overflow Modal */}
         {overflowModal && (
           <Dialog open={!!overflowModal} onOpenChange={() => setOverflowModal(null)}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-6xl max-h-[95vh] w-[90vw]">
               <DialogHeader>
                 <DialogTitle>
                   {overflowModal.dayTitle ? overflowModal.dayTitle : `Earnings for ${overflowModal.date}`}
                 </DialogTitle>
               </DialogHeader>
-              <ScrollArea className="max-h-[60vh]">
-                <div className="grid grid-cols-2 gap-4">
+              <ScrollArea className="max-h-[80vh]">
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {overflowModal.events.map((event, i) => (
                     <div key={i} className="flex items-center gap-3 p-2 border rounded bg-card">
                       <CompanyLogo event={event} size="large" />

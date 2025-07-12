@@ -305,7 +305,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
     return (
       <Dialog open={!!selectedDate} onOpenChange={() => setSelectedDate(null)}>
-        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] sm:max-h-[80vh] p-4 sm:p-6">
+        <DialogContent className="max-w-7xl max-h-[98vh] w-[95vw] p-4 sm:p-6 overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 sm:gap-3">
               <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
@@ -326,7 +326,7 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
                 <p className="text-xs sm:text-sm">This day is clear of major market events.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                 {selectedDayEvents.map((event, index) => (
                   <Card key={`${event.date}-${index}`} className="p-3 sm:p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-start gap-3 sm:gap-4">

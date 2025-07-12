@@ -14,11 +14,18 @@ import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { StockSelector } from '@/components/stock-selector';
+import tickers from '@/lib/tickers.json';
 
 interface Stock {
   id?: string;
   symbol: string;
   name: string;
+}
+
+// Add a helper to get the logo URL for a ticker
+function getLogoUrl(symbol: string) {
+  const entry = tickers.find((t: any) => t.ticker.toLowerCase() === symbol.toLowerCase());
+  return entry?.logoUrl || `/images/logos/${symbol.toUpperCase()}.png`;
 }
 
 export default function SplitScreenPage() {
@@ -338,15 +345,6 @@ export default function SplitScreenPage() {
       <div 
         className="relative"
       >
-        {/* Centered ConcoreTwitter logo above the split divider */}
-        <div className="absolute left-1/2 top-0 transform -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-          <img
-            src="/images/concoretwitter.png"
-            alt="ConcoreTwitter"
-            className="h-12 md:h-14 lg:h-16 w-auto drop-shadow-xl"
-            style={{ background: 'transparent' }}
-          />
-        </div>
         <div 
           id="split-container"
           className="flex h-[calc(100vh-80px)] relative mt-12"
@@ -399,7 +397,7 @@ export default function SplitScreenPage() {
               {/* Small Drop Message */}
               {!isDragOver && uploadedFiles.length === 0 && (
                 <div className="p-4 text-center">
-                  <p className="text-xs text-muted-foreground">Drop news anywhere on ConcoreNews section</p>
+                  <p className="text-2xl md:text-3xl font-bold text-muted-foreground">Drop news anywhere on ConcoreNews section</p>
                 </div>
               )}
 
@@ -446,7 +444,7 @@ export default function SplitScreenPage() {
                                 </span>
                               ) : (
                                 <img
-                                  src={`/images/logos/${stock.symbol.toUpperCase()}.png`}
+                                  src={getLogoUrl(stock.symbol)}
                                   alt={stock.symbol}
                                   className="w-8 h-8 object-contain"
                                   onError={(e) => {
@@ -560,38 +558,28 @@ export default function SplitScreenPage() {
           >
             <div className="h-full flex flex-col">
               <div className="flex flex-col items-center justify-center mb-8 py-8">
-                <img 
-                  src="/images/concoretwitter.png" 
-                  alt="ConcoreTwitter" 
-                  className="h-12 md:h-14 lg:h-16 w-auto mb-4"
-                  style={{ background: 'transparent' }}
-                />
                 <div className="text-2xl md:text-3xl font-bold text-center">ConcoreNews + X Integration</div>
               </div>
               
-              <XAuth />
-              
-              <div className="mt-8 space-y-4">
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <h3 className="font-semibold mb-2">AI-Powered Features</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Automatic ticker detection from X posts</li>
-                    <li>• Content categorization and analysis</li>
-                    <li>• Drag & drop screenshots from X</li>
-                    <li>• Copy-paste article processing</li>
-                  </ul>
+              <div className="flex-1 flex items-center justify-center">
+                <div className="w-full max-w-md transform scale-125">
+                  <XAuth />
                 </div>
-                
+              </div>
+
+              <div className="mt-8">
                 <div className="p-4 bg-muted/30 rounded-lg">
                   <h3 className="font-semibold mb-2">Workflow Integration</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• Seamless data flow between X and ConcoreNews</li>
-                    <li>• Real-time market analysis</li>
-                    <li>• Automated news processing</li>
-                    <li>• Unified trading calendar</li>
+                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>seamless data flow between x and concorenews</li>
+                    <li>drag & drop news in the drop zone</li>
+                    <li>copy and paste article processing</li>
+                    <li>automated news processing</li>
+                    <li>content categorization</li>
                   </ul>
                 </div>
               </div>
+              
             </div>
           </div>
         </div>

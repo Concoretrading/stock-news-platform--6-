@@ -103,11 +103,11 @@ export default function CalendarPage() {
         <TabsContent value="elite">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              {/* Golden Logo with gold filter */}
+              {/* Concore Logo */}
               <span className="inline-block w-7 h-7 sm:w-9 sm:h-9">
                 <img
-                  src="/images/elite-logo.png"
-                  alt="Elite Logo"
+                  src="/images/concore-logo.png"
+                  alt="Concore Logo"
                   className="w-full h-full object-contain drop-shadow-lg"
                 />
               </span>
@@ -120,21 +120,15 @@ export default function CalendarPage() {
           <CardContent className="pt-0">
             <div className="text-center py-12">
               <div className="w-full py-10 px-8 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border-2 border-amber-200 rounded-2xl shadow-lg relative overflow-hidden">
-                {/* Decorative background elements */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-10">
-                  <div className="absolute top-4 right-4 w-20 h-20 bg-amber-300 rounded-full blur-xl"></div>
-                  <div className="absolute bottom-8 left-8 w-16 h-16 bg-orange-300 rounded-full blur-lg"></div>
-                  <div className="absolute top-1/2 left-1/4 w-12 h-12 bg-yellow-300 rounded-full blur-md"></div>
-                </div>
                 <div className="relative z-10 max-w-lg mx-auto">
-                  {/* Golden Concore Logo with glow effect */}
+                  {/* Concore Logo with glow effect */}
                   <div className="mb-6 flex justify-center">
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 rounded-full blur-md opacity-40 animate-pulse"></div>
                       <div className="relative z-10 w-16 h-16 mx-auto">
                         <img 
-                          src="/images/elite-logo.png" 
-                          alt="Elite Logo" 
+                          src="/images/concore-logo.png" 
+                          alt="Concore Logo" 
                           className="w-full h-full object-contain drop-shadow-lg"
                         />
                       </div>

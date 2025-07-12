@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Plus, X, Upload, Save, Eye, FileText } from 'lucide-react';
+import { Save, Eye, X, Upload, FileText, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
-import { useToast } from '@/hooks/use-toast';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
+import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 interface Section {
   name: string;
@@ -17,90 +17,94 @@ interface Section {
 }
 
 export default function NewTradeReviewPage() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [ticker, setTicker] = useState('');
   const [tradeDate, setTradeDate] = useState('');
   const [positionType, setPositionType] = useState<'LONG' | 'SHORT'>('LONG');
   const [sections, setSections] = useState<Section[]>([]);
-  const [currentSection, setCurrentSection] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const [enlargedImage, setEnlargedImage] = useState<{url: string; altText: string} | null>(null);
 
   const addSection = (sectionName: string) => {
-    if (sections.length >= 8) {
-      toast({
-        title: "Maximum sections reached",
-        description: "You can only add up to 8 sections per review",
-        variant: "destructive",
-      });
-      return;
+    if (sections.length < 8) {
+      setSections([...sections, { name: sectionName, content: '', images: [] }]);
     }
-
-    setSections(prev => [...prev, {
-      name: sectionName,
-      content: '',
-      images: []
-    }]);
   };
 
   const updateSection = (index: number, field: keyof Section, value: any) => {
-    setSections(prev => prev.map((section, i) => 
-      i === index ? { ...section, [field]: value } : section
-    ));
+    const newSections = [...sections];
+    if (field === 'images') {
+      newSections[index].images = value;
+    } else {
+      newSections[index][field] = value;
+    }
+    setSections(newSections);
   };
 
   const removeSection = (index: number) => {
-    setSections(prev => prev.filter((_, i) => i !== index));
-    if (currentSection >= sections.length - 1) {
-      setCurrentSection(Math.max(0, sections.length - 2));
-    }
+    setSections(sections.filter((_, i) => i !== index));
   };
 
   const handleImageUpload = async (file: File, sectionIndex: number) => {
     try {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('sectionIndex', sectionIndex.toString());
 
       const response = await fetchWithAuth('/api/upload', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json();
+        const newImage = {
+          url: data.url,
+          altText: file.name
+        };
+        
+        const newSections = [...sections];
+        newSections[sectionIndex].images.push(newImage);
+        setSections(newSections);
+        
+        toast({
+          title: "Image uploaded successfully",
+          description: "Your image has been added to the section.",
+        });
+      } else {
         throw new Error('Upload failed');
       }
-
-      const data = await response.json();
-      
-      updateSection(sectionIndex, 'images', [
-        ...sections[sectionIndex].images,
-        { url: data.url, altText: file.name }
-      ]);
-
-      toast({
-        title: "Image uploaded",
-        description: "Image added to section",
-      });
     } catch (error) {
       toast({
         title: "Upload failed",
-        description: "Failed to upload image",
+        description: "There was an error uploading your image. Please try again.",
         variant: "destructive",
       });
     }
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to save your trade review.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!ticker || !tradeDate || sections.length === 0) {
       toast({
         title: "Missing information",
-        description: "Please fill in all required fields and add at least one section",
+        description: "Please fill in all required fields and add at least one section.",
         variant: "destructive",
       });
       return;
     }
 
     setIsSubmitting(true);
+
     try {
       const response = await fetchWithAuth('/api/trade-reviews', {
         method: 'POST',
@@ -111,26 +115,25 @@ export default function NewTradeReviewPage() {
           ticker,
           tradeDate,
           positionType,
-          sections
+          sections,
         }),
       });
 
-      const result = await response.json();
-
-      if (result.success) {
+      if (response.ok) {
+        const data = await response.json();
         toast({
-          title: "Trade review created",
-          description: "Your trade review has been saved successfully",
+          title: "Trade review saved",
+          description: "Your trade review has been saved successfully.",
         });
-        // Redirect to the review page
-        window.location.href = `/trade-reviews/${result.data.id}`;
+        // Redirect to the saved review
+        window.location.href = `/trade-reviews/${data.id}`;
       } else {
-        throw new Error(result.error);
+        throw new Error('Failed to save trade review');
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create trade review",
+        title: "Save failed",
+        description: "There was an error saving your trade review. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -141,28 +144,23 @@ export default function NewTradeReviewPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href="/trade-reviews">
-                <ArrowLeft className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
+              <Link href="/trade-reviews" className="flex items-center space-x-2 text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Reviews</span>
               </Link>
-              <div>
-                <h1 className="text-xl font-semibold">New Trade Review</h1>
-                <p className="text-sm text-muted-foreground">Analyze your trade with structured sections</p>
-              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2 disabled:opacity-50"
-              >
-                <Save className="h-4 w-4" />
-                <span>{isSubmitting ? 'Saving...' : 'Save Review'}</span>
-              </button>
-            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
+            >
+              <Save className="h-4 w-4" />
+              <span>{isSubmitting ? 'Saving...' : 'Save Review'}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -272,27 +270,33 @@ export default function NewTradeReviewPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-2">
-                            Images ({section.images.length}/3)
+                            Images ({section.images.length}/4)
                           </label>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             {section.images.map((image, imgIndex) => (
-                              <div key={imgIndex} className="relative">
+                              <div key={imgIndex} className="relative group">
                                 <img
                                   src={image.url}
                                   alt={image.altText}
-                                  className="w-full h-20 object-cover rounded border"
+                                  className="w-full h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                  onClick={() => setEnlargedImage(image)}
                                 />
+                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200 rounded flex items-center justify-center">
+                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-white text-xs font-medium">
+                                    Click to enlarge
+                                  </div>
+                                </div>
                                 <button
                                   onClick={() => updateSection(index, 'images', 
                                     section.images.filter((_, i) => i !== imgIndex)
                                   )}
-                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                                  className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                                 >
                                   <X className="h-3 w-3" />
                                 </button>
                               </div>
                             ))}
-                            {section.images.length < 3 && (
+                            {section.images.length < 4 && (
                               <label className="w-full h-20 border-2 border-dashed border-muted-foreground/25 rounded flex items-center justify-center cursor-pointer hover:border-blue-300 transition-colors">
                                 <input
                                   type="file"
@@ -356,6 +360,25 @@ export default function NewTradeReviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Image Enlargement Modal */}
+      {enlargedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-4xl max-h-[90vh] bg-white rounded-lg overflow-hidden">
+            <button
+              onClick={() => setEnlargedImage(null)}
+              className="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-75 transition-colors z-10"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <img
+              src={enlargedImage.url}
+              alt={enlargedImage.altText}
+              className="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
