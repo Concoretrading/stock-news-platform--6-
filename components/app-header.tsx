@@ -58,8 +58,8 @@ export function AppHeader() {
                 aria-label="Split Screen"
               >
                 <img
-                  src="/images/concoretwitter.png"
-                  alt="ConcoreTwitter Split Screen"
+                  src="/images/logotwitter.png"
+                  alt="Logotwitter Split Screen"
                   width={40}
                   height={40}
                   style={{ 
