@@ -58,12 +58,11 @@ export function AppHeader() {
                 aria-label="Split Screen"
               >
                 <Image
-                  src="/images/concore-logo.png"
-                  alt="ConcoreNews Split Screen"
+                  src="/images/concoretwitter.png"
+                  alt="ConcoreTwitter Split Screen"
                   width={32}
                   height={32}
-                  className="rounded-full bg-white/10 p-1"
-                  style={{ objectFit: 'contain', display: 'block' }}
+                  style={{ background: 'transparent', objectFit: 'contain', display: 'block' }}
                 />
               </Button>
             </Link>
