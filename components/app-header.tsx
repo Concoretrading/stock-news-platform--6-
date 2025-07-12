@@ -23,55 +23,32 @@ export function AppHeader() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
-              <div className="flex items-center space-x-2 mt-2">
-                <TrendingUp className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-slate-400">Track • Analyze • Succeed</span>
+              <div className="flex items-center space-x-8 mt-2 justify-center">
+                {/* Calendar */}
+                <Link href="/calendar" className="flex flex-col items-center group" passHref legacyBehavior>
+                  <span>
+                    <CalendarIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-700 transition-colors" />
+                  </span>
+                  <span className="mt-1 text-sm font-medium group-hover:text-blue-700 transition-colors">Calendar</span>
+                </Link>
+                {/* Split Mode */}
+                <Link href="/split-screen" className="flex flex-col items-center group" passHref legacyBehavior>
+                  <span>
+                    <img src="/images/logotwitter.png" alt="Split Mode" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
+                  </span>
+                  <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors">Split Mode</span>
+                </Link>
+                {/* Journal */}
+                <Link href="/trade-reviews" className="flex flex-col items-center group" passHref legacyBehavior>
+                  <span>
+                    <img src="/images/journal.png" alt="Journal" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
+                  </span>
+                  <span className="mt-1 text-sm font-medium group-hover:text-green-400 transition-colors">Journal</span>
+                </Link>
               </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/calendar" passHref legacyBehavior>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-blue-500 hover:bg-blue-900/20 hover:text-blue-400 focus-visible:ring-blue-500"
-                aria-label="Calendar"
-              >
-                <CalendarIcon className="h-[1.5rem] w-[1.5rem]" />
-              </Button>
-            </Link>
-            <Link href="/trade-reviews" passHref legacyBehavior>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-green-500 hover:bg-green-900/20 hover:text-green-400 focus-visible:ring-green-500"
-                aria-label="Trade Reviews"
-              >
-                <FileText className="h-[1.5rem] w-[1.5rem]" />
-              </Button>
-            </Link>
-            <Link href="/split-screen" passHref legacyBehavior>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-gray-300 hover:bg-gray-800 hover:text-white focus-visible:ring-gray-400 p-0 flex items-center justify-center"
-                aria-label="Split Screen"
-              >
-                <img
-                  src="/images/logotwitter.png"
-                  alt="Logotwitter Split Screen"
-                  width={40}
-                  height={40}
-                  style={{ 
-                    background: 'transparent', 
-                    objectFit: 'contain', 
-                    display: 'block',
-                    maxWidth: '40px',
-                    maxHeight: '40px'
-                  }}
-                />
-              </Button>
-            </Link>
             <ThemeToggle />
             <Button
               variant="outline"
