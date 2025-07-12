@@ -561,22 +561,21 @@ export default function SplitScreenPage() {
                 <div className="text-2xl md:text-3xl font-bold text-center">ConcoreNews + X Integration</div>
               </div>
               
-              <div className="flex-1 flex items-center justify-center">
-                <div className="w-full max-w-md transform scale-125">
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="w-full max-w-md transform scale-125 mb-8">
                   <XAuth />
                 </div>
-              </div>
-
-              <div className="mt-8">
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <h3 className="font-semibold mb-2">Workflow Integration</h3>
-                  <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                    <li>seamless data flow between x and concorenews</li>
-                    <li>drag & drop news in the drop zone</li>
-                    <li>copy and paste article processing</li>
-                    <li>automated news processing</li>
-                    <li>content categorization</li>
-                  </ul>
+                <div className="w-full flex flex-col items-center">
+                  <div className="p-4 bg-muted/30 rounded-lg w-full max-w-md flex flex-col items-center">
+                    <h3 className="font-semibold mb-4 text-center">Workflow Integration</h3>
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside text-center">
+                      <li>seamless data flow between x and concorenews</li>
+                      <li>drag & drop news in the drop zone</li>
+                      <li>copy and paste article processing</li>
+                      <li>automated news processing</li>
+                      <li>content categorization</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               
