@@ -46,36 +46,30 @@ export function AppHeader() {
             <div className="flex items-center space-x-4">
               {/* Calendar */}
               <Link href="/calendar" className="flex flex-col items-center group">
-                <div>
-                  <CalendarIcon className="h-5 w-5 text-blue-500 group-hover:text-blue-700 transition-colors" />
-                  <span className="mt-1 text-xs font-medium group-hover:text-blue-700 transition-colors block">Calendar</span>
-                </div>
+                <CalendarIcon className="h-5 w-5 text-blue-500 group-hover:text-blue-700 transition-colors mx-auto" />
+                <span className="mt-1 text-xs font-medium group-hover:text-blue-700 transition-colors text-center">Calendar</span>
               </Link>
               
               {/* Split Mode with X + Plus + ConcoreNews logo */}
               <Link href="/split-screen" className="flex flex-col items-center group">
-                <div>
-                  <div className="flex items-center space-x-1">
-                    <X className="h-4 w-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
-                    <Plus className="h-3 w-3 text-gray-500 group-hover:text-gray-300 transition-colors" />
-                    <Image
-                      src="/images/concore-logo.png"
-                      alt="ConcoreNews"
-                      width={16}
-                      height={16}
-                      className="rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
-                    />
-                  </div>
-                  <span className="mt-1 text-xs font-medium group-hover:text-gray-200 transition-colors block">Split Mode</span>
+                <div className="flex items-center justify-center space-x-1">
+                  <X className="h-4 w-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                  <Plus className="h-3 w-3 text-gray-500 group-hover:text-gray-300 transition-colors" />
+                  <Image
+                    src="/images/concore-logo.png"
+                    alt="ConcoreNews"
+                    width={16}
+                    height={16}
+                    className="rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
+                  />
                 </div>
+                <span className="mt-1 text-xs font-medium group-hover:text-gray-200 transition-colors text-center">Split Mode</span>
               </Link>
               
               {/* Journal with BookOpen icon in tan color */}
               <Link href="/trade-reviews" className="flex flex-col items-center group">
-                <div>
-                  <BookOpen className="h-5 w-5 text-amber-600 group-hover:text-amber-500 transition-colors" />
-                  <span className="mt-1 text-xs font-medium group-hover:text-amber-500 transition-colors block">Journal</span>
-                </div>
+                <BookOpen className="h-5 w-5 text-amber-600 group-hover:text-amber-500 transition-colors mx-auto" />
+                <span className="mt-1 text-xs font-medium group-hover:text-amber-500 transition-colors text-center">Journal</span>
               </Link>
             </div>
           </div>
