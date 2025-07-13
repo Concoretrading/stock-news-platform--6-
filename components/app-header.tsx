@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { TrendingUp, LogOut, Calendar as CalendarIcon, Twitter, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -34,7 +35,7 @@ export function AppHeader() {
                 {/* Split Mode */}
                 <Link href="/split-screen" className="flex flex-col items-center group" passHref legacyBehavior>
                   <span>
-                    <img src="/images/logotwitter.png" alt="Split Mode" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
+                    <Twitter className="h-8 w-8 text-blue-400 group-hover:text-blue-600 transition-colors" />
                   </span>
                   <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors">Split Mode</span>
                 </Link>
