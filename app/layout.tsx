@@ -40,7 +40,9 @@ export default function RootLayout({
             <div>
               {children}
               <Toaster />
-              <ScreenshotButton />
+              <button className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center border-2 border-blue-500 p-0 touch-manipulation" title="Upload Screenshot for AI Analysis">
+                <span style={{fontSize: '2rem', lineHeight: 1}}>📷</span>
+              </button>
               <VersionDisplay />
             </div>
           </AuthProvider>
