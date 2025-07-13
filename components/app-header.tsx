@@ -69,7 +69,11 @@ export function AppHeader() {
               </Link>
               
               {/* Journal with BookOpen icon in tan color */}
-              <Link href="/trade-reviews" className="flex flex-col items-center group">
+              <Link 
+                href="/trade-reviews" 
+                className="flex flex-col items-center group"
+                onClick={() => console.log('🔧 Journal/Trade Reviews button clicked')}
+              >
                 <div className="h-5 flex items-center justify-center">
                   <BookOpen className="h-5 w-5 text-amber-600 group-hover:text-amber-500 transition-colors" />
                 </div>

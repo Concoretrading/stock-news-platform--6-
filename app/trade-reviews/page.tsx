@@ -45,6 +45,9 @@ export default function TradeReviewsPage() {
   useEffect(() => {
     if (user) {
       loadTradeReviews();
+    } else {
+      // If no user, still set loading to false to show the page
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -66,6 +69,8 @@ export default function TradeReviewsPage() {
   }, [searchQuery, tradeReviews]);
 
   const loadTradeReviews = async () => {
+    if (!user) return;
+    
     try {
       setIsLoading(true);
       const response = await fetchWithAuth('/api/trade-reviews');
