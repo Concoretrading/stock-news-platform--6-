@@ -1,9 +1,6 @@
-import React from "react";
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { AuthProvider } from "@/components/auth-provider"
-import ScreenshotButton from "@/components/ScreenshotButton"
+import React, { useState, useEffect, useRef } from "react"
 import { NewsPasteButton } from "@/components/news-paste-button"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/components/auth-provider"
