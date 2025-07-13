@@ -1,4 +1,5 @@
 "use client";
+import React from "react"
 import { useState } from "react"
 import { Camera } from "lucide-react"
 import { Button } from "@/components/ui/button"
