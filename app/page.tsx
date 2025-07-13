@@ -742,8 +742,10 @@ export default function HomePage() {
                       <Dialog open={showPastInstructions} onOpenChange={setShowPastInstructions}>
                         <DialogTrigger asChild>
                           <Button variant="outline" className="w-full border-amber-300 text-amber-700 hover:bg-amber-50 mt-auto">
-                            <Upload className="h-4 w-4 mr-2" />
-                            Try It
+                            <span className="flex items-center">
+                              <Upload className="h-4 w-4 mr-2" />
+                              Try It
+                            </span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">

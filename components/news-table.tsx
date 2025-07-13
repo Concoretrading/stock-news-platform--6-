@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState, useEffect } from "react"
 import { format, startOfMonth, endOfMonth, isWithinInterval } from "date-fns"
 import {
@@ -552,40 +553,42 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
                         isCurrentMonth ? "bg-slate-800 border border-slate-700" : ""
                       }`}
                     >
-                      <div className="flex items-center gap-2">
-                        {isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
-                        <span className="font-medium">{monthName}</span>
-                        {isCurrentMonth && (
-                          <Badge variant="secondary" className="text-xs">
-                            Current
-                          </Badge>
-                        )}
-                        {isCustomMonth && (
-                          <Badge variant="outline" className="text-xs">
-                            Custom
-                          </Badge>
-                        )}
-                        {isDefaultMonth && !isCustomMonth && (
-                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
-                            Default
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {monthCatalysts.length} catalyst{monthCatalysts.length !== 1 ? "s" : ""}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deleteMonth(month)
-                          }}
-                          className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
-                        >
-                          <TrashIcon className="h-3 w-3" />
-                        </Button>
+                      <div className="w-full flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
+                          <span className="font-medium">{monthName}</span>
+                          {isCurrentMonth && (
+                            <Badge variant="secondary" className="text-xs">
+                              Current
+                            </Badge>
+                          )}
+                          {isCustomMonth && (
+                            <Badge variant="outline" className="text-xs">
+                              Custom
+                            </Badge>
+                          )}
+                          {isDefaultMonth && !isCustomMonth && (
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                              Default
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            {monthCatalysts.length} catalyst{monthCatalysts.length !== 1 ? "s" : ""}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteMonth(month)
+                            }}
+                            className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                          >
+                            <TrashIcon className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </Button>
                   </CollapsibleTrigger>
@@ -604,17 +607,19 @@ export function NewsTable({ ticker, searchQuery }: NewsTableProps) {
                         <Collapsible key={weekKey} open={isWeekOpen} onOpenChange={() => toggleWeek(weekKey)}>
                           <CollapsibleTrigger asChild>
                             <Button variant="ghost" className="w-full justify-between p-2 h-auto text-sm">
-                              <div className="flex items-center gap-2">
-                                {isWeekOpen ? (
-                                  <ChevronDownIcon className="h-3 w-3" />
-                                ) : (
-                                  <ChevronRightIcon className="h-3 w-3" />
-                                )}
-                                <span>{weekLabel}</span>
+                              <div className="w-full flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  {isWeekOpen ? (
+                                    <ChevronDownIcon className="h-3 w-3" />
+                                  ) : (
+                                    <ChevronRightIcon className="h-3 w-3" />
+                                  )}
+                                  <span>{weekLabel}</span>
+                                </div>
+                                <span className="text-xs text-muted-foreground">
+                                  {weekCatalysts.length} catalyst{weekCatalysts.length !== 1 ? "s" : ""}
+                                </span>
                               </div>
-                              <span className="text-xs text-muted-foreground">
-                                {weekCatalysts.length} catalyst{weekCatalysts.length !== 1 ? "s" : ""}
-                              </span>
                             </Button>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="pl-6 pt-2 space-y-2">

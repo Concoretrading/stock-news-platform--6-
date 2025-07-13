@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -574,35 +575,37 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                       variant="ghost"
                       className={`w-full justify-between p-3 h-auto ${isCurrentMonth ? "bg-slate-800 border border-slate-700" : ""}`}
                     >
-                      <div className="flex items-center gap-2">
-                        {isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
-                        <span className="font-medium">{monthName}</span>
-                        {isCurrentMonth && (
-                          <Badge variant="secondary" className="text-xs">
-                            Current
-                          </Badge>
-                        )}
-                        {isCustomMonth && (
-                          <Badge variant="outline" className="text-xs">
-                            Custom
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {monthResult.catalysts.length} catalyst{monthResult.catalysts.length !== 1 ? "s" : ""}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            deleteMonth(month)
-                          }}
-                          className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
-                        >
-                          <TrashIcon className="h-3 w-3" />
-                        </Button>
+                      <div className="w-full flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
+                          <span className="font-medium">{monthName}</span>
+                          {isCurrentMonth && (
+                            <Badge variant="secondary" className="text-xs">
+                              Current
+                            </Badge>
+                          )}
+                          {isCustomMonth && (
+                            <Badge variant="outline" className="text-xs">
+                              Custom
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground">
+                            {monthResult.catalysts.length} catalyst{monthResult.catalysts.length !== 1 ? "s" : ""}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              deleteMonth(month)
+                            }}
+                            className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                          >
+                            <TrashIcon className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </Button>
                   </CollapsibleTrigger>
