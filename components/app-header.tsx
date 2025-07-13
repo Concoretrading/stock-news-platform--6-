@@ -2,7 +2,7 @@
 
 import React from "react";
 import { ThemeToggle } from "@/components/theme-toggle"
-import { TrendingUp, LogOut, Calendar as CalendarIcon, Plus, BookOpen } from "lucide-react"
+import { TrendingUp, LogOut, Calendar as CalendarIcon, X, BookOpen, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
@@ -34,7 +34,7 @@ export function AppHeader() {
           <div className="flex flex-col items-end space-y-3">
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
                 <div className="flex items-center space-x-2">
                   <LogOut className="h-4 w-4" />
                   <span>Log Out</span>
@@ -52,17 +52,18 @@ export function AppHeader() {
                 </div>
               </Link>
               
-              {/* Split Mode with + and logo */}
+              {/* Split Mode with X + Plus + ConcoreNews logo */}
               <Link href="/split-screen" className="flex flex-col items-center group">
                 <div>
-                  <div className="relative h-5 w-5 flex items-center justify-center">
-                    <Plus className="h-3 w-3 text-gray-400 group-hover:text-gray-200 transition-colors absolute" />
+                  <div className="flex items-center space-x-1">
+                    <X className="h-4 w-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                    <Plus className="h-3 w-3 text-gray-500 group-hover:text-gray-300 transition-colors" />
                     <Image
                       src="/images/concore-logo.png"
                       alt="ConcoreNews"
-                      width={12}
-                      height={12}
-                      className="rounded-full opacity-60 group-hover:opacity-80 transition-opacity absolute top-0 right-0"
+                      width={16}
+                      height={16}
+                      className="rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
                     />
                   </div>
                   <span className="mt-1 text-xs font-medium group-hover:text-gray-200 transition-colors block">Split Mode</span>
