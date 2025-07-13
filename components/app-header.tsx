@@ -43,7 +43,7 @@ export function AppHeader() {
             </div>
             
             {/* Navigation icons under the logout button */}
-            <div className="flex items-baseline space-x-4">
+            <div className="flex items-center space-x-4">
               {/* Calendar */}
               <Link href="/calendar" className="flex flex-col items-center group">
                 <div className="h-5 flex items-center justify-center">
