@@ -24,29 +24,6 @@ export function AppHeader() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
-              <div className="flex items-center space-x-8 mt-2 justify-center">
-                {/* Calendar */}
-                <Link href="/calendar" className="flex flex-col items-center group">
-                  <div>
-                    <CalendarIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-700 transition-colors" />
-                    <span className="mt-1 text-sm font-medium group-hover:text-blue-700 transition-colors block text-center">Calendar</span>
-                  </div>
-                </Link>
-                {/* Split Mode */}
-                <Link href="/split-screen" className="flex flex-col items-center group">
-                  <div>
-                    <Twitter className="h-8 w-8 text-blue-400 group-hover:text-blue-600 transition-colors" />
-                    <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors block text-center">Split Mode</span>
-                  </div>
-                </Link>
-                {/* Journal */}
-                <Link href="/trade-reviews" className="flex flex-col items-center group">
-                  <div>
-                    <img src="/images/journal.png" alt="Journal" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
-                    <span className="mt-1 text-sm font-medium group-hover:text-green-400 transition-colors block text-center">Journal</span>
-                  </div>
-                </Link>
-              </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -65,6 +42,31 @@ export function AppHeader() {
               Log Out
             </Button>
           </div>
+        </div>
+        
+        {/* Navigation Icons - Centered under the welcome text */}
+        <div className="flex items-center justify-center space-x-8 mt-4">
+          {/* Calendar */}
+          <Link href="/calendar" className="flex flex-col items-center group">
+            <div>
+              <CalendarIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-700 transition-colors" />
+              <span className="mt-1 text-sm font-medium group-hover:text-blue-700 transition-colors block text-center">Calendar</span>
+            </div>
+          </Link>
+          {/* Split Mode */}
+          <Link href="/split-screen" className="flex flex-col items-center group">
+            <div>
+              <Twitter className="h-8 w-8 text-blue-400 group-hover:text-blue-600 transition-colors" />
+              <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors block text-center">Split Mode</span>
+            </div>
+          </Link>
+          {/* Journal */}
+          <Link href="/trade-reviews" className="flex flex-col items-center group">
+            <div>
+              <img src="/images/journal.png" alt="Journal" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
+              <span className="mt-1 text-sm font-medium group-hover:text-green-400 transition-colors block text-center">Journal</span>
+            </div>
+          </Link>
         </div>
       </div>
     </header>
