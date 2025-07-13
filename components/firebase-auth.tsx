@@ -1,5 +1,6 @@
-import React from "react";
 'use client';
+
+import React from "react";
 
 import { User } from 'firebase/auth';
 import { useState, useEffect } from 'react';

@@ -1,5 +1,6 @@
-import React from "react";
 "use client"
+
+import React from "react";
 
 import { Bell } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"

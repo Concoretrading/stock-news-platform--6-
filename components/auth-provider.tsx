@@ -1,5 +1,6 @@
-import React from "react";
 'use client';
+
+import React from "react";
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User as FirebaseUser } from "firebase/auth";
