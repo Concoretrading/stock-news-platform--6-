@@ -16,7 +16,7 @@ export function AppHeader() {
             <Link href="/">
               <Image
                 src="/images/concore-logo.png"
-                alt="ConcoreTrading"
+                alt="ConcoreNews"
                 width={64}
                 height={64}
                 className="rounded-full bg-white/10 p-2 cursor-pointer"
@@ -24,47 +24,46 @@ export function AppHeader() {
             </Link>
             <div>
               <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
+              <div className="flex items-center space-x-2 mt-2">
+                <TrendingUp className="h-4 w-4 text-blue-400" />
+                <span className="text-sm text-slate-400">Track • Analyze • Succeed</span>
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <Button
-              variant="outline"
-              className="text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
-              onClick={async () => {
-                const { getAuth, signOut } = await import("firebase/auth");
-                const auth = getAuth();
-                await signOut(auth);
-                window.location.reload();
-              }}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Log Out
+            <Button variant="outline" size="sm">
+              <div className="flex items-center space-x-2">
+                <LogOut className="h-4 w-4" />
+                <span>Log Out</span>
+              </div>
             </Button>
           </div>
         </div>
         
-        {/* Navigation Icons - Centered under the welcome text */}
+        {/* Navigation icons centered under welcome text */}
         <div className="flex items-center justify-center space-x-8 mt-4">
           {/* Calendar */}
           <Link href="/calendar" className="flex flex-col items-center group">
             <div>
               <CalendarIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-700 transition-colors" />
-              <span className="mt-1 text-sm font-medium group-hover:text-blue-700 transition-colors block text-center">Calendar</span>
+              <span className="mt-1 text-sm font-medium group-hover:text-blue-700 transition-colors block">Calendar</span>
             </div>
           </Link>
+          
           {/* Split Mode */}
           <Link href="/split-screen" className="flex flex-col items-center group">
             <div>
-              <Twitter className="h-8 w-8 text-blue-400 group-hover:text-blue-600 transition-colors" />
-              <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors block text-center">Split Mode</span>
+              <Twitter className="h-8 w-8 text-gray-400 group-hover:text-gray-200 transition-colors" />
+              <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors block">Split Mode</span>
             </div>
           </Link>
+          
           {/* Journal */}
           <Link href="/trade-reviews" className="flex flex-col items-center group">
             <div>
-              <img src="/images/journal.png" alt="Journal" width={32} height={32} className="group-hover:opacity-80 transition-opacity" />
-              <span className="mt-1 text-sm font-medium group-hover:text-green-400 transition-colors block text-center">Journal</span>
+              <FileText className="h-8 w-8 text-green-500 group-hover:text-green-700 transition-colors" />
+              <span className="mt-1 text-sm font-medium group-hover:text-green-700 transition-colors block">Journal</span>
             </div>
           </Link>
         </div>
