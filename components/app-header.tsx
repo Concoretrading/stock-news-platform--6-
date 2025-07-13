@@ -30,42 +30,45 @@ export function AppHeader() {
               </div>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            <Button variant="outline" size="sm">
-              <div className="flex items-center space-x-2">
-                <LogOut className="h-4 w-4" />
-                <span>Log Out</span>
-              </div>
-            </Button>
+          
+          <div className="flex flex-col items-end space-y-3">
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <Button variant="outline" size="sm">
+                <div className="flex items-center space-x-2">
+                  <LogOut className="h-4 w-4" />
+                  <span>Log Out</span>
+                </div>
+              </Button>
+            </div>
+            
+            {/* Navigation icons under the logout button */}
+            <div className="flex items-center space-x-4">
+              {/* Calendar */}
+              <Link href="/calendar" className="flex flex-col items-center group">
+                <div>
+                  <CalendarIcon className="h-5 w-5 text-blue-500 group-hover:text-blue-700 transition-colors" />
+                  <span className="mt-1 text-xs font-medium group-hover:text-blue-700 transition-colors block">Calendar</span>
+                </div>
+              </Link>
+              
+              {/* Split Mode */}
+              <Link href="/split-screen" className="flex flex-col items-center group">
+                <div>
+                  <Twitter className="h-5 w-5 text-gray-400 group-hover:text-gray-200 transition-colors" />
+                  <span className="mt-1 text-xs font-medium group-hover:text-gray-200 transition-colors block">Split Mode</span>
+                </div>
+              </Link>
+              
+              {/* Journal */}
+              <Link href="/trade-reviews" className="flex flex-col items-center group">
+                <div>
+                  <FileText className="h-5 w-5 text-green-500 group-hover:text-green-700 transition-colors" />
+                  <span className="mt-1 text-xs font-medium group-hover:text-green-700 transition-colors block">Journal</span>
+                </div>
+              </Link>
+            </div>
           </div>
-        </div>
-        
-        {/* Navigation icons centered under welcome text */}
-        <div className="flex items-center justify-center space-x-8 mt-4">
-          {/* Calendar */}
-          <Link href="/calendar" className="flex flex-col items-center group">
-            <div>
-              <CalendarIcon className="h-8 w-8 text-blue-500 group-hover:text-blue-700 transition-colors" />
-              <span className="mt-1 text-sm font-medium group-hover:text-blue-700 transition-colors block">Calendar</span>
-            </div>
-          </Link>
-          
-          {/* Split Mode */}
-          <Link href="/split-screen" className="flex flex-col items-center group">
-            <div>
-              <Twitter className="h-8 w-8 text-gray-400 group-hover:text-gray-200 transition-colors" />
-              <span className="mt-1 text-sm font-medium group-hover:text-gray-200 transition-colors block">Split Mode</span>
-            </div>
-          </Link>
-          
-          {/* Journal */}
-          <Link href="/trade-reviews" className="flex flex-col items-center group">
-            <div>
-              <FileText className="h-8 w-8 text-green-500 group-hover:text-green-700 transition-colors" />
-              <span className="mt-1 text-sm font-medium group-hover:text-green-700 transition-colors block">Journal</span>
-            </div>
-          </Link>
         </div>
       </div>
     </header>
