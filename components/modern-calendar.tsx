@@ -433,7 +433,6 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
         variant={viewMode === 'week' ? 'default' : 'outline'}
         onClick={() => {
           setViewMode('week');
-          setSelectedDate(new Date());
           setWeekStartDate(startOfWeek(new Date()));
         }}
       >Week</Button>

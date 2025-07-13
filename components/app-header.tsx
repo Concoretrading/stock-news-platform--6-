@@ -43,16 +43,18 @@ export function AppHeader() {
             </div>
             
             {/* Navigation icons under the logout button */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-baseline space-x-4">
               {/* Calendar */}
               <Link href="/calendar" className="flex flex-col items-center group">
-                <CalendarIcon className="h-5 w-5 text-blue-500 group-hover:text-blue-700 transition-colors mx-auto" />
+                <div className="h-5 flex items-center justify-center">
+                  <CalendarIcon className="h-5 w-5 text-blue-500 group-hover:text-blue-700 transition-colors" />
+                </div>
                 <span className="mt-1 text-xs font-medium group-hover:text-blue-700 transition-colors text-center">Calendar</span>
               </Link>
               
               {/* Split Mode with X + Plus + ConcoreNews logo */}
               <Link href="/split-screen" className="flex flex-col items-center group">
-                <div className="flex items-center justify-center space-x-1">
+                <div className="h-5 flex items-center justify-center space-x-1">
                   <X className="h-4 w-4 text-gray-400 group-hover:text-gray-200 transition-colors" />
                   <Plus className="h-3 w-3 text-gray-500 group-hover:text-gray-300 transition-colors" />
                   <Image
@@ -68,7 +70,9 @@ export function AppHeader() {
               
               {/* Journal with BookOpen icon in tan color */}
               <Link href="/trade-reviews" className="flex flex-col items-center group">
-                <BookOpen className="h-5 w-5 text-amber-600 group-hover:text-amber-500 transition-colors mx-auto" />
+                <div className="h-5 flex items-center justify-center">
+                  <BookOpen className="h-5 w-5 text-amber-600 group-hover:text-amber-500 transition-colors" />
+                </div>
                 <span className="mt-1 text-xs font-medium group-hover:text-amber-500 transition-colors text-center">Journal</span>
               </Link>
             </div>
