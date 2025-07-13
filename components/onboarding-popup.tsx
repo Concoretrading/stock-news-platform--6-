@@ -16,7 +16,7 @@ export function OnboardingPopup({ isVisible, onClose }: OnboardingPopupProps) {
   if (!isVisible) return null
 
   return (
-    <div className="fixed top-4 left-4 right-4 sm:top-20 sm:right-6 sm:left-auto z-50 sm:w-80">
+    <div className="fixed top-20 right-24 z-50 w-80">
       <Card className="border-blue-200 bg-white dark:bg-gray-800 shadow-lg">
         <CardContent className="p-4 sm:p-6">
           <div className="flex items-start justify-between mb-4">
