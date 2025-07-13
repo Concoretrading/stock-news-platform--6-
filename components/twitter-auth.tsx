@@ -1,12 +1,12 @@
-'use client';
+"use client"
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Twitter, LogOut, User, CheckCircle, AlertCircle } from 'lucide-react';
-import { useAuth } from './auth-provider';
-import Image from "next/image";
+import React from "react";
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { useAuth } from "@/components/auth-provider"
+import Image from "next/image"
 
 interface XUser {
   id: string;
@@ -22,29 +22,101 @@ export function XAuth() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
+  // Check for stored Twitter user data on component mount
+  useEffect(() => {
+    const storedXUser = localStorage.getItem('xUser');
+    if (storedXUser) {
+      try {
+        setXUser(JSON.parse(storedXUser));
+      } catch (error) {
+        console.error('Error parsing stored X user data:', error);
+        localStorage.removeItem('xUser');
+      }
+    }
+  }, []);
+
+  // Handle OAuth callback from Twitter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    const error = urlParams.get('error');
+
+    if (error) {
+      setError('Twitter authentication was denied or failed');
+      return;
+    }
+
+    if (code && state) {
+      handleOAuthCallback(code, state);
+    }
+  }, []);
+
+  const handleOAuthCallback = async (code: string, state: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/twitter/callback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code, state }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const userData: XUser = {
+          id: data.user.id,
+          username: data.user.username,
+          displayName: data.user.name,
+          profileImageUrl: data.user.profile_image_url || '/placeholder-user.jpg',
+          verified: data.user.verified || false
+        };
+        
+        setXUser(userData);
+        localStorage.setItem('xUser', JSON.stringify(userData));
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        throw new Error(data.error || 'Authentication failed');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authentication failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleXLogin = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Simulate X OAuth login
-      // In a real implementation, this would redirect to X OAuth
-      console.log('🔄 Initiating X OAuth login...');
-      
-      // For demo purposes, simulate a successful login
-      setTimeout(() => {
-        setXUser({
-          id: 'x_user_123',
-          username: 'trader_pro',
-          displayName: 'Trader Pro',
-          profileImageUrl: '/placeholder-user.jpg',
-          verified: true
-        });
-        setIsLoading(false);
-      }, 2000);
-      
+      // Get Twitter OAuth URL from our backend
+      const response = await fetch('/api/twitter/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          redirectUrl: window.location.origin + window.location.pathname
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Redirect to Twitter OAuth
+        window.location.href = data.authUrl;
+      } else {
+        throw new Error(data.error || 'Failed to initiate Twitter authentication');
+      }
     } catch (err) {
-      setError('Failed to connect to X. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to connect to X. Please try again.');
       setIsLoading(false);
     }
   };
@@ -52,7 +124,49 @@ export function XAuth() {
   const handleXLogout = () => {
     setXUser(null);
     setError(null);
+    localStorage.removeItem('xUser');
   };
+
+  if (xUser) {
+    return (
+      <Card className="w-full max-w-md mx-auto mt-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Image src="/images/x-logo.svg" alt="X" width={20} height={20} />
+            Connected to X
+          </CardTitle>
+          <CardDescription>
+            Successfully connected as @{xUser.username}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-3 mb-4">
+            <Image 
+              src={xUser.profileImageUrl} 
+              alt={xUser.displayName}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+            <div>
+              <p className="font-semibold flex items-center gap-1">
+                {xUser.displayName}
+                {xUser.verified && <span className="text-blue-500">✓</span>}
+              </p>
+              <p className="text-sm text-muted-foreground">@{xUser.username}</p>
+            </div>
+          </div>
+          <Button 
+            onClick={handleXLogout} 
+            variant="outline" 
+            className="w-full"
+          >
+            Disconnect X Account
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-md mx-auto mt-8">
@@ -66,14 +180,23 @@ export function XAuth() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* X sign-in button and logic remain unchanged */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+        
         {isLoading ? (
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            Connecting to X...
+          <div className="flex items-center justify-center gap-2 py-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+            <span>Connecting to X...</span>
           </div>
         ) : (
-          <Button onClick={handleXLogin} className="w-full bg-black text-white hover:bg-gray-900 flex items-center gap-2" aria-label="Sign in with X">
+          <Button 
+            onClick={handleXLogin} 
+            className="w-full bg-black text-white hover:bg-gray-900 flex items-center gap-2" 
+            aria-label="Sign in with X"
+          >
             <Image src="/images/x-logo.svg" alt="X" width={16} height={16} />
             Sign in with X
           </Button>
