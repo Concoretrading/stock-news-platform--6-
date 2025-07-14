@@ -98,8 +98,8 @@ export default function HomePage() {
     setMounted(true)
   }, [])
 
-  // Carousel settings - show 5 stocks per page on mobile, 8 on desktop, max 10 total
-  const stocksPerPage = isMobile ? 5 : 8
+  // Carousel settings - show 3 stocks per page on mobile, 8 on desktop, max 10 total
+  const stocksPerPage = isMobile ? 3 : 8
   const maxStocks = 10
 
   // Hide instructions after 5 seconds
@@ -735,8 +735,8 @@ export default function HomePage() {
                       </>
                     )}
                     
-                    {/* Mobile Grid - 5 stocks per page with better spacing */}
-                    <div className="grid grid-cols-5 gap-3 px-4">
+                    {/* Mobile Grid - 3 stocks per page with wider cards */}
+                    <div className="grid grid-cols-3 gap-3 px-4">
                       {visibleStocks.map((stock) => (
                         <div key={stock.symbol} className="transform transition-transform hover:scale-105">
                           <StockCard 
