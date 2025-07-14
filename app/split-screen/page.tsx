@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X, GripVertical, Bell, PlusCircle, Trash2, Edit2, Settings } from 'lucide-react';
+import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X, GripVertical, Bell, PlusCircle, Trash2, Edit2, Settings, Move } from 'lucide-react';
 import { XAuth } from '@/components/twitter-auth';
 import { StockNewsHistory } from '@/components/stock-news-history';
 import { StockNewsSearch } from '@/components/stock-news-search';
@@ -401,18 +401,84 @@ export default function SplitScreenPage() {
             </div>
           </div>
 
-          {/* Responsive Divider */}
+          {/* Enhanced Mobile Divider */}
           <div
-            className="h-2 md:h-full md:w-2 bg-border hover:bg-blue-500 cursor-row-resize md:cursor-col-resize relative group touch-none"
+            className={`relative group touch-none transition-all duration-200 ${
+              isDragging 
+                ? 'h-8 md:h-full md:w-8 bg-blue-500' 
+                : 'h-6 md:h-full md:w-4 bg-border hover:bg-blue-400'
+            } cursor-row-resize md:cursor-col-resize`}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            {/* Grab Block */}
-            <div className="absolute inset-x-0 md:inset-y-0 top-1/2 md:top-auto md:left-1/2 transform -translate-y-1/2 md:-translate-y-0 md:-translate-x-1/2 flex items-center justify-center">
-              <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium">
-                Grab
+            {/* Enhanced Mobile Drag Handle */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {/* Mobile: Horizontal drag indicator */}
+              <div className="flex md:hidden items-center justify-center w-full h-full">
+                <div className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
+                  isDragging ? 'scale-110' : 'scale-100'
+                }`}>
+                  {/* Horizontal grip lines */}
+                  <div className="flex space-x-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
+                        isDragging ? 'bg-white' : 'bg-gray-400'
+                      }`} />
+                    ))}
+                  </div>
+                  {/* Move icon */}
+                  <Move className={`h-3 w-3 transition-colors ${
+                    isDragging ? 'text-white' : 'text-gray-500'
+                  }`} />
+                  {/* Horizontal grip lines */}
+                  <div className="flex space-x-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
+                        isDragging ? 'bg-white' : 'bg-gray-400'
+                      }`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Desktop: Vertical drag indicator */}
+              <div className="hidden md:flex flex-col items-center justify-center h-full">
+                <div className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
+                  isDragging ? 'scale-110' : 'scale-100'
+                }`}>
+                  {/* Vertical grip lines */}
+                  <div className="flex flex-col space-y-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
+                        isDragging ? 'bg-white' : 'bg-gray-400'
+                      }`} />
+                    ))}
+                  </div>
+                  {/* Move icon */}
+                  <Move className={`h-3 w-3 transition-colors ${
+                    isDragging ? 'text-white' : 'text-gray-500'
+                  }`} />
+                  {/* Vertical grip lines */}
+                  <div className="flex flex-col space-y-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
+                        isDragging ? 'bg-white' : 'bg-gray-400'
+                      }`} />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
+            
+            {/* Touch hint label */}
+            {!isDragging && (
+              <div className="absolute inset-x-0 md:inset-y-0 top-full md:top-auto md:left-full transform md:-translate-y-1/2 mt-1 md:mt-0 md:ml-2 flex md:flex-col items-center justify-center pointer-events-none">
+                <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span className="md:hidden">Hold & drag up/down</span>
+                  <span className="hidden md:inline">Hold & drag left/right</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ConcoreNews Panel - Bottom on Mobile, Left on Desktop */}
