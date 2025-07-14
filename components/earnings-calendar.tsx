@@ -672,20 +672,23 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
 
     return (
       <div>
-        <div className="flex justify-between items-center mb-6">
+        {/* Mobile-responsive header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
           <Button
             variant="ghost"
             onClick={() => setViewMode('month')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-fit"
           >
             <ChevronLeft className="h-4 w-4" />
             Back to Month
           </Button>
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-lg sm:text-2xl font-bold text-center sm:text-right">
             Week of {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 4), 'MMM d, yyyy')}
           </h2>
         </div>
-        <div className="grid grid-cols-5 gap-4">
+        
+        {/* Mobile: Stack days vertically, Desktop: Grid layout */}
+        <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
           {weekDays.map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
             let dayEvents = events[dateKey] || [];
@@ -706,8 +709,10 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
               <Card 
                 key={dateKey} 
                 className={cn(
-                  "p-4 cursor-pointer transition-colors duration-200 hover:bg-accent/50",
-                  dayEvents.length > 0 && "border-primary/20"
+                  "relative cursor-pointer transition-colors duration-200 hover:bg-accent/50",
+                  dayEvents.length > 0 && "border-primary/20",
+                  // Mobile: horizontal layout, Desktop: vertical layout
+                  "p-3 sm:p-4"
                 )}
                 onClick={() => {
                   setSelectedDate(day);
@@ -719,30 +724,61 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                   });
                 }}
               >
-                <div className="text-center mb-4">
-                  <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
-                  <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
-                  {/* Event count badge */}
-                  {dayEvents.length > 0 && (
-                    <div className="absolute top-2 right-2 bg-gray-500 text-red-500 text-xs px-1.5 py-0.5 rounded font-medium">
-                      {dayEvents.length}
-                    </div>
-                  )}
+                {/* Event count badge */}
+                {dayEvents.length > 0 && (
+                  <div className="absolute top-2 right-2 bg-primary/80 text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
+                    {dayEvents.length}
+                  </div>
+                )}
+                
+                {/* Mobile Layout: Horizontal */}
+                <div className="sm:hidden flex items-center gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
+                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                  </div>
+                  <div className="flex-1">
+                    {dayEvents.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {dayEvents.slice(0, 6).map((event: EarningsEvent, i: number) => (
+                          <div key={i} className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1">
+                            <CompanyLogo event={event} size="small" />
+                            <div className="text-xs font-medium">{event.stockTicker}</div>
+                          </div>
+                        ))}
+                        {dayEvents.length > 6 && (
+                          <div className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-1">
+                            +{dayEvents.length - 6} more
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No Earnings</div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col items-center gap-2">
-                  <CalendarIcon className="h-8 w-8 text-muted-foreground" />
-                  {dayEvents.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-1">
-                      {dayEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
-                        <div key={i} className="flex flex-col items-center gap-1">
-                          <CompanyLogo event={event} size="small" />
-                          <div className="text-xs text-center">{event.stockTicker}</div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">No Earnings</div>
-                  )}
+
+                {/* Desktop Layout: Vertical (original) */}
+                <div className="hidden sm:block">
+                  <div className="text-center mb-4">
+                    <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
+                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <CalendarIcon className="h-8 w-8 text-muted-foreground" />
+                    {dayEvents.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-1">
+                        {dayEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
+                          <div key={i} className="flex flex-col items-center gap-1">
+                            <CompanyLogo event={event} size="small" />
+                            <div className="text-xs text-center">{event.stockTicker}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No Earnings</div>
+                    )}
+                  </div>
                 </div>
               </Card>
             );
