@@ -166,9 +166,9 @@ export function XAuth() {
 
   if (xUser) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="w-full max-w-lg h-[500px] max-h-[600px] flex flex-col border rounded-lg overflow-hidden bg-white dark:bg-gray-800 flex-shrink-0">
         {/* User Profile Header */}
-        <div className="p-4 border-b bg-white dark:bg-gray-800">
+        <div className="p-4 border-b flex-shrink-0">
           <div className="flex items-center gap-3 mb-3">
             <Image 
               src={xUser.profileImageUrl} 
@@ -195,17 +195,20 @@ export function XAuth() {
         </div>
 
         {/* Twitter Timeline Embed */}
-        <div className="flex-1 overflow-hidden">
-          <div className="w-full h-full">
+        <div className="flex-1 overflow-hidden relative">
+          <div className="w-full h-full absolute inset-0">
             {/* Twitter Timeline Widget */}
             <div 
-              className="w-full h-full"
+              className="w-full h-full relative"
+              style={{ minHeight: '400px', maxHeight: '600px' }}
               dangerouslySetInnerHTML={{
                 __html: `
                   <a 
                     class="twitter-timeline" 
-                    data-height="100%" 
+                    data-height="400" 
+                    data-width="100%" 
                     data-theme="light" 
+                    data-chrome="noheader nofooter noborders" 
                     href="https://twitter.com/${xUser.username}?ref_src=twsrc%5Etfw"
                   >
                     Tweets by @${xUser.username}

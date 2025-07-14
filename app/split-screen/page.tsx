@@ -360,40 +360,44 @@ export default function SplitScreenPage() {
         >
           {/* X Panel - Top on Mobile, Right on Desktop */}
           <div 
-            className="bg-background border-b md:border-b-0 md:border-l w-full md:w-auto order-first md:order-last"
+            className="bg-background border-b md:border-b-0 md:border-l w-full md:w-auto order-first md:order-last flex-none"
             style={{ 
-              height: `${leftPanelWidth}%`,
-              width: isClient && window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%'
+              height: isClient && window.innerWidth < 768 ? `${leftPanelWidth}%` : 'auto',
+              width: isClient && window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%',
+              minHeight: isClient && window.innerWidth < 768 ? '200px' : '100%',
+              minWidth: isClient && window.innerWidth >= 768 ? '300px' : 'auto'
             }}
           >
-            <div className="h-full flex flex-col items-center justify-center px-4 md:px-8">
-              {/* Twitter Sign-in Section */}
-              <div className="w-full max-w-lg">
-                <div className="mb-6 md:mb-12">
-                  <XAuth />
-                </div>
-                
-                {/* Workflow Integration Section */}
-                <div className="bg-muted/30 rounded-lg p-4 md:p-8">
-                  <h3 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6 text-center">Workflow Integration</h3>
-                  <div className="space-y-2 md:space-y-4">
-                    <div className="flex items-center space-x-2 md:space-x-3">
-                      <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs md:text-sm font-bold">1</span>
+            <div className="h-full w-full overflow-hidden">
+              <div className="h-full flex flex-col items-center justify-center px-4 md:px-8">
+                {/* Twitter Sign-in Section - Fixed Container */}
+                <div className="w-full max-w-lg flex-shrink-0">
+                  <div className="mb-6 md:mb-12">
+                    <XAuth />
+                  </div>
+                  
+                  {/* Workflow Integration Section */}
+                  <div className="bg-muted/30 rounded-lg p-4 md:p-8">
+                    <h3 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6 text-center">Workflow Integration</h3>
+                    <div className="space-y-2 md:space-y-4">
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs md:text-sm font-bold">1</span>
+                        </div>
+                        <span className="text-sm md:text-base">Connect your X account</span>
                       </div>
-                      <span className="text-sm md:text-base">Connect your X account</span>
-                    </div>
-                    <div className="flex items-center space-x-2 md:space-x-3">
-                      <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs md:text-sm font-bold">2</span>
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs md:text-sm font-bold">2</span>
+                        </div>
+                        <span className="text-sm md:text-base">Drop news content on ConcoreNews</span>
                       </div>
-                      <span className="text-sm md:text-base">Drop news content on ConcoreNews</span>
-                    </div>
-                    <div className="flex items-center space-x-2 md:space-x-3">
-                      <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs md:text-sm font-bold">3</span>
+                      <div className="flex items-center space-x-2 md:space-x-3">
+                        <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-xs md:text-sm font-bold">3</span>
+                        </div>
+                        <span className="text-sm md:text-base">Auto-categorize and track</span>
                       </div>
-                      <span className="text-sm md:text-base">Auto-categorize and track</span>
                     </div>
                   </div>
                 </div>
@@ -411,65 +415,29 @@ export default function SplitScreenPage() {
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            {/* Prominent Grab Button */}
+            {/* Simple Grab and Slide Button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              {/* Mobile: Horizontal grab button */}
-              <div className="flex md:hidden items-center justify-center w-full h-full">
-                <div className={`flex flex-col items-center justify-center space-y-1 px-4 py-2 rounded-lg transition-all duration-200 ${
-                  isDragging 
-                    ? 'bg-white/20 text-white scale-105' 
-                    : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
-                }`}>
-                  <Move className="h-4 w-4" />
-                  <span className="text-xs font-semibold whitespace-nowrap">Grab to Move</span>
-                  <div className="flex space-x-1">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-current opacity-60" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Desktop: Vertical grab button */}
-              <div className="hidden md:flex flex-col items-center justify-center h-full">
-                <div className={`flex flex-col items-center justify-center space-y-2 px-2 py-4 rounded-lg transition-all duration-200 ${
-                  isDragging 
-                    ? 'bg-white/20 text-white scale-105' 
-                    : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
-                }`}>
-                  <Move className="h-4 w-4" />
-                  <div className="flex flex-col space-y-1 items-center">
-                    <span className="text-xs font-semibold transform -rotate-90 whitespace-nowrap">Grab</span>
-                    <span className="text-xs font-semibold transform -rotate-90 whitespace-nowrap">to Move</span>
-                  </div>
-                  <div className="flex flex-col space-y-1">
-                    {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-current opacity-60" />
-                    ))}
-                  </div>
-                </div>
+              <div className={`flex items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 ${
+                isDragging 
+                  ? 'bg-white/20 text-white scale-105' 
+                  : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
+              }`}>
+                <Move className="h-4 w-4 mr-2" />
+                <span className="text-sm font-semibold whitespace-nowrap">Grab and Slide</span>
               </div>
             </div>
-            
-            {/* Enhanced Touch Instructions */}
-            {!isDragging && (
-              <div className="absolute inset-x-0 md:inset-y-0 top-full md:top-auto md:left-full transform md:-translate-y-1/2 mt-2 md:mt-0 md:ml-3 flex md:flex-col items-center justify-center pointer-events-none">
-                <div className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap font-medium opacity-0 group-hover:opacity-100 transition-opacity border border-blue-500">
-                  <span className="md:hidden">👆 Hold & drag up/down to resize</span>
-                  <span className="hidden md:inline">👈 Hold & drag left/right to resize</span>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* ConcoreNews Panel - Bottom on Mobile, Left on Desktop */}
           <div 
-            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full md:w-auto order-last md:order-first ${
+            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full md:w-auto order-last md:order-first flex-1 ${
               isDragOver ? 'bg-blue-50 border-blue-300' : ''
             }`}
             style={{ 
-              height: `${100 - leftPanelWidth}%`,
-              width: isClient && window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%'
+              height: isClient && window.innerWidth < 768 ? `${100 - leftPanelWidth}%` : 'auto',
+              width: isClient && window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%',
+              minHeight: isClient && window.innerWidth < 768 ? '200px' : '100%',
+              minWidth: isClient && window.innerWidth >= 768 ? '300px' : 'auto'
             }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
