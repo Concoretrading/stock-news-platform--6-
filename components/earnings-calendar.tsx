@@ -4,7 +4,7 @@ import React from "react";
 
 import type { MouseEvent } from 'react';
 import { useEffect, useState } from 'react';
-import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addDays, isSameWeek } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, addDays, isSameWeek, isToday, isBefore, startOfDay } from 'date-fns';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -49,6 +49,18 @@ function getMarketCap(ticker: string) {
   return MARKET_CAPS[ticker.replace(/\..*$/, '')] || 0;
 }
 
+// Mobile detection hook
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const { user, firebaseUser } = useAuth();
   const [viewMode, setViewMode] = useState<ViewMode>('months');
@@ -62,6 +74,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   const [overflowModal, setOverflowModal] = useState<{date: string, events: EarningsEvent[], dayTitle?: string} | null>(null);
   // Add state for tracking failed logo loads
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
+  const isMobile = useIsMobile();
 
   // Generate 7 months starting from current month
   const months = Array.from({ length: 7 }, (_, i) => addMonths(startOfMonth(new Date()), i));
@@ -508,7 +521,14 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
           ))}
           {days.filter(day => {
             const dayOfWeek = day.getDay();
-            return dayOfWeek >= 1 && dayOfWeek <= 5; // Monday = 1, Friday = 5
+            const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5; // Monday = 1, Friday = 5
+            
+            // On mobile, also filter out past dates
+            if (isMobile) {
+              return isWeekday && !isBefore(startOfDay(day), startOfDay(new Date()));
+            }
+            
+            return isWeekday;
           }).map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
             let dayEvents = events[dateKey] || [];
@@ -689,7 +709,16 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         
         {/* Mobile: Stack days vertically, Desktop: Grid layout */}
         <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
-          {weekDays.map((day) => {
+          {weekDays
+            .filter((day) => {
+              // On mobile, filter out past dates (only show today and future)
+              if (isMobile) {
+                return !isBefore(startOfDay(day), startOfDay(new Date()));
+              }
+              // On desktop, show all days
+              return true;
+            })
+            .map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
             let dayEvents = events[dateKey] || [];
             // Sort by: 1) Has logo (prioritize), 2) Market cap descending
