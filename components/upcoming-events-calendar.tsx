@@ -158,6 +158,100 @@ export default function UpcomingEventsCalendar() {
     }
   };
 
+  // Simple Mobile Week View - Always Visible on Mobile
+  const renderSimpleMobileWeekView = () => {
+    const today = new Date();
+    const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday start
+    const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)); // Full week
+
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold text-primary mb-2">
+            This Week's Events
+          </h2>
+          <p className="text-base text-muted-foreground">
+            {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          {weekDays
+            .filter((day) => !isBefore(startOfDay(day), startOfDay(new Date())))
+            .map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const dayEvents = events.filter(event => 
+                isSameDay(new Date(event.eventDate), day)
+              );
+
+              return (
+                <Card 
+                  key={dateKey}
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-primary/20 p-6"
+                  onClick={() => {
+                    setOverflowModal({ 
+                      date: dateKey, 
+                      events: dayEvents,
+                      dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                    });
+                  }}
+                >
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-primary mb-1">
+                      {format(day, 'EEEE')}
+                    </h3>
+                    <p className="text-base text-muted-foreground">
+                      {format(day, 'MMMM d, yyyy')}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {dayEvents.length > 0 ? (
+                      <>
+                        <div className="grid gap-3">
+                          {dayEvents.slice(0, 3).map((event, i) => (
+                            <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-4">
+                              <div className={`text-3xl flex-shrink-0 ${getImpactColor(event.impact)}`}>
+                                {getEventIcon(event)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-semibold truncate mb-1">{event.title}</div>
+                                <div className="text-xs text-muted-foreground">{event.stockTicker}</div>
+                              </div>
+                              <div className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                                event.impact === 'HIGH' ? 'bg-red-100 text-red-700' :
+                                event.impact === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                {event.impact}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {dayEvents.length > 3 && (
+                          <div className="text-center">
+                            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-3">
+                              <span className="text-sm font-medium">+{dayEvents.length - 3} more events</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-5xl mb-4">📅</div>
+                        <div className="text-lg text-muted-foreground">No events scheduled</div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+        </div>
+      </div>
+    );
+  };
+
   // Mobile Week View - Matching Earnings Calendar Layout
   const renderMobileWeekView = () => {
     const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday start
@@ -705,29 +799,28 @@ export default function UpcomingEventsCalendar() {
             </div>
           ) : (
             <div>
-              {/* Mobile View */}
-              {isMobile && mobileViewMode === 'week' && renderMobileWeekView()}
-              {isMobile && mobileViewMode === 'day' && renderMobileDayView()}
+              {/* ALWAYS MOBILE VIEW ON SMALL SCREENS */}
+              <div className="block md:hidden">
+                {renderSimpleMobileWeekView()}
+              </div>
               
-              {/* Desktop View */}
-              {!isMobile && (
-                <>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm text-muted-foreground">
-                      Showing {events.length} events in the next {monthsAhead} months
-                    </div>
-                    <div className="flex gap-2">
-                      <Badge variant="outline">Earnings 📊</Badge>
-                      <Badge variant="outline">Product Launch 🚀</Badge>
-                      <Badge variant="outline">Conference 🎤</Badge>
-                      <Badge variant="outline">Regulatory ⚖️</Badge>
-                      <Badge variant="outline">AI Detected 🤖</Badge>
-                    </div>
+              {/* ALWAYS DESKTOP VIEW ON LARGE SCREENS */}
+              <div className="hidden md:block">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {events.length} events in the next {monthsAhead} months
                   </div>
-                  
-                  {currentView === 'calendar' ? renderCalendarView() : renderListView()}
-                </>
-              )}
+                  <div className="flex gap-2">
+                    <Badge variant="outline">Earnings 📊</Badge>
+                    <Badge variant="outline">Product Launch 🚀</Badge>
+                    <Badge variant="outline">Conference 🎤</Badge>
+                    <Badge variant="outline">Regulatory ⚖️</Badge>
+                    <Badge variant="outline">AI Detected 🤖</Badge>
+                  </div>
+                </div>
+                
+                {currentView === 'calendar' ? renderCalendarView() : renderListView()}
+              </div>
             </div>
           )}
         </CardContent>
