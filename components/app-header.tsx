@@ -28,10 +28,10 @@ export function AppHeader() {
     return (
       <header className="bg-slate-900 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          {/* Upper Right Corner Controls - More Space */}
-          <div className="flex justify-end mb-6">
-            <div className="flex flex-col items-center space-y-2">
-              <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-8 w-8 p-0">
+          {/* Upper Right Corner Controls - Side by Side */}
+          <div className="flex justify-end mb-4">
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-6 w-6 p-0">
                 <LogOut className="h-3 w-3" />
                 <span className="sr-only">Log Out</span>
               </Button>

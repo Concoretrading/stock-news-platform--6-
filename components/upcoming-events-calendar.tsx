@@ -9,9 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Calendar, TrendingUp, Target, AlertTriangle, CheckCircle, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, addDays, isSameWeek, isWithinInterval, isBefore, startOfDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface UpcomingEvent {
   id: string;
@@ -54,6 +57,7 @@ export default function UpcomingEventsCalendar() {
   const [mobileViewMode, setMobileViewMode] = useState<'week' | 'day'>('week');
   const [selectedWeek, setSelectedWeek] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date>(new Date());
+  const [overflowModal, setOverflowModal] = useState<{ date: string; events: UpcomingEvent[]; dayTitle?: string } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -154,63 +158,61 @@ export default function UpcomingEventsCalendar() {
     }
   };
 
-  // Mobile Week View
+  // Mobile Week View - Matching Earnings Calendar Layout
   const renderMobileWeekView = () => {
     const weekStart = startOfWeek(selectedWeek, { weekStartsOn: 1 }); // Monday start
-    const weekEnd = endOfWeek(selectedWeek, { weekStartsOn: 1 });
-    const weekDays = eachDayOfInterval({ start: weekStart, end: weekEnd });
-    
-    const weekEvents = events.filter(event => 
-      isWithinInterval(new Date(event.eventDate), { start: weekStart, end: weekEnd })
-    );
+    const weekDays = Array.from({ length: 5 }, (_, i) => addDays(weekStart, i)); // Monday to Friday
 
     return (
-      <div className="space-y-4">
-        {/* Week Navigation */}
-        <div className="flex items-center justify-between mb-6">
+      <div>
+        {/* Mobile-responsive header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedWeek(addWeeks(selectedWeek, -1))}
+            variant="ghost"
+            onClick={() => setMobileViewMode('day')}
+            className="flex items-center gap-2 w-fit"
           >
             <ChevronLeft className="h-4 w-4" />
+            Back to Month
           </Button>
-          <div className="text-center">
-            <div className="font-semibold">
-              {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
-            </div>
-            <div className="text-xs text-muted-foreground">Economic Events</div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedWeek(addWeeks(selectedWeek, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+          <h2 className="text-lg sm:text-2xl font-bold text-center sm:text-right">
+            Week of {format(weekStart, 'MMM d')} - {format(addDays(weekStart, 4), 'MMM d, yyyy')}
+          </h2>
         </div>
-
-        {/* Mobile: Horizontal Day Cards */}
-        <div className="space-y-3">
+        
+        {/* Mobile: Stack days vertically, Desktop: Grid layout */}
+        <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
           {weekDays
             .filter((day) => {
-              // Only show present and future dates on mobile
-              return !isBefore(startOfDay(day), startOfDay(new Date()));
+              // On mobile, filter out past dates (only show today and future)
+              if (isMobile) {
+                return !isBefore(startOfDay(day), startOfDay(new Date()));
+              }
+              // On desktop, show all days
+              return true;
             })
-            .map(day => {
-            const dayEvents = weekEvents.filter(event => 
+            .map((day) => {
+            const dateKey = format(day, 'yyyy-MM-dd');
+            const dayEvents = events.filter(event => 
               isSameDay(new Date(event.eventDate), day)
             );
-            
+
             return (
-              <div
-                key={day.toISOString()}
-                className={`relative p-4 border rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${
-                  isSameDay(day, new Date()) ? 'bg-blue-50 border-blue-200' : 'bg-card'
-                }`}
+              <Card 
+                key={dateKey} 
+                className={cn(
+                  "relative cursor-pointer transition-colors duration-200 hover:bg-accent/50",
+                  dayEvents.length > 0 && "border-primary/20",
+                  // Mobile: horizontal layout, Desktop: vertical layout
+                  "p-3 sm:p-4"
+                )}
                 onClick={() => {
-                  setSelectedDay(day);
-                  setMobileViewMode('day');
+                  // Show day details in a modal
+                  setOverflowModal({ 
+                    date: dateKey, 
+                    events: dayEvents,
+                    dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                  });
                 }}
               >
                 {/* Event count badge */}
@@ -220,8 +222,8 @@ export default function UpcomingEventsCalendar() {
                   </div>
                 )}
                 
-                {/* Horizontal layout: Day info on left, events on right */}
-                <div className="flex items-center gap-4">
+                {/* Mobile Layout: Horizontal */}
+                <div className="sm:hidden flex items-center gap-4">
                   <div className="flex-shrink-0">
                     <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
                     <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
@@ -230,17 +232,9 @@ export default function UpcomingEventsCalendar() {
                     {dayEvents.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {dayEvents.slice(0, 6).map((event, i) => (
-                          <div 
-                            key={i} 
-                            className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                              getImpactColor(event.impact) === 'text-red-600' ? 'bg-red-100 text-red-700' :
-                              getImpactColor(event.impact) === 'text-yellow-600' ? 'bg-yellow-100 text-yellow-700' :
-                              getImpactColor(event.impact) === 'text-green-600' ? 'bg-green-100 text-green-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}
-                          >
-                            <span>{getEventIcon(event)}</span>
-                            <span className="truncate max-w-[120px]">{event.title}</span>
+                          <div key={i} className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1">
+                            <span className={`text-xs ${getImpactColor(event.impact)}`}>{getEventIcon(event)}</span>
+                            <div className="text-xs font-medium truncate max-w-[100px]">{event.title}</div>
                           </div>
                         ))}
                         {dayEvents.length > 6 && (
@@ -254,7 +248,30 @@ export default function UpcomingEventsCalendar() {
                     )}
                   </div>
                 </div>
-              </div>
+
+                {/* Desktop Layout: Vertical (original) */}
+                <div className="hidden sm:block">
+                  <div className="text-center mb-4">
+                    <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
+                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <Calendar className="h-8 w-8 text-muted-foreground" />
+                    {dayEvents.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-1">
+                        {dayEvents.slice(0, 4).map((event, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1">
+                            <div className={`text-lg ${getImpactColor(event.impact)}`}>{getEventIcon(event)}</div>
+                            <div className="text-xs text-center truncate w-16">{event.title}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No Events</div>
+                    )}
+                  </div>
+                </div>
+              </Card>
             );
           })}
         </div>
@@ -629,6 +646,48 @@ export default function UpcomingEventsCalendar() {
           )}
         </CardContent>
       </Card>
+      
+      {/* Overflow Modal */}
+      {overflowModal && (
+        <Dialog open={!!overflowModal} onOpenChange={() => setOverflowModal(null)}>
+          <DialogContent className="max-w-6xl max-h-[95vh] w-[90vw]">
+            <DialogHeader>
+              <DialogTitle>
+                {overflowModal.dayTitle ? overflowModal.dayTitle : `Economic Events for ${overflowModal.date}`}
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="max-h-[80vh]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {overflowModal.events.map((event, i) => (
+                  <div key={i} className="flex items-start gap-3 p-4 border rounded bg-card hover:shadow-md transition-shadow">
+                    <div className={`text-xl ${getImpactColor(event.impact)}`}>
+                      {getEventIcon(event)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm">{event.title}</div>
+                      <div className="text-xs text-muted-foreground mb-1">{event.stockTicker}</div>
+                      <div className="text-xs text-muted-foreground">{event.category}</div>
+                      <div className="text-xs mt-1">
+                        <span className={`px-1.5 py-0.5 rounded text-xs ${
+                          getImpactColor(event.impact) === 'text-red-600' ? 'bg-red-100 text-red-700' :
+                          getImpactColor(event.impact) === 'text-yellow-600' ? 'bg-yellow-100 text-yellow-700' :
+                          getImpactColor(event.impact) === 'text-green-600' ? 'bg-green-100 text-green-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {event.impact} impact
+                        </span>
+                      </div>
+                      {event.description && (
+                        <div className="text-xs text-muted-foreground mt-2 line-clamp-2">{event.description}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 } 
