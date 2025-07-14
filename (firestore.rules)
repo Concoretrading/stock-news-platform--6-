@@ -44,6 +44,16 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
     }
 
+    // User preferences (user-specific settings)
+    match /users/{userId}/preferences/{document} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Timeline preferences (user-specific timeline settings)
+    match /users/{userId}/timelinePrefs/{document} {
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+    }
+
     // (Add similar rules for any other user-specific collections)
   }
 }

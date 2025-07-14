@@ -199,22 +199,22 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
   const getEventIcon = (event: CalendarEvent) => {
     // If event has an iconUrl, use it
     if (event.iconUrl) {
-      return <img src={event.iconUrl} alt={event.company_name} className="h-4 w-4 rounded" />;
+      return <img src={event.iconUrl} alt={event.company_name} className="h-3 w-3 sm:h-4 sm:w-4 rounded" />;
     }
     
     // If event has a logoUrl, use it
     if (event.logoUrl) {
-      return <img src={event.logoUrl} alt={event.company_name} className="h-4 w-4 rounded" />;
+      return <img src={event.logoUrl} alt={event.company_name} className="h-3 w-3 sm:h-4 sm:w-4 rounded" />;
     }
     
     // Fallback to ticker-based icons
     const ticker = event.ticker;
-    if (ticker === 'MARKET') return <AlertTriangle className="h-4 w-4" />;
-    if (ticker === 'WITCHING') return <Zap className="h-4 w-4" />;
-    if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') return <Building2 className="h-4 w-4" />;
-    if (ticker === 'VIX') return <TrendingUp className="h-4 w-4" />;
-    if (['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(ticker)) return <DollarSign className="h-4 w-4" />;
-    return <TrendingUp className="h-4 w-4" />;
+    if (ticker === 'MARKET') return <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4" />;
+    if (ticker === 'WITCHING') return <Zap className="h-3 w-3 sm:h-4 sm:w-4" />;
+    if (ticker === 'FOMC' || ticker === 'BEIGE' || ticker === 'MINUTES') return <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />;
+    if (ticker === 'VIX') return <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />;
+    if (['CPI', 'PPI', 'PCE', 'JOBS', 'UNEMP', 'CLAIMS', 'RETAIL', 'CONF', 'MICH', 'ISM', 'ISPMI', 'IP', 'STARTS', 'EXIST', 'NEW', 'GDP', 'TRADE'].includes(ticker)) return <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />;
+    return <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />;
   };
 
   const getEventColor = (ticker: string, eventType: string) => {

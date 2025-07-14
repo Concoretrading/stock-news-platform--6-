@@ -239,8 +239,11 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   };
 
   const CompanyLogo = ({ event, size = "small" }: { event: EarningsEvent, size?: "small" | "large" }) => {
-    // Make logos larger
-    const sizeClasses = size === "small" ? "w-14 h-14" : "w-20 h-20";
+    // Mobile-responsive logo sizes
+    const sizeClasses = size === "small" 
+      ? "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14" 
+      : "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20";
+    
     // Find logo URL from tickers.json (case-insensitive)
     const tickerEntry = tickers.find(
       (t) => t.ticker.toLowerCase() === event.stockTicker.toLowerCase()
@@ -256,11 +259,11 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
     
     return (
       <div 
-        className={`${sizeClasses} cursor-pointer hover:opacity-80`}
+        className={`${sizeClasses} cursor-pointer hover:opacity-80 flex-shrink-0`}
         onClick={(e) => handleEventClick(event, e)}
       >
         {hasFailed ? (
-          <div className="w-full h-full flex items-center justify-center text-lg bg-primary text-white rounded">
+          <div className="w-full h-full flex items-center justify-center text-xs sm:text-sm md:text-base lg:text-lg bg-primary text-white rounded">
             {event.stockTicker.slice(0, 2)}
           </div>
         ) : (

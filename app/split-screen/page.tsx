@@ -48,95 +48,42 @@ export default function SplitScreenPage() {
     { symbol: 'AAPL', name: 'Apple Inc.' },
     { symbol: 'MSFT', name: 'Microsoft Corporation' },
     { symbol: 'GOOGL', name: 'Alphabet Inc.' },
+    { symbol: 'TSLA', name: 'Tesla, Inc.' },
     { symbol: 'AMZN', name: 'Amazon.com Inc.' },
-    { symbol: 'META', name: 'Meta Platforms Inc.' },
-    { symbol: 'TSLA', name: 'Tesla Inc.' },
     { symbol: 'NVDA', name: 'NVIDIA Corporation' },
+    { symbol: 'META', name: 'Meta Platforms Inc.' },
     { symbol: 'NFLX', name: 'Netflix Inc.' },
-    { symbol: 'AMD', name: 'Advanced Micro Devices Inc.' },
-    { symbol: 'INTC', name: 'Intel Corporation' },
+    { symbol: 'UBER', name: 'Uber Technologies Inc.' },
+    { symbol: 'SPOT', name: 'Spotify Technology S.A.' },
   ];
 
-  // Add state for new stock input and editing
-  const [newStockSymbol, setNewStockSymbol] = useState('');
-  const [newStockName, setNewStockName] = useState('');
-  const [editingStock, setEditingStock] = useState<Stock | null>(null);
-  const [editStockSymbol, setEditStockSymbol] = useState('');
-  const [editStockName, setEditStockName] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Add state for tracking failed logo loads
-  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
-
-  // Load user's watchlist on component mount
-  useEffect(() => {
-    if (user) {
-      loadUserWatchlist();
-    } else {
-      // Fallback to mock data if not authenticated
-      setWatchlist(mockWatchlist);
-      setIsLoadingStocks(false);
-    }
-  }, [user]);
-
-  const loadUserWatchlist = async () => {
-    try {
-      setIsLoadingStocks(true);
-      const response = await fetchWithAuth('/api/watchlist');
-      const result = await response.json();
-      
-      if (result.success && result.data.length > 0) {
-        setWatchlist(result.data.slice(0, 10).map((stock: any) => ({
-          id: stock.id,
-          symbol: stock.ticker,
-          name: stock.companyName
-        })));
-      } else {
-        // Fallback to mock data
-        setWatchlist(mockWatchlist);
-      }
-    } catch (error) {
-      console.error('Error loading watchlist:', error);
-      setWatchlist(mockWatchlist);
-    } finally {
-      setIsLoadingStocks(false);
-    }
-  };
-
-  // Load saved width from localStorage
-  useEffect(() => {
-    const savedWidth = localStorage.getItem('splitScreenLeftWidth');
-    if (savedWidth) {
-      const width = parseFloat(savedWidth);
-      if (width >= 20 && width <= 80) {
-        setLeftPanelWidth(width);
-      }
-    }
-  }, []);
-
-  // Save width to localStorage
-  const saveWidth = useCallback((width: number) => {
-    localStorage.setItem('splitScreenLeftWidth', width.toString());
-  }, []);
-
+  // Handle mouse events for resizing
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
   }, []);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || !containerRef.current) return;
     
-    const container = document.getElementById('split-container');
-    if (!container) return;
-    
+    const container = containerRef.current;
     const rect = container.getBoundingClientRect();
-    const newWidth = ((e.clientX - rect.left) / rect.width) * 100;
     
-    if (newWidth >= 20 && newWidth <= 80) {
-      setLeftPanelWidth(newWidth);
-      saveWidth(newWidth);
+    // Check if we're on mobile (flex-col) or desktop (flex-row)
+    const isMobile = window.innerWidth < 768;
+    
+    if (isMobile) {
+      // Mobile: vertical resize (Y axis)
+      const percentage = ((e.clientY - rect.top) / rect.height) * 100;
+      setLeftPanelWidth(Math.min(Math.max(percentage, 20), 80));
+    } else {
+      // Desktop: horizontal resize (X axis)
+      const percentage = ((e.clientX - rect.left) / rect.width) * 100;
+      setLeftPanelWidth(Math.min(Math.max(percentage, 20), 80));
     }
-  }, [isDragging, saveWidth]);
+  }, [isDragging]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -153,6 +100,39 @@ export default function SplitScreenPage() {
     }
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
+  const loadUserWatchlist = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetchWithAuth('/api/watchlist');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.watchlist && data.watchlist.length > 0) {
+          setWatchlist(data.watchlist);
+        } else {
+          setWatchlist(mockWatchlist);
+        }
+      } else {
+        setWatchlist(mockWatchlist);
+      }
+    } catch (error) {
+      console.error('Error loading watchlist:', error);
+      setWatchlist(mockWatchlist);
+    } finally {
+      setIsLoadingStocks(false);
+    }
+  };
+
+  useEffect(() => {
+    loadUserWatchlist();
+  }, [user]);
+
+  useEffect(() => {
+    if (watchlist.length > 0 && !selectedStock) {
+      setSelectedStock(watchlist[0]);
+    }
+  }, [watchlist, selectedStock]);
+
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -160,166 +140,137 @@ export default function SplitScreenPage() {
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOver(false);
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setIsDragOver(false);
+    }
   }, []);
 
-  const handleDrop = useCallback(async (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
     
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-      // Check for image files first (screenshots should be processed as images)
-      const imageFiles = files.filter(file => file.type.startsWith('image/'));
-      
-      if (imageFiles.length > 0) {
-        console.log('🖼️ Image files dropped, processing as screenshots');
-        
-        // Check authentication
-        if (!user) {
-          console.log('❌ User not authenticated');
-          toast({
-            title: "Authentication Required", 
-            description: "Please log in to process screenshots",
-            variant: "destructive",
-          });
-          return;
-        }
-        
-        // Process each image file
-        for (const file of imageFiles) {
-          console.log('🔄 Processing file:', file.name, file.type);
-          await processScreenshot(file);
-        }
-        return;
-      }
-      
-      // If no image files, store them for display
       setUploadedFiles(prev => [...prev, ...files]);
-      console.log('Files dropped:', files);
+      
+      // Process each file
+      files.forEach(file => {
+        if (file.type.startsWith('image/')) {
+          processScreenshot(file);
+        } else {
+          console.log('Processing non-image file:', file.name);
+        }
+      });
     }
-  }, [user, toast]);
+  }, []);
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
 
   const processScreenshot = async (file: File) => {
-    console.log('🔄 Starting screenshot processing...');
+    if (!selectedStock) {
+      toast({
+        title: "No Stock Selected",
+        description: "Please select a stock before uploading screenshots.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const formData = new FormData();
-      formData.append("image", file);
-      console.log('📤 Sending request to /api/analyze-screenshot');
+      formData.append('screenshot', file);
+      formData.append('ticker', selectedStock.symbol);
 
-      const response = await fetchWithAuth("/api/analyze-screenshot", {
-        method: "POST",
+      const response = await fetchWithAuth('/api/analyze-screenshot', {
+        method: 'POST',
         body: formData,
       });
 
-      console.log('📥 Response status:', response.status);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('❌ API Error:', errorData);
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+      if (response.ok) {
+        const result = await response.json();
+        toast({
+          title: "Screenshot Processed",
+          description: `Successfully analyzed screenshot for ${selectedStock.symbol}`,
+        });
+        
+        // Refresh the history tab
+        setRefreshKey(prev => prev + 1);
+        
+        // Remove the processed file
+        setUploadedFiles(prev => prev.filter(f => f !== file));
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Processing Failed",
+          description: error.message || "Failed to process screenshot",
+          variant: "destructive",
+        });
       }
-
-      const data = await response.json();
-      console.log('✅ Screenshot analysis result:', data);
-      
-      const successCount = data.newsEntryResults?.filter((r: any) => r.success).length || 0;
-      const tickers = data.newsEntryResults?.filter((r: any) => r.success).map((r: any) => r.ticker) || [];
-      
-      toast({
-        title: "Screenshot Processed! 📸",
-        description: successCount > 0 
-          ? `Catalyst(s) added for: ${tickers.join(", ")}`
-          : 'No matching stocks found in your watchlist',
-        variant: successCount > 0 ? 'default' : 'destructive',
-      });
-      
     } catch (error) {
-      console.error('❌ Screenshot processing error:', error);
+      console.error('Error processing screenshot:', error);
       toast({
-        title: "Screenshot Analysis Failed",
-        description: error instanceof Error ? error.message : "Unable to analyze the screenshot. Please try again.",
+        title: "Error",
+        description: "An error occurred while processing the screenshot",
         variant: "destructive",
       });
     }
   };
 
-  const removeFile = useCallback((index: number) => {
-    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
-  }, []);
-
-  const handleStockClick = useCallback((stock: Stock) => {
-    setSelectedStock(stock);
-    setActiveTab('history');
-  }, []);
-
-  const handlePushBack = useCallback(() => {
-    setSelectedStock(null);
-  }, []);
-
-  // Add stock to watchlist
   const handleAddStock = () => {
-    if (newStockSymbol.trim() && newStockName.trim()) {
-      setWatchlist(prev => [
-        ...prev,
-        { symbol: newStockSymbol.toUpperCase(), name: newStockName }
-      ]);
-      setNewStockSymbol('');
-      setNewStockName('');
-    }
+    setShowStockSelector(true);
   };
-  // Remove stock from watchlist
+
   const handleRemoveStock = (symbol: string) => {
     setWatchlist(prev => prev.filter(stock => stock.symbol !== symbol));
-    if (selectedStock?.symbol === symbol) setSelectedStock(null);
-  };
-  // Start editing a stock
-  const handleEditStock = (stock: Stock) => {
-    setEditingStock(stock);
-    setEditStockSymbol(stock.symbol);
-    setEditStockName(stock.name);
-  };
-  // Save edited stock
-  const handleSaveEditStock = () => {
-    if (editingStock && editStockSymbol.trim() && editStockName.trim()) {
-      setWatchlist(prev => prev.map(stock =>
-        stock.symbol === editingStock.symbol
-          ? { symbol: editStockSymbol.toUpperCase(), name: editStockName }
-          : stock
-      ));
-      setEditingStock(null);
-      setEditStockSymbol('');
-      setEditStockName('');
+    if (selectedStock?.symbol === symbol) {
+      setSelectedStock(watchlist.find(s => s.symbol !== symbol) || null);
     }
   };
-  // Cancel editing
-  const handleCancelEdit = () => {
-    setEditingStock(null);
-    setNewStockSymbol('');
-    setNewStockName('');
+
+  const handleEditStock = (stock: Stock) => {
+    // For now, just show the stock selector
+    setShowStockSelector(true);
   };
 
-  // Handle watchlist update from StockSelector
+  const handleSaveEditStock = () => {
+    // Implementation for saving edited stock
+    setShowStockSelector(false);
+  };
+
+  const handleCancelEdit = () => {
+    setShowStockSelector(false);
+  };
+
   const handleUpdateWatchlist = async (newStocks: Stock[]) => {
     try {
-      setWatchlist(newStocks.map((stock) => ({
-        symbol: stock.symbol,
-        name: stock.name
-      })));
-      
-      // If current selected stock is not in the new list, clear selection
-      if (selectedStock && !newStocks.some(s => s.symbol === selectedStock.symbol)) {
-        setSelectedStock(null);
-      }
-      
-      toast({
-        title: "Watchlist Updated",
-        description: "Your watchlist has been updated successfully",
+      const response = await fetchWithAuth('/api/watchlist', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ watchlist: newStocks }),
       });
+
+      if (response.ok) {
+        setWatchlist(newStocks);
+        if (newStocks.length > 0 && !selectedStock) {
+          setSelectedStock(newStocks[0]);
+        }
+        setShowStockSelector(false);
+        toast({
+          title: "Watchlist Updated",
+          description: "Your watchlist has been successfully updated.",
+        });
+      } else {
+        throw new Error('Failed to update watchlist');
+      }
     } catch (error) {
+      console.error('Error updating watchlist:', error);
       toast({
         title: "Error",
-        description: "Failed to update watchlist",
+        description: "Failed to update watchlist. Please try again.",
         variant: "destructive",
       });
     }
@@ -354,18 +305,79 @@ export default function SplitScreenPage() {
 
       {/* Split Screen Container */}
       <div 
+        ref={containerRef}
         className="relative"
       >
         <div 
           id="split-container"
           className="flex flex-col md:flex-row h-[calc(100vh-64px)] relative"
-          style={{ cursor: isDragging ? 'col-resize' : 'default' }}
+          style={{ cursor: isDragging ? 'row-resize md:col-resize' : 'default' }}
         >
-          {/* Left Panel - ConcoreNews */}
+          {/* X Panel - Top on Mobile, Right on Desktop */}
           <div 
-            className={`bg-background md:border-r transition-colors w-full md:w-1/2 h-3/5 md:h-full ${
+            className="bg-background border-b md:border-b-0 md:border-l w-full order-first md:order-last"
+            style={{ 
+              height: `${leftPanelWidth}%`,
+              width: window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%'
+            }}
+          >
+            <div className="h-full flex flex-col items-center justify-center px-4 md:px-8">
+              {/* Twitter Sign-in Section */}
+              <div className="w-full max-w-lg">
+                <div className="mb-6 md:mb-12">
+                  <XAuth />
+                </div>
+                
+                {/* Workflow Integration Section */}
+                <div className="bg-muted/30 rounded-lg p-4 md:p-8">
+                  <h3 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6 text-center">Workflow Integration</h3>
+                  <div className="space-y-2 md:space-y-4">
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs md:text-sm font-bold">1</span>
+                      </div>
+                      <span className="text-sm md:text-base">Connect your X account</span>
+                    </div>
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs md:text-sm font-bold">2</span>
+                      </div>
+                      <span className="text-sm md:text-base">Drop news content on ConcoreNews</span>
+                    </div>
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs md:text-sm font-bold">3</span>
+                      </div>
+                      <span className="text-sm md:text-base">Auto-categorize and track</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Responsive Divider */}
+          <div
+            className="h-1 md:h-full md:w-1 bg-border hover:bg-blue-500 cursor-row-resize md:cursor-col-resize relative group"
+            onMouseDown={handleMouseDown}
+          >
+            {/* Grab Block */}
+            <div className="absolute inset-x-0 md:inset-y-0 top-1/2 md:top-auto md:left-1/2 transform -translate-y-1/2 md:-translate-y-0 md:-translate-x-1/2 flex items-center justify-center">
+              <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium">
+                Grab
+              </div>
+            </div>
+          </div>
+
+          {/* ConcoreNews Panel - Bottom on Mobile, Left on Desktop */}
+          <div 
+            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full order-last md:order-first ${
               isDragOver ? 'bg-blue-50 border-blue-300' : ''
             }`}
+            style={{ 
+              height: `${100 - leftPanelWidth}%`,
+              width: window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%'
+            }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -401,50 +413,6 @@ export default function SplitScreenPage() {
                 </div>
               )}
 
-              {/* Small Drop Message */}
-              {!isDragOver && uploadedFiles.length === 0 && (
-                <div className="p-4 text-center">
-                  <p className="text-2xl md:text-3xl font-bold text-muted-foreground">Drop news anywhere on ConcoreNews section</p>
-                </div>
-              )}
-
-              {/* Stock Selector */}
-              <div className="p-3 md:p-4 border-b">
-                <div className="space-y-2 md:space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs md:text-sm font-medium">Select Stock</label>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setShowStockSelector(true)}
-                      className="text-xs h-7 md:h-8"
-                    >
-                      <Settings className="h-3 w-3 mr-1" />
-                      Manage
-                    </Button>
-                  </div>
-                  <Select 
-                    value={selectedStock?.symbol || ""} 
-                    onValueChange={(value) => {
-                      const stock = watchlist.find(s => s.symbol === value);
-                      setSelectedStock(stock || null);
-                    }}
-                  >
-                    <SelectTrigger className="h-9 md:h-10">
-                      <SelectValue placeholder="Choose a stock from your watchlist" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {watchlist.map((stock) => (
-                        <SelectItem key={stock.symbol} value={stock.symbol}>
-                          <span className="text-xs md:text-sm">{stock.symbol} - {stock.name}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Watchlist */}
               <div className="flex-1 flex flex-col min-h-0">
                 <div className="p-4 border-b">
                   <div className="flex items-center justify-between mb-3">
@@ -487,7 +455,7 @@ export default function SplitScreenPage() {
                               e.stopPropagation();
                               handleEditStock(stock);
                             }}
-                            className="text-gray-500 hover:text-gray-700"
+                            className="text-gray-500 hover:text-blue-600"
                           >
                             <Edit2 className="h-3 w-3" />
                           </button>
@@ -496,7 +464,7 @@ export default function SplitScreenPage() {
                               e.stopPropagation();
                               handleRemoveStock(stock.symbol);
                             }}
-                            className="text-red-500 hover:text-red-700"
+                            className="text-gray-500 hover:text-red-600"
                           >
                             <Trash2 className="h-3 w-3" />
                           </button>
@@ -506,7 +474,6 @@ export default function SplitScreenPage() {
                   </div>
                 </div>
 
-                {/* Selected Stock Details */}
                 {selectedStock && (
                   <div className="flex-1 flex flex-col min-h-0">
                     <div className="p-4 border-b">
@@ -566,60 +533,6 @@ export default function SplitScreenPage() {
                     </Tabs>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-
-          {/* Resizable Divider - Hidden on mobile */}
-          <div
-            className="hidden md:block w-1 bg-border hover:bg-blue-500 cursor-col-resize relative group"
-            onMouseDown={handleMouseDown}
-          >
-            {/* Grab Block */}
-            <div className="absolute inset-y-0 left-1/2 transform -translate-x-1/2 w-8 -ml-4 flex items-center justify-center">
-              <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium">
-                Grab
-              </div>
-            </div>
-          </div>
-
-          {/* Right Panel - X Integration */}
-          <div 
-            className="bg-background w-full md:w-1/2 h-2/5 md:h-full"
-          >
-            <div className="h-full flex flex-col items-center justify-center px-4 md:px-8">
-              {/* Twitter Sign-in Section - Made proportionate to left side */}
-              <div className="w-full max-w-lg">
-                <div className="mb-6 md:mb-12">
-                  <XAuth />
-                </div>
-                
-                {/* Workflow Integration Section */}
-                <div className="bg-muted/30 rounded-lg p-4 md:p-8">
-                  <h3 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6 text-center">Workflow Integration</h3>
-                  <div className="space-y-2 md:space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm md:text-lg">Seamless data flow between X and ConcoreNews</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm md:text-lg">Drag & drop news in the drop zone</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm md:text-lg">Copy and paste article processing</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm md:text-lg">Automated news processing</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm md:text-lg">Content categorization</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

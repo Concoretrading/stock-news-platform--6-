@@ -98,7 +98,7 @@ export default function HomePage() {
     setMounted(true)
   }, [])
 
-  // Carousel settings - show 5 stocks per page on mobile, 8 on desktop (2 rows of 4), max 10 total
+  // Carousel settings - show 5 stocks per page on mobile, 8 on desktop, max 10 total
   const stocksPerPage = isMobile ? 5 : 8
   const maxStocks = 10
 
@@ -110,30 +110,66 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [])
 
-  // Show onboarding for new users
+  // Show onboarding for new users (with a small delay to avoid immediate popup)
   useEffect(() => {
-    if (isShowingDefaults && !loading) {
-      // Check if user has seen onboarding before
-      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding')
-      if (!hasSeenOnboarding) {
-        setShowOnboarding(true)
-        // Mark that user has seen onboarding
-        localStorage.setItem('hasSeenOnboarding', 'true')
+    const checkOnboardingStatus = async () => {
+      if (isShowingDefaults && !loading && user) {
+        try {
+          const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
+          if (!token) return
+          
+          const response = await fetchWithAuth('/api/user-preferences', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (response.ok) {
+            const result = await response.json()
+            if (result.success && !result.data.hasSeenOnboarding) {
+              // Small delay to avoid immediate popup
+              setTimeout(() => {
+                setShowOnboarding(true)
+              }, 1000)
+            }
+          }
+        } catch (error) {
+          console.error('Error checking onboarding status:', error)
+        }
       }
     }
-  }, [isShowingDefaults, loading])
+    
+    checkOnboardingStatus()
+  }, [isShowingDefaults, loading, user])
 
   // Utility function to reset onboarding (for testing)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // @ts-ignore - Adding to window for testing
-      window.resetOnboarding = () => {
-        localStorage.removeItem('hasSeenOnboarding')
-        setShowOnboarding(true)
-        console.log('🔄 Onboarding reset - popup will show again')
+      window.resetOnboarding = async () => {
+        if (user) {
+          try {
+            const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
+            if (token) {
+              await fetchWithAuth('/api/user-preferences', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ hasSeenOnboarding: false })
+              })
+              setShowOnboarding(true)
+              console.log('🔄 Onboarding reset - popup will show again')
+            }
+          } catch (error) {
+            console.error('Error resetting onboarding:', error)
+          }
+        }
       }
     }
-  }, [])
+  }, [user])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -672,7 +708,7 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                {/* Mobile: Horizontal Sliding Layout with 5 stocks visible */}
+                {/* Mobile: Show 5 stocks with slide navigation */}
                 <div className="block sm:hidden">
                   <div className="relative">
                     {/* Mobile Navigation Arrows */}
@@ -683,7 +719,7 @@ export default function HomePage() {
                           size="sm" 
                           onClick={prevPage}
                           disabled={currentPage === 0}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm border-gray-300 shadow-sm"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-gray-300 shadow-lg hover:bg-gray-50"
                         >
                           <ChevronLeft className="h-4 w-4" />
                         </Button>
@@ -692,41 +728,46 @@ export default function HomePage() {
                           size="sm" 
                           onClick={nextPage}
                           disabled={currentPage === totalPages - 1}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm border-gray-300 shadow-sm"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-gray-300 shadow-lg hover:bg-gray-50"
                         >
                           <ChevronRight className="h-4 w-4" />
                         </Button>
                       </>
                     )}
                     
-                    {/* Horizontal Scroll Container - Show only current page stocks */}
-                    <div className="overflow-x-auto scrollbar-hide touch-scroll">
-                      <div className="flex gap-3 pb-4">
-                        {visibleStocks.map((stock) => (
-                          <div key={stock.symbol} className="flex-shrink-0 w-[calc(20%-12px)] transform transition-transform hover:scale-105">
-                            <StockCard 
-                              ticker={stock.symbol}
-                              name={stock.name}
-                              onClick={() => handleStockClick(stock)}
-                            />
-                          </div>
-                        ))}
-                      </div>
+                    {/* Mobile Grid - 5 stocks per page */}
+                    <div className="grid grid-cols-5 gap-2 px-8">
+                      {visibleStocks.map((stock) => (
+                        <div key={stock.symbol} className="transform transition-transform hover:scale-105">
+                          <StockCard 
+                            ticker={stock.symbol}
+                            name={stock.name}
+                            onClick={() => handleStockClick(stock)}
+                          />
+                        </div>
+                      ))}
                     </div>
                     
                     {/* Mobile Page Indicators */}
                     {totalPages > 1 && (
-                      <div className="flex justify-center mt-4">
-                        <div className="flex space-x-2">
-                          {Array.from({ length: totalPages }).map((_, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => setCurrentPage(idx)}
-                              className={`w-2 h-2 rounded-full transition-colors touch-manipulation ${
-                                currentPage === idx ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
-                              }`}
-                            />
-                          ))}
+                      <div className="flex justify-center mt-4 space-x-2">
+                        {Array.from({ length: totalPages }).map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentPage(idx)}
+                            className={`w-2 h-2 rounded-full transition-colors touch-manipulation ${
+                              currentPage === idx ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Mobile Page Counter */}
+                    {totalPages > 1 && (
+                      <div className="flex justify-center mt-2">
+                        <div className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                          {currentPage + 1} of {totalPages} • {watchlist.length} stocks total
                         </div>
                       </div>
                     )}
@@ -970,7 +1011,27 @@ export default function HomePage() {
         {/* Onboarding Popup */}
         <OnboardingPopup
           isVisible={showOnboarding}
-          onClose={() => setShowOnboarding(false)}
+          onClose={async () => {
+            setShowOnboarding(false)
+            // Mark that user has seen onboarding
+            if (user) {
+              try {
+                const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
+                if (token) {
+                  await fetchWithAuth('/api/user-preferences', {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ hasSeenOnboarding: true })
+                  })
+                }
+              } catch (error) {
+                console.error('Error marking onboarding as seen:', error)
+              }
+            }
+          }}
         />
       </div>
       
