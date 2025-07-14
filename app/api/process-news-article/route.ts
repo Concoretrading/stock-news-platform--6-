@@ -139,10 +139,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { articleText } = body;
 
-    if (!articleText || typeof articleText !== 'string' || articleText.length < 50) {
+    if (!articleText || typeof articleText !== 'string' || articleText.length < 300) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Article text is required and must be at least 50 characters long' 
+        error: 'Article text is required and must be at least 300 characters long' 
       }, { status: 400 });
     }
 

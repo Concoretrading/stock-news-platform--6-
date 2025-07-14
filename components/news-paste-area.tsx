@@ -21,10 +21,10 @@ export function NewsPasteArea({ isOpen, onClose }: NewsPasteAreaProps) {
   const { toast } = useToast()
 
   const handleProcess = async () => {
-    if (!articleText.trim() || articleText.length < 50) {
+    if (!articleText.trim() || articleText.length < 300) {
       toast({
         title: "Invalid Article",
-        description: "Please paste a news article (at least 50 characters)",
+        description: "Please paste a news article (at least 300 characters)",
         variant: "destructive",
       })
       return
@@ -132,7 +132,7 @@ Tesla Inc. reported stronger-than-expected fourth quarter earnings yesterday, wi
           
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div className="text-sm text-gray-500 text-center sm:text-left">
-              {articleText.length} characters {articleText.length >= 50 ? '✅' : '❌ (min 50)'}
+              {articleText.length} characters {articleText.length >= 300 ? '✅' : '❌ (min 300)'}
             </div>
             <div className="flex gap-2 justify-center sm:justify-end">
               <Button 
@@ -145,7 +145,7 @@ Tesla Inc. reported stronger-than-expected fourth quarter earnings yesterday, wi
               </Button>
               <Button 
                 onClick={handleProcess} 
-                disabled={isProcessing || articleText.length < 50}
+                disabled={isProcessing || articleText.length < 300}
                 className="flex-1 sm:flex-none min-w-[120px] touch-manipulation"
               >
                 {isProcessing ? (

@@ -47,6 +47,7 @@ export default function EditTradeReviewPage({ params }: { params: { id: string }
   const [sections, setSections] = useState<Section[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [enlargedImage, setEnlargedImage] = useState<{url: string; altText: string} | null>(null);
+  const [activeSectionForPaste, setActiveSectionForPaste] = useState<number | null>(null);
 
   useEffect(() => {
     if (user && params.id) {
@@ -143,6 +144,59 @@ export default function EditTradeReviewPage({ params }: { params: { id: string }
       reader.readAsDataURL(file);
     }
   };
+
+  const handlePasteImage = async (e: ClipboardEvent) => {
+    // Don't process paste if user is typing in an input/textarea
+    const target = e.target as HTMLElement;
+    if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') {
+      return;
+    }
+
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    const items = Array.from(clipboardData.items);
+    const imageItem = items.find(item => item.type.startsWith('image/'));
+    
+    if (imageItem && activeSectionForPaste !== null) {
+      const file = imageItem.getAsFile();
+      if (file) {
+        e.preventDefault();
+        
+        // Check if section has space for more images
+        if (sections[activeSectionForPaste].images.length >= 4) {
+          toast({
+            title: "Image limit reached",
+            description: "This section already has the maximum of 4 images.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        toast({
+          title: "Image pasted!",
+          description: "Processing your pasted image...",
+        });
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          addImageToSection(activeSectionForPaste, result, `pasted-image-${Date.now()}.png`);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  // Set up paste event listener
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => handlePasteImage(e);
+    document.addEventListener('paste', handlePaste);
+    
+    return () => {
+      document.removeEventListener('paste', handlePaste);
+    };
+  }, [activeSectionForPaste, sections]);
 
   const handleSubmit = async () => {
     if (!user) {
@@ -311,7 +365,18 @@ export default function EditTradeReviewPage({ params }: { params: { id: string }
               ) : (
                 <div className="space-y-4">
                   {sections.map((section, index) => (
-                    <div key={index} className="border rounded-lg p-4">
+                    <div 
+                      key={index} 
+                      className={`border rounded-lg p-4 transition-all duration-200 ${
+                        activeSectionForPaste === index 
+                          ? 'border-blue-500 bg-blue-50/50 shadow-md' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      tabIndex={0}
+                      onFocus={() => setActiveSectionForPaste(index)}
+                      onBlur={() => setActiveSectionForPaste(null)}
+                      onClick={() => setActiveSectionForPaste(index)}
+                    >
                       <div className="flex items-center justify-between mb-4">
                         <input
                           type="text"
@@ -376,6 +441,11 @@ export default function EditTradeReviewPage({ params }: { params: { id: string }
                               </div>
                             )}
                           </div>
+                          {activeSectionForPaste === index && (
+                            <div className="mt-2 text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                              💡 This section is active for image pasting. Copy an image and press Ctrl+V to paste it here.
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

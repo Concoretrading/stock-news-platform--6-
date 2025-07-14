@@ -254,7 +254,7 @@ export default function ClientLayout({ children }: ClientLayoutProps) {
 
       console.log('📋 Final text data length:', textData.length)
 
-      if (textData && textData.length > 50) {
+      if (textData && textData.length > 300) {
         console.log('✅ Processing article text')
         await processNewsArticle(textData)
         return

@@ -450,7 +450,7 @@ export default function HomePage() {
         }
       }
 
-      if (textData && textData.length > 50) {
+      if (textData && textData.length > 300) {
         await processNewsArticle(textData)
         return
       }
