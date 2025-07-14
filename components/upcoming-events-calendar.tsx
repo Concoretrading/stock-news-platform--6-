@@ -33,7 +33,7 @@ interface UpcomingEvent {
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 640);
+    const check = () => setIsMobile(window.innerWidth < 768); // Match md: breakpoint
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
@@ -180,65 +180,77 @@ export default function UpcomingEventsCalendar() {
           </h2>
         </div>
         
-        {/* Mobile: Simple day list, Desktop: Grid layout */}
-        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
-          {weekDays
-            .filter((day) => {
-              // On mobile, filter out past dates (only show today and future)
-              if (isMobile) {
-                return !isBefore(startOfDay(day), startOfDay(new Date()));
-              }
-              // On desktop, show all days
-              return true;
-            })
-            .map((day) => {
-            const dateKey = format(day, 'yyyy-MM-dd');
-            const dayEvents = events.filter(event => 
-              isSameDay(new Date(event.eventDate), day)
-            );
+        {/* Mobile vs Desktop Layout */}
+        {isMobile ? (
+          /* MOBILE: Ultra Simple Day List */
+          <div className="space-y-4">
+            {weekDays
+              .filter((day) => !isBefore(startOfDay(day), startOfDay(new Date())))
+              .map((day) => {
+                const dateKey = format(day, 'yyyy-MM-dd');
+                const dayEvents = events.filter(event => 
+                  isSameDay(new Date(event.eventDate), day)
+                );
 
-            return (
-              <Card 
-                key={dateKey} 
-                className={cn(
-                  "cursor-pointer transition-colors duration-200 hover:bg-accent/50",
-                  dayEvents.length > 0 && "border-primary/20",
-                  // Mobile: simple day card, Desktop: complex layout
-                  "p-4 sm:p-4"
-                )}
-                onClick={() => {
-                  // Show day details in a modal
-                  setOverflowModal({ 
-                    date: dateKey, 
-                    events: dayEvents,
-                    dayTitle: format(day, 'EEEE, MMMM d, yyyy')
-                  });
-                }}
-              >
-                {/* Mobile Layout: Simple day card */}
-                <div className="sm:hidden">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xl font-bold">{format(day, 'EEEE')}</div>
-                      <div className="text-sm text-muted-foreground">{format(day, 'MMMM d, yyyy')}</div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {dayEvents.length > 0 ? (
-                        <>
-                          <div className="bg-primary/80 text-primary-foreground text-sm px-3 py-1 rounded-full font-medium">
-                            {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">No events</div>
-                      )}
+                return (
+                  <div 
+                    key={dateKey}
+                    className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => {
+                      setOverflowModal({ 
+                        date: dateKey, 
+                        events: dayEvents,
+                        dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                      });
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                          {format(day, 'EEEE')}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {format(day, 'MMMM d, yyyy')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {dayEvents.length > 0 ? (
+                          <>
+                            <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium px-3 py-1 rounded-full">
+                              {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
+                            </span>
+                            <ChevronRight className="h-5 w-5 text-gray-400" />
+                          </>
+                        ) : (
+                          <span className="text-sm text-gray-400">No events</span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
+                );
+              })}
+          </div>
+        ) : (
+          /* DESKTOP: Grid Layout */
+          <div className="grid grid-cols-5 gap-4">
+            {weekDays.map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const dayEvents = events.filter(event => 
+                isSameDay(new Date(event.eventDate), day)
+              );
 
-                {/* Desktop Layout: Complex grid (original) */}
-                <div className="hidden sm:block">
+              return (
+                <Card 
+                  key={dateKey} 
+                  className="cursor-pointer transition-colors duration-200 hover:bg-accent/50 p-4"
+                  onClick={() => {
+                    setOverflowModal({ 
+                      date: dateKey, 
+                      events: dayEvents,
+                      dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                    });
+                  }}
+                >
                   <div className="text-center mb-4">
                     <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
                     <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
@@ -258,11 +270,11 @@ export default function UpcomingEventsCalendar() {
                       <div className="text-sm text-muted-foreground">No Events</div>
                     )}
                   </div>
-                </div>
-              </Card>
-            );
-          })}
-        </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
