@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Calendar, TrendingUp, Target, AlertTriangle, CheckCircle, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
-import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, addDays, isSameWeek, isWithinInterval } from 'date-fns';
+import { format, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, addWeeks, addDays, isSameWeek, isWithinInterval, isBefore, startOfDay } from 'date-fns';
 
 interface UpcomingEvent {
   id: string;
@@ -167,7 +167,7 @@ export default function UpcomingEventsCalendar() {
     return (
       <div className="space-y-4">
         {/* Week Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-6">
           <Button
             variant="outline"
             size="sm"
@@ -179,7 +179,7 @@ export default function UpcomingEventsCalendar() {
             <div className="font-semibold">
               {format(weekStart, 'MMM d')} - {format(weekEnd, 'MMM d, yyyy')}
             </div>
-            <div className="text-xs text-muted-foreground">Week View</div>
+            <div className="text-xs text-muted-foreground">Economic Events</div>
           </div>
           <Button
             variant="outline"
@@ -190,9 +190,14 @@ export default function UpcomingEventsCalendar() {
           </Button>
         </div>
 
-        {/* Week Days */}
-        <div className="grid grid-cols-7 gap-1">
-          {weekDays.map(day => {
+        {/* Mobile: Horizontal Day Cards */}
+        <div className="space-y-3">
+          {weekDays
+            .filter((day) => {
+              // Only show present and future dates on mobile
+              return !isBefore(startOfDay(day), startOfDay(new Date()));
+            })
+            .map(day => {
             const dayEvents = weekEvents.filter(event => 
               isSameDay(new Date(event.eventDate), day)
             );
@@ -200,54 +205,59 @@ export default function UpcomingEventsCalendar() {
             return (
               <div
                 key={day.toISOString()}
-                className={`min-h-[60px] p-1 border rounded text-xs ${
-                  isSameDay(day, new Date()) ? 'bg-blue-50 border-blue-200' : 'bg-gray-50'
+                className={`relative p-4 border rounded-lg cursor-pointer transition-colors hover:bg-accent/50 ${
+                  isSameDay(day, new Date()) ? 'bg-blue-50 border-blue-200' : 'bg-card'
                 }`}
                 onClick={() => {
                   setSelectedDay(day);
                   setMobileViewMode('day');
                 }}
               >
-                <div className="text-center font-medium mb-1">
-                  {format(day, 'EEE')}
-                </div>
-                <div className="text-center text-muted-foreground mb-1">
-                  {format(day, 'd')}
-                </div>
+                {/* Event count badge */}
                 {dayEvents.length > 0 && (
-                  <div className="text-center">
-                    <Badge variant="secondary" className="text-xs">
-                      {dayEvents.length}
-                    </Badge>
+                  <div className="absolute top-2 right-2 bg-primary/80 text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
+                    {dayEvents.length}
                   </div>
                 )}
+                
+                {/* Horizontal layout: Day info on left, events on right */}
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
+                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                  </div>
+                  <div className="flex-1">
+                    {dayEvents.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {dayEvents.slice(0, 6).map((event, i) => (
+                          <div 
+                            key={i} 
+                            className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                              getImpactColor(event.impact) === 'text-red-600' ? 'bg-red-100 text-red-700' :
+                              getImpactColor(event.impact) === 'text-yellow-600' ? 'bg-yellow-100 text-yellow-700' :
+                              getImpactColor(event.impact) === 'text-green-600' ? 'bg-green-100 text-green-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            <span>{getEventIcon(event)}</span>
+                            <span className="truncate max-w-[120px]">{event.title}</span>
+                          </div>
+                        ))}
+                        {dayEvents.length > 6 && (
+                          <div className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-1">
+                            +{dayEvents.length - 6} more
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-muted-foreground">No Economic Events</div>
+                    )}
+                  </div>
+                </div>
               </div>
             );
           })}
         </div>
-
-        {/* Week Events Summary */}
-        {weekEvents.length > 0 && (
-          <div className="space-y-2">
-            <div className="font-medium text-sm">This Week's Events:</div>
-            {weekEvents.slice(0, 5).map(event => (
-              <div key={event.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                <span>{getEventIcon(event)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm truncate">{event.title}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {format(new Date(event.eventDate), 'MMM d, h:mm a')} • {event.stockTicker}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {weekEvents.length > 5 && (
-              <div className="text-xs text-muted-foreground text-center">
-                +{weekEvents.length - 5} more events this week
-              </div>
-            )}
-          </div>
-        )}
       </div>
     );
   };

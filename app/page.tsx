@@ -76,6 +76,7 @@ export default function HomePage() {
   const [showPastInstructions, setShowPastInstructions] = useState(false)
   const [showFutureInstructions, setShowFutureInstructions] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [onboardingChecked, setOnboardingChecked] = useState(false)
   const [isShowingDefaults, setIsShowingDefaults] = useState(false) // Track if showing UI-only defaults
   const [todaysEvents, setTodaysEvents] = useState<EconomicEvent[]>([])
   const [eventsLoading, setEventsLoading] = useState(false)
@@ -113,7 +114,9 @@ export default function HomePage() {
   // Show onboarding for new users (with a small delay to avoid immediate popup)
   useEffect(() => {
     const checkOnboardingStatus = async () => {
-      if (isShowingDefaults && !loading && user) {
+      if (!loading && user && !showOnboarding && !onboardingChecked) {
+        setOnboardingChecked(true) // Mark as checked to prevent multiple calls
+        
         try {
           const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
           if (!token) return
@@ -140,8 +143,11 @@ export default function HomePage() {
       }
     }
     
-    checkOnboardingStatus()
-  }, [isShowingDefaults, loading, user])
+    // Only check onboarding status once when user is loaded
+    if (user && !loading && !onboardingChecked) {
+      checkOnboardingStatus()
+    }
+  }, [user, loading, onboardingChecked])
 
   // Utility function to reset onboarding (for testing)
   useEffect(() => {
