@@ -560,14 +560,11 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                 onMouseEnter={() => setHoveredDate(day)}
                 onMouseLeave={() => setHoveredDate(null)}
                 onClick={() => {
-                  // On mobile, show modal with all events for the day
+                  // On mobile, navigate to weekly view to allow individual stock selection
                   if (isMobile) {
                     if (dayEvents.length > 0) {
-                      setOverflowModal({ 
-                        date: dateKey, 
-                        events: dayEvents,
-                        dayTitle: format(day, 'EEEE, MMMM d, yyyy')
-                      });
+                      setSelectedDate(day);
+                      setViewMode('week');
                     }
                     return;
                   }
@@ -604,6 +601,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                           className="relative group"
                           onClick={(e: MouseEvent) => {
                             e.stopPropagation();
+                            // On mobile, don't handle individual stock clicks in monthly view
+                            if (isMobile) return;
                             handleEventClick(event, e);
                           }}
                         >
@@ -623,6 +622,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                           className="relative group"
                           onClick={(e: MouseEvent) => {
                             e.stopPropagation();
+                            // On mobile, don't handle individual stock clicks in monthly view
+                            if (isMobile) return;
                             handleEventClick(event, e);
                           }}
                         >
@@ -642,6 +643,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                           className="relative group"
                           onClick={(e: MouseEvent) => {
                             e.stopPropagation();
+                            // On mobile, don't handle individual stock clicks in monthly view
+                            if (isMobile) return;
                             handleEventClick(event, e);
                           }}
                         >
@@ -657,7 +660,13 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                           className="w-8 h-8 flex items-center justify-center bg-gray-500 text-red-500 text-xs rounded hover:bg-gray-600"
                           onClick={e => {
                             e.stopPropagation();
-                            setOverflowModal({ date: dateKey, events: dayEvents });
+                            // On mobile, navigate to weekly view instead of opening modal
+                            if (isMobile) {
+                              setSelectedDate(day);
+                              setViewMode('week');
+                            } else {
+                              setOverflowModal({ date: dateKey, events: dayEvents });
+                            }
                           }}
                         >
                           +{overflowCount}
