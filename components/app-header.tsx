@@ -28,19 +28,9 @@ export function AppHeader() {
     return (
       <header className="bg-slate-900 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          {/* Mobile Centered Layout with Right Corner Controls */}
-          <div className="relative mb-8">
-            {/* Centered Welcome Message */}
-            <div className="text-center">
-              <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
-              <div className="flex items-center justify-center space-x-2 mt-1">
-                <TrendingUp className="h-6 w-6 text-blue-400" />
-                <span className="text-lg text-slate-400">Track . Analyze . Succeed</span>
-              </div>
-            </div>
-            
-            {/* Upper Right Corner Controls - Stacked */}
-            <div className="absolute top-0 right-0 flex flex-col items-center space-y-1">
+          {/* Upper Right Corner Controls - More Space */}
+          <div className="flex justify-end mb-6">
+            <div className="flex flex-col items-center space-y-2">
               <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-8 w-8 p-0">
                 <LogOut className="h-3 w-3" />
                 <span className="sr-only">Log Out</span>
@@ -49,40 +39,49 @@ export function AppHeader() {
             </div>
           </div>
           
-          {/* Mobile Navigation Icons - Centered */}
-          <div className="flex items-center justify-center space-x-8">
+          {/* Centered Welcome Message - Moved Down */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
+            <div className="flex items-center justify-center space-x-2 mt-1">
+              <TrendingUp className="h-6 w-6 text-blue-400" />
+              <span className="text-lg text-slate-400">Track . Analyze . Succeed</span>
+            </div>
+          </div>
+          
+          {/* Mobile Navigation Icons - Smaller and Moved Down */}
+          <div className="flex items-center justify-center space-x-8 mt-4">
             {/* Calendar */}
             <Link href="/calendar" className="flex flex-col items-center group">
-              <div className="h-12 w-12 flex items-center justify-center bg-blue-500/20 rounded-full group-hover:bg-blue-500/30 transition-colors">
-                <CalendarIcon className="h-7 w-7 text-blue-400 group-hover:text-blue-300 transition-colors" />
+              <div className="h-10 w-10 flex items-center justify-center bg-blue-500/20 rounded-full group-hover:bg-blue-500/30 transition-colors">
+                <CalendarIcon className="h-6 w-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
-              <span className="mt-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Calendar</span>
+              <span className="mt-1.5 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Calendar</span>
             </Link>
             
             {/* Split + ConcoreNews */}
             <Link href="/split-screen" className="flex flex-col items-center group">
-              <div className="h-12 w-12 flex items-center justify-center bg-gray-500/20 rounded-full group-hover:bg-gray-500/30 transition-colors">
-                <div className="flex items-center space-x-1">
-                  <X className="h-4 w-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
-                  <Plus className="h-3.5 w-3.5 text-gray-500 group-hover:text-gray-400 transition-colors" />
+              <div className="h-10 w-10 flex items-center justify-center bg-gray-500/20 rounded-full group-hover:bg-gray-500/30 transition-colors">
+                <div className="flex items-center space-x-0.5">
+                  <X className="h-3.5 w-3.5 text-gray-400 group-hover:text-gray-300 transition-colors" />
+                  <Plus className="h-3 w-3 text-gray-500 group-hover:text-gray-400 transition-colors" />
                   <Image
                     src="/images/concore-logo.png"
                     alt="ConcoreNews"
-                    width={16}
-                    height={16}
+                    width={14}
+                    height={14}
                     className="rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
                   />
                 </div>
               </div>
-              <span className="mt-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Split Mode</span>
+              <span className="mt-1.5 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Split Mode</span>
             </Link>
             
             {/* Journal */}
             <Link href="/trade-reviews" className="flex flex-col items-center group">
-              <div className="h-12 w-12 flex items-center justify-center bg-amber-500/20 rounded-full group-hover:bg-amber-500/30 transition-colors">
-                <BookOpen className="h-7 w-7 text-amber-400 group-hover:text-amber-300 transition-colors" />
+              <div className="h-10 w-10 flex items-center justify-center bg-amber-500/20 rounded-full group-hover:bg-amber-500/30 transition-colors">
+                <BookOpen className="h-6 w-6 text-amber-400 group-hover:text-amber-300 transition-colors" />
               </div>
-              <span className="mt-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Journal</span>
+              <span className="mt-1.5 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Journal</span>
             </Link>
           </div>
         </div>
