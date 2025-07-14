@@ -119,8 +119,12 @@ export default function HomePage() {
         
         try {
           const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
-          if (!token) return
+          if (!token) {
+            console.log('No token available, skipping onboarding check')
+            return
+          }
           
+          console.log('Checking onboarding status for user:', user.uid)
           const response = await fetchWithAuth('/api/user-preferences', {
             method: 'GET',
             headers: {
@@ -130,15 +134,24 @@ export default function HomePage() {
           
           if (response.ok) {
             const result = await response.json()
-            if (result.success && !result.data.hasSeenOnboarding) {
+            console.log('Onboarding check result:', result)
+            
+            // Only show onboarding if we explicitly confirm user hasn't seen it
+            if (result.success && result.data && result.data.hasSeenOnboarding === false) {
+              console.log('User has not seen onboarding, showing popup')
               // Small delay to avoid immediate popup
               setTimeout(() => {
                 setShowOnboarding(true)
               }, 1000)
+            } else {
+              console.log('User has seen onboarding or data unavailable, not showing popup')
             }
+          } else {
+            console.log('Failed to fetch user preferences, not showing onboarding popup')
           }
         } catch (error) {
           console.error('Error checking onboarding status:', error)
+          // Don't show popup if there's an error
         }
       }
     }
@@ -996,13 +1009,16 @@ export default function HomePage() {
         <OnboardingPopup
           isVisible={showOnboarding}
           onClose={async () => {
+            console.log('Closing onboarding popup and marking as seen')
             setShowOnboarding(false)
+            
             // Mark that user has seen onboarding
             if (user) {
               try {
                 const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
                 if (token) {
-                  await fetchWithAuth('/api/user-preferences', {
+                  console.log('Updating user preferences to mark onboarding as seen')
+                  const response = await fetchWithAuth('/api/user-preferences', {
                     method: 'POST',
                     headers: {
                       'Authorization': `Bearer ${token}`,
@@ -1010,10 +1026,21 @@ export default function HomePage() {
                     },
                     body: JSON.stringify({ hasSeenOnboarding: true })
                   })
+                  
+                  if (response.ok) {
+                    const result = await response.json()
+                    console.log('Successfully marked onboarding as seen:', result)
+                  } else {
+                    console.error('Failed to update user preferences:', await response.text())
+                  }
+                } else {
+                  console.error('No token available to update user preferences')
                 }
               } catch (error) {
                 console.error('Error marking onboarding as seen:', error)
               }
+            } else {
+              console.error('No user available to update preferences')
             }
           }}
         />

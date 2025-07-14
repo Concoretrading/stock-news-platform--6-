@@ -15,7 +15,7 @@ export async function fetchNews(userId: string, filters?: { ticker?: string; fro
       query = query.where('stockTickers', 'array-contains', filters.ticker.toUpperCase());
     }
     
-    const snapshot = await query.orderBy('date', 'desc').limit(50).get();
+    const snapshot = await query.orderBy('date', 'desc').limit(300).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Error fetching news:', error);

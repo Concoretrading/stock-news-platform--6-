@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       query = query.where('stockTickers', 'array-contains', ticker.toUpperCase());
     }
     
-    const catalystsSnap = await query.orderBy('date', 'desc').limit(50).get();
+    const catalystsSnap = await query.orderBy('date', 'desc').limit(300).get();
     const catalysts = catalystsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json({ success: true, data: catalysts });
