@@ -29,10 +29,10 @@ export function AppHeader() {
       <header className="bg-slate-900 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
           {/* Mobile Top Bar with Welcome Message and Upper Right Controls */}
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-8">
             {/* Welcome Message */}
             <div className="text-center flex-1">
-              <h1 className="text-xl font-bold">Welcome to ConcoreNews</h1>
+              <h1 className="text-2xl font-bold">Welcome to ConcoreNews</h1>
               <div className="flex items-center justify-center space-x-2 mt-1">
                 <TrendingUp className="h-4 w-4 text-blue-400" />
                 <span className="text-sm text-slate-400">Track . Analyze . Succeed</span>
