@@ -13,7 +13,7 @@ import { useAuth } from '@/components/auth-provider';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { StockSelector } from '@/components/stock-selector';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import tickers from '@/lib/tickers.json';
 
 interface Stock {
@@ -375,10 +375,27 @@ export default function SplitScreenPage() {
 
               {/* Stock Selector */}
               <div className="p-4 border-b">
-                <StockSelector
-                  value={selectedStock}
-                  onChange={setSelectedStock}
-                />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Select Stock</label>
+                  <Select 
+                    value={selectedStock?.symbol || ""} 
+                    onValueChange={(value) => {
+                      const stock = watchlist.find(s => s.symbol === value);
+                      setSelectedStock(stock || null);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Choose a stock from your watchlist" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {watchlist.map((stock) => (
+                        <SelectItem key={stock.symbol} value={stock.symbol}>
+                          {stock.symbol} - {stock.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Watchlist */}
