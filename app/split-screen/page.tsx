@@ -401,81 +401,62 @@ export default function SplitScreenPage() {
             </div>
           </div>
 
-          {/* Enhanced Mobile Divider */}
+          {/* Prominent Grab to Move Divider */}
           <div
-            className={`relative group touch-none transition-all duration-200 ${
+            className={`relative group touch-none transition-all duration-200 flex items-center justify-center ${
               isDragging 
-                ? 'h-8 md:h-full md:w-8 bg-blue-500' 
-                : 'h-6 md:h-full md:w-4 bg-border hover:bg-blue-400'
+                ? 'h-12 md:h-full md:w-12 bg-blue-600 shadow-lg' 
+                : 'h-10 md:h-full md:w-10 bg-gray-200 hover:bg-blue-500'
             } cursor-row-resize md:cursor-col-resize`}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
-            {/* Enhanced Mobile Drag Handle */}
+            {/* Prominent Grab Button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              {/* Mobile: Horizontal drag indicator */}
+              {/* Mobile: Horizontal grab button */}
               <div className="flex md:hidden items-center justify-center w-full h-full">
-                <div className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                  isDragging ? 'scale-110' : 'scale-100'
+                <div className={`flex flex-col items-center justify-center space-y-1 px-4 py-2 rounded-lg transition-all duration-200 ${
+                  isDragging 
+                    ? 'bg-white/20 text-white scale-105' 
+                    : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
                 }`}>
-                  {/* Horizontal grip lines */}
+                  <Move className="h-4 w-4" />
+                  <span className="text-xs font-semibold whitespace-nowrap">Grab to Move</span>
                   <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
-                        isDragging ? 'bg-white' : 'bg-gray-400'
-                      }`} />
-                    ))}
-                  </div>
-                  {/* Move icon */}
-                  <Move className={`h-3 w-3 transition-colors ${
-                    isDragging ? 'text-white' : 'text-gray-500'
-                  }`} />
-                  {/* Horizontal grip lines */}
-                  <div className="flex space-x-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
-                        isDragging ? 'bg-white' : 'bg-gray-400'
-                      }`} />
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-1 h-1 rounded-full bg-current opacity-60" />
                     ))}
                   </div>
                 </div>
               </div>
               
-              {/* Desktop: Vertical drag indicator */}
+              {/* Desktop: Vertical grab button */}
               <div className="hidden md:flex flex-col items-center justify-center h-full">
-                <div className={`flex flex-col items-center justify-center space-y-1 transition-all duration-200 ${
-                  isDragging ? 'scale-110' : 'scale-100'
+                <div className={`flex flex-col items-center justify-center space-y-2 px-2 py-4 rounded-lg transition-all duration-200 ${
+                  isDragging 
+                    ? 'bg-white/20 text-white scale-105' 
+                    : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
                 }`}>
-                  {/* Vertical grip lines */}
-                  <div className="flex flex-col space-y-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
-                        isDragging ? 'bg-white' : 'bg-gray-400'
-                      }`} />
-                    ))}
+                  <Move className="h-4 w-4" />
+                  <div className="flex flex-col space-y-1 items-center">
+                    <span className="text-xs font-semibold transform -rotate-90 whitespace-nowrap">Grab</span>
+                    <span className="text-xs font-semibold transform -rotate-90 whitespace-nowrap">to Move</span>
                   </div>
-                  {/* Move icon */}
-                  <Move className={`h-3 w-3 transition-colors ${
-                    isDragging ? 'text-white' : 'text-gray-500'
-                  }`} />
-                  {/* Vertical grip lines */}
                   <div className="flex flex-col space-y-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <div key={i} className={`w-1 h-1 rounded-full transition-colors ${
-                        isDragging ? 'bg-white' : 'bg-gray-400'
-                      }`} />
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="w-1 h-1 rounded-full bg-current opacity-60" />
                     ))}
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Touch hint label */}
+            {/* Enhanced Touch Instructions */}
             {!isDragging && (
-              <div className="absolute inset-x-0 md:inset-y-0 top-full md:top-auto md:left-full transform md:-translate-y-1/2 mt-1 md:mt-0 md:ml-2 flex md:flex-col items-center justify-center pointer-events-none">
-                <div className="bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="md:hidden">Hold & drag up/down</span>
-                  <span className="hidden md:inline">Hold & drag left/right</span>
+              <div className="absolute inset-x-0 md:inset-y-0 top-full md:top-auto md:left-full transform md:-translate-y-1/2 mt-2 md:mt-0 md:ml-3 flex md:flex-col items-center justify-center pointer-events-none">
+                <div className="bg-blue-600 text-white text-xs px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap font-medium opacity-0 group-hover:opacity-100 transition-opacity border border-blue-500">
+                  <span className="md:hidden">👆 Hold & drag up/down to resize</span>
+                  <span className="hidden md:inline">👈 Hold & drag left/right to resize</span>
                 </div>
               </div>
             )}

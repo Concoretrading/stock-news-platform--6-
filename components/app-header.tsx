@@ -27,9 +27,9 @@ export function AppHeader() {
     // Mobile Layout
     return (
       <header className="bg-slate-900 text-white shadow-lg">
-        <div className="container mx-auto px-4 py-4">
-          {/* Upper Right Corner Controls - Side by Side */}
-          <div className="flex justify-end mb-4">
+        <div className="container mx-auto px-4 py-2">
+          {/* Upper Right Corner Controls - Higher Up */}
+          <div className="flex justify-end mb-2">
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-6 w-6 p-0">
                 <LogOut className="h-3 w-3" />
@@ -39,8 +39,8 @@ export function AppHeader() {
             </div>
           </div>
           
-          {/* Centered Welcome Message - Moved Down */}
-          <div className="text-center mb-8">
+          {/* Centered Welcome Message - Moved Up */}
+          <div className="text-center mb-6">
             <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
             <div className="flex items-center justify-center space-x-2 mt-1">
               <TrendingUp className="h-6 w-6 text-blue-400" />

@@ -234,7 +234,7 @@ export default function UpcomingEventsCalendar() {
                         {dayEvents.slice(0, 6).map((event, i) => (
                           <div key={i} className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1">
                             <span className={`text-xs ${getImpactColor(event.impact)}`}>{getEventIcon(event)}</span>
-                            <div className="text-xs font-medium truncate max-w-[100px]">{event.title}</div>
+                            <div className="text-xs font-medium truncate max-w-[80px]">{event.title}</div>
                           </div>
                         ))}
                         {dayEvents.length > 6 && (
