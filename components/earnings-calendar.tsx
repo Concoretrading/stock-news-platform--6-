@@ -552,12 +552,26 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                 key={dateKey}
                 className={cn(
                   "min-h-[140px] p-2 border rounded transition-colors duration-200 relative",
-                  isHoveredWeek && "bg-accent/50 cursor-pointer",
-                  !dayEvents.length && "hover:bg-accent/25"
+                  isHoveredWeek && "bg-accent/50",
+                  !isMobile && isHoveredWeek && "cursor-pointer",
+                  !isMobile && !dayEvents.length && "hover:bg-accent/25",
+                  isMobile && dayEvents.length > 0 && "cursor-pointer hover:bg-accent/25"
                 )}
                 onMouseEnter={() => setHoveredDate(day)}
                 onMouseLeave={() => setHoveredDate(null)}
                 onClick={() => {
+                  // On mobile, show modal with all events for the day
+                  if (isMobile) {
+                    if (dayEvents.length > 0) {
+                      setOverflowModal({ 
+                        date: dateKey, 
+                        events: dayEvents,
+                        dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                      });
+                    }
+                    return;
+                  }
+                  
                   if (isHoveredWeek) {
                     setSelectedDate(day);
                     setViewMode('week');
@@ -668,7 +682,14 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
               <ScrollArea className="max-h-[80vh]">
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {overflowModal.events.map((event, i) => (
-                    <div key={i} className="flex items-center gap-3 p-2 border rounded bg-card">
+                    <div 
+                      key={i} 
+                      className="flex items-center gap-3 p-2 border rounded bg-card cursor-pointer hover:bg-accent transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEventClick(event, e);
+                      }}
+                    >
                       <CompanyLogo event={event} size="large" />
                       <div>
                         <div className="font-semibold">{event.companyName}</div>
@@ -771,7 +792,14 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                       <>
                         <div className="grid grid-cols-2 gap-3">
                           {dayEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
-                            <div key={i} className="flex flex-col items-center gap-2 bg-muted/30 rounded-lg p-3">
+                            <div 
+                              key={i} 
+                              className="flex flex-col items-center gap-2 bg-muted/30 rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEventClick(event, e);
+                              }}
+                            >
                               <CompanyLogo event={event} size="small" />
                               <div className="text-sm font-semibold text-center">{event.stockTicker}</div>
                               <div className="text-xs text-muted-foreground text-center truncate w-full">
@@ -809,7 +837,14 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                     {dayEvents.length > 0 ? (
                       <div className="grid grid-cols-2 gap-1">
                         {dayEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
-                          <div key={i} className="flex flex-col items-center gap-1">
+                          <div 
+                            key={i} 
+                            className="flex flex-col items-center gap-1 cursor-pointer hover:bg-muted/30 rounded p-1 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEventClick(event, e);
+                            }}
+                          >
                             <CompanyLogo event={event} size="small" />
                             <div className="text-xs text-center">{event.stockTicker}</div>
                           </div>

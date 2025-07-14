@@ -166,7 +166,7 @@ export function XAuth() {
 
   if (xUser) {
     return (
-      <div className="w-full max-w-lg h-[500px] max-h-[600px] flex flex-col border rounded-lg overflow-hidden bg-white dark:bg-gray-800 flex-shrink-0">
+      <div className="w-full max-w-lg h-[350px] md:h-[500px] max-h-[400px] md:max-h-[600px] flex flex-col border rounded-lg overflow-hidden bg-white dark:bg-gray-800 flex-shrink-0">
         {/* User Profile Header */}
         <div className="p-4 border-b flex-shrink-0">
           <div className="flex items-center gap-3 mb-3">
@@ -200,12 +200,12 @@ export function XAuth() {
             {/* Twitter Timeline Widget */}
             <div 
               className="w-full h-full relative"
-              style={{ minHeight: '400px', maxHeight: '600px' }}
+              style={{ minHeight: '250px', maxHeight: '350px' }}
               dangerouslySetInnerHTML={{
                 __html: `
                   <a 
                     class="twitter-timeline" 
-                    data-height="400" 
+                    data-height="300" 
                     data-width="100%" 
                     data-theme="light" 
                     data-chrome="noheader nofooter noborders" 

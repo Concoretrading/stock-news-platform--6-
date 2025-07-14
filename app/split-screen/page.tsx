@@ -362,9 +362,10 @@ export default function SplitScreenPage() {
           <div 
             className="bg-background border-b md:border-b-0 md:border-l w-full md:w-auto order-first md:order-last flex-none"
             style={{ 
-              height: isClient && window.innerWidth < 768 ? `${leftPanelWidth}%` : 'auto',
+              height: isClient && window.innerWidth < 768 ? `${Math.min(leftPanelWidth, 45)}%` : 'auto',
               width: isClient && window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%',
               minHeight: isClient && window.innerWidth < 768 ? '200px' : '100%',
+              maxHeight: isClient && window.innerWidth < 768 ? '45vh' : 'none',
               minWidth: isClient && window.innerWidth >= 768 ? '300px' : 'auto'
             }}
           >
@@ -434,9 +435,9 @@ export default function SplitScreenPage() {
               isDragOver ? 'bg-blue-50 border-blue-300' : ''
             }`}
             style={{ 
-              height: isClient && window.innerWidth < 768 ? `${100 - leftPanelWidth}%` : 'auto',
+              height: isClient && window.innerWidth < 768 ? `${Math.max(100 - Math.min(leftPanelWidth, 45), 55)}%` : 'auto',
               width: isClient && window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%',
-              minHeight: isClient && window.innerWidth < 768 ? '200px' : '100%',
+              minHeight: isClient && window.innerWidth < 768 ? '55vh' : '100%',
               minWidth: isClient && window.innerWidth >= 768 ? '300px' : 'auto'
             }}
             onDragOver={handleDragOver}
