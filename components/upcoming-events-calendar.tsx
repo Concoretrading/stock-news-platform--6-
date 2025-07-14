@@ -182,8 +182,8 @@ export default function UpcomingEventsCalendar() {
         
         {/* Mobile vs Desktop Layout */}
         {isMobile ? (
-          /* MOBILE: Ultra Simple Day List */
-          <div className="space-y-4">
+          /* MOBILE: Clean Readable Day Cards */
+          <div className="space-y-6">
             {weekDays
               .filter((day) => !isBefore(startOfDay(day), startOfDay(new Date())))
               .map((day) => {
@@ -193,9 +193,9 @@ export default function UpcomingEventsCalendar() {
                 );
 
                 return (
-                  <div 
+                  <Card 
                     key={dateKey}
-                    className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
+                    className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-primary/20 p-6"
                     onClick={() => {
                       setOverflowModal({ 
                         date: dateKey, 
@@ -204,29 +204,55 @@ export default function UpcomingEventsCalendar() {
                       });
                     }}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                          {format(day, 'EEEE')}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {format(day, 'MMMM d, yyyy')}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {dayEvents.length > 0 ? (
-                          <>
-                            <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium px-3 py-1 rounded-full">
-                              {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
-                            </span>
-                            <ChevronRight className="h-5 w-5 text-gray-400" />
-                          </>
-                        ) : (
-                          <span className="text-sm text-gray-400">No events</span>
-                        )}
-                      </div>
+                    <div className="text-center mb-6">
+                      <h3 className="text-2xl font-bold text-primary mb-1">
+                        {format(day, 'EEEE')}
+                      </h3>
+                      <p className="text-base text-muted-foreground">
+                        {format(day, 'MMMM d, yyyy')}
+                      </p>
                     </div>
-                  </div>
+                    
+                    <div className="space-y-4">
+                      {dayEvents.length > 0 ? (
+                        <>
+                          <div className="grid gap-3">
+                            {dayEvents.slice(0, 3).map((event, i) => (
+                              <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
+                                <div className={`text-2xl ${getImpactColor(event.impact)}`}>
+                                  {getEventIcon(event)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-semibold truncate">{event.title}</div>
+                                  <div className="text-xs text-muted-foreground">{event.stockTicker}</div>
+                                </div>
+                                <div className={`px-2 py-1 rounded text-xs font-medium ${
+                                  event.impact === 'HIGH' ? 'bg-red-100 text-red-700' :
+                                  event.impact === 'MEDIUM' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-green-100 text-green-700'
+                                }`}>
+                                  {event.impact}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          {dayEvents.length > 3 && (
+                            <div className="text-center">
+                              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-2">
+                                <span className="text-sm font-medium">+{dayEvents.length - 3} more events</span>
+                                <ChevronRight className="h-4 w-4" />
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-center py-8">
+                          <div className="text-3xl mb-3">📅</div>
+                          <div className="text-base text-muted-foreground">No events scheduled</div>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
                 );
               })}
           </div>

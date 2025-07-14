@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, Calendar as CalendarIcon, ExternalLink, Clock, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, ExternalLink, Clock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/components/auth-provider';
 import { getFirestore, collection, query, where, getDocs, limit } from 'firebase/firestore';
@@ -708,7 +708,7 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
         </div>
         
         {/* Mobile: Stack days vertically, Desktop: Grid layout */}
-        <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
+        <div className="space-y-6 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
           {weekDays
             .filter((day) => {
               // On mobile, filter out past dates (only show today and future)
@@ -740,8 +740,8 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                 className={cn(
                   "relative cursor-pointer transition-colors duration-200 hover:bg-accent/50",
                   dayEvents.length > 0 && "border-primary/20",
-                  // Mobile: horizontal layout, Desktop: vertical layout
-                  "p-3 sm:p-4"
+                  // Mobile: larger padding, Desktop: standard padding
+                  "p-6 sm:p-4"
                 )}
                 onClick={() => {
                   setSelectedDate(day);
@@ -760,29 +760,40 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
                   </div>
                 )}
                 
-                {/* Mobile Layout: Horizontal */}
-                <div className="sm:hidden flex items-center gap-4">
-                  <div className="flex-shrink-0">
-                    <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
-                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
+                {/* Mobile Layout: Clean Vertical Card */}
+                <div className="sm:hidden">
+                  <div className="text-center mb-4">
+                    <div className="text-xl font-bold text-primary">{format(day, 'EEEE')}</div>
+                    <div className="text-base text-muted-foreground">{format(day, 'MMM d')}</div>
                   </div>
-                  <div className="flex-1">
+                  <div className="space-y-3">
                     {dayEvents.length > 0 ? (
-                      <div className="flex flex-wrap gap-2">
-                        {dayEvents.slice(0, 6).map((event: EarningsEvent, i: number) => (
-                          <div key={i} className="flex items-center gap-1 bg-muted/50 rounded-full px-2 py-1">
-                            <CompanyLogo event={event} size="small" />
-                            <div className="text-xs font-medium">{event.stockTicker}</div>
-                          </div>
-                        ))}
-                        {dayEvents.length > 6 && (
-                          <div className="text-xs text-muted-foreground bg-muted rounded-full px-2 py-1">
-                            +{dayEvents.length - 6} more
+                      <>
+                        <div className="grid grid-cols-2 gap-3">
+                          {dayEvents.slice(0, 4).map((event: EarningsEvent, i: number) => (
+                            <div key={i} className="flex flex-col items-center gap-2 bg-muted/30 rounded-lg p-3">
+                              <CompanyLogo event={event} size="small" />
+                              <div className="text-sm font-semibold text-center">{event.stockTicker}</div>
+                              <div className="text-xs text-muted-foreground text-center truncate w-full">
+                                {event.companyName}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {dayEvents.length > 4 && (
+                          <div className="text-center">
+                            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-2">
+                              <span className="text-sm font-medium">+{dayEvents.length - 4} more companies</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </div>
                           </div>
                         )}
-                      </div>
+                      </>
                     ) : (
-                      <div className="text-sm text-muted-foreground">No Earnings</div>
+                      <div className="text-center py-8">
+                        <div className="text-muted-foreground mb-2">📊</div>
+                        <div className="text-sm text-muted-foreground">No Earnings</div>
+                      </div>
                     )}
                   </div>
                 </div>
