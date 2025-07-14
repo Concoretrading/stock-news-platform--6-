@@ -71,6 +71,12 @@ export default function SplitScreenPage() {
     setIsDragging(true);
   }, []);
 
+  // Handle touch events for mobile resizing
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !containerRef.current) return;
     
@@ -89,22 +95,55 @@ export default function SplitScreenPage() {
       const percentage = ((e.clientX - rect.left) / rect.width) * 100;
       setLeftPanelWidth(Math.min(Math.max(percentage, 20), 80));
     }
-  }, [isDragging]);
+  }, [isDragging, isClient]);
+
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    if (!isDragging || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const touch = e.touches[0];
+    
+    // Check if we're on mobile (flex-col) or desktop (flex-row)
+    const isMobile = isClient && window.innerWidth < 768;
+    
+    if (isMobile) {
+      // Mobile: vertical resize (Y axis)
+      const percentage = ((touch.clientY - rect.top) / rect.height) * 100;
+      setLeftPanelWidth(Math.min(Math.max(percentage, 20), 80));
+    } else {
+      // Desktop: horizontal resize (X axis)
+      const percentage = ((touch.clientX - rect.left) / rect.width) * 100;
+      setLeftPanelWidth(Math.min(Math.max(percentage, 20), 80));
+    }
+  }, [isDragging, isClient]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
 
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
   useEffect(() => {
     if (isDragging) {
+      // Mouse events
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
+      
+      // Touch events
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+      
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
       };
     }
-  }, [isDragging, handleMouseMove, handleMouseUp]);
+  }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   const loadUserWatchlist = async () => {
     if (!user) return;
@@ -364,8 +403,9 @@ export default function SplitScreenPage() {
 
           {/* Responsive Divider */}
           <div
-            className="h-1 md:h-full md:w-1 bg-border hover:bg-blue-500 cursor-row-resize md:cursor-col-resize relative group"
+            className="h-2 md:h-full md:w-2 bg-border hover:bg-blue-500 cursor-row-resize md:cursor-col-resize relative group touch-none"
             onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
             {/* Grab Block */}
             <div className="absolute inset-x-0 md:inset-y-0 top-1/2 md:top-auto md:left-1/2 transform -translate-y-1/2 md:-translate-y-0 md:-translate-x-1/2 flex items-center justify-center">

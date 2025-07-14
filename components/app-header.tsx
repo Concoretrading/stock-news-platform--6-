@@ -32,10 +32,10 @@ export function AppHeader() {
           <div className="relative mb-8">
             {/* Centered Welcome Message */}
             <div className="text-center">
-              <h1 className="text-2xl font-bold">Welcome to ConcoreNews</h1>
+              <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
               <div className="flex items-center justify-center space-x-2 mt-1">
-                <TrendingUp className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-slate-400">Track . Analyze . Succeed</span>
+                <TrendingUp className="h-6 w-6 text-blue-400" />
+                <span className="text-lg text-slate-400">Track . Analyze . Succeed</span>
               </div>
             </div>
             
@@ -53,36 +53,36 @@ export function AppHeader() {
           <div className="flex items-center justify-center space-x-8">
             {/* Calendar */}
             <Link href="/calendar" className="flex flex-col items-center group">
-              <div className="h-8 w-8 flex items-center justify-center bg-blue-500/20 rounded-full group-hover:bg-blue-500/30 transition-colors">
-                <CalendarIcon className="h-5 w-5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+              <div className="h-12 w-12 flex items-center justify-center bg-blue-500/20 rounded-full group-hover:bg-blue-500/30 transition-colors">
+                <CalendarIcon className="h-7 w-7 text-blue-400 group-hover:text-blue-300 transition-colors" />
               </div>
-              <span className="mt-1 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Calendar</span>
+              <span className="mt-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Calendar</span>
             </Link>
             
             {/* Split + ConcoreNews */}
             <Link href="/split-screen" className="flex flex-col items-center group">
-              <div className="h-8 w-8 flex items-center justify-center bg-gray-500/20 rounded-full group-hover:bg-gray-500/30 transition-colors">
-                <div className="flex items-center space-x-0.5">
-                  <X className="h-3 w-3 text-gray-400 group-hover:text-gray-300 transition-colors" />
-                  <Plus className="h-2.5 w-2.5 text-gray-500 group-hover:text-gray-400 transition-colors" />
+              <div className="h-12 w-12 flex items-center justify-center bg-gray-500/20 rounded-full group-hover:bg-gray-500/30 transition-colors">
+                <div className="flex items-center space-x-1">
+                  <X className="h-4 w-4 text-gray-400 group-hover:text-gray-300 transition-colors" />
+                  <Plus className="h-3.5 w-3.5 text-gray-500 group-hover:text-gray-400 transition-colors" />
                   <Image
                     src="/images/concore-logo.png"
                     alt="ConcoreNews"
-                    width={12}
-                    height={12}
+                    width={16}
+                    height={16}
                     className="rounded-full opacity-60 group-hover:opacity-80 transition-opacity"
                   />
                 </div>
               </div>
-              <span className="mt-1 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Split Mode</span>
+              <span className="mt-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Split Mode</span>
             </Link>
             
             {/* Journal */}
             <Link href="/trade-reviews" className="flex flex-col items-center group">
-              <div className="h-8 w-8 flex items-center justify-center bg-amber-500/20 rounded-full group-hover:bg-amber-500/30 transition-colors">
-                <BookOpen className="h-5 w-5 text-amber-400 group-hover:text-amber-300 transition-colors" />
+              <div className="h-12 w-12 flex items-center justify-center bg-amber-500/20 rounded-full group-hover:bg-amber-500/30 transition-colors">
+                <BookOpen className="h-7 w-7 text-amber-400 group-hover:text-amber-300 transition-colors" />
               </div>
-              <span className="mt-1 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Journal</span>
+              <span className="mt-2 text-sm font-medium text-slate-300 group-hover:text-white transition-colors">Journal</span>
             </Link>
           </div>
         </div>

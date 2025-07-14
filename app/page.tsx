@@ -708,37 +708,20 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                {/* Mobile: Show 5 stocks with slide navigation */}
+                {/* Mobile: Horizontal scrolling carousel */}
                 <div className="block sm:hidden">
                   <div className="relative">
-                    {/* Mobile Navigation Arrows */}
-                    {totalPages > 1 && (
-                      <>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={prevPage}
-                          disabled={currentPage === 0}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-gray-300 shadow-lg hover:bg-gray-50"
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={nextPage}
-                          disabled={currentPage === totalPages - 1}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-8 w-8 p-0 bg-white/90 backdrop-blur-sm border-gray-300 shadow-lg hover:bg-gray-50"
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )}
-                    
-                    {/* Mobile Grid - 3 stocks per page with wider cards */}
-                    <div className="grid grid-cols-3 gap-3 px-4">
-                      {visibleStocks.map((stock) => (
-                        <div key={stock.symbol} className="transform transition-transform hover:scale-105">
+                    {/* Mobile Horizontal Scroll Container */}
+                    <div 
+                      className="flex gap-3 px-4 overflow-x-auto scroll-smooth snap-x snap-mandatory hide-scrollbar"
+                      style={{
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        WebkitOverflowScrolling: 'touch'
+                      }}
+                    >
+                      {watchlist.map((stock) => (
+                        <div key={stock.symbol} className="flex-none w-[calc(33.333%-8px)] snap-start">
                           <StockCard 
                             ticker={stock.symbol}
                             name={stock.name}
@@ -748,29 +731,24 @@ export default function HomePage() {
                       ))}
                     </div>
                     
-                    {/* Mobile Page Indicators */}
-                    {totalPages > 1 && (
+                    {/* Mobile scroll indicator dots */}
+                    {watchlist.length > 3 && (
                       <div className="flex justify-center mt-4 space-x-2">
-                        {Array.from({ length: totalPages }).map((_, idx) => (
-                          <button
+                        {Array.from({ length: Math.ceil(watchlist.length / 3) }).map((_, idx) => (
+                          <div
                             key={idx}
-                            onClick={() => setCurrentPage(idx)}
-                            className={`w-2 h-2 rounded-full transition-colors touch-manipulation ${
-                              currentPage === idx ? 'bg-blue-600' : 'bg-gray-300 hover:bg-gray-400'
-                            }`}
+                            className="w-2 h-2 rounded-full bg-gray-300"
                           />
                         ))}
                       </div>
                     )}
                     
-                    {/* Mobile Page Counter */}
-                    {totalPages > 1 && (
-                      <div className="flex justify-center mt-2">
-                        <div className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
-                          {currentPage + 1} of {totalPages} • {watchlist.length} stocks total
-                        </div>
+                    {/* Mobile total counter */}
+                    <div className="flex justify-center mt-2">
+                      <div className="text-xs text-gray-500 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
+                        {watchlist.length} stocks total
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
                 
