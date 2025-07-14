@@ -31,11 +31,11 @@ export function AppHeader() {
           {/* Upper Right Corner Controls - Higher Up */}
           <div className="flex justify-end mb-2">
             <div className="flex items-center space-x-2">
+              <ThemeToggle />
               <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-6 w-6 p-0">
                 <LogOut className="h-3 w-3" />
                 <span className="sr-only">Log Out</span>
               </Button>
-              <ThemeToggle />
             </div>
           </div>
           
