@@ -565,15 +565,87 @@ export function ModernCalendar({ type = 'all' }: ModernCalendarProps) {
 
   const renderWeekView = () => {
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStartDate, i));
+    
     return (
       <>
         {renderViewToggles()}
-        <div className="flex justify-between items-center mb-4">
-          <Button variant="ghost" onClick={() => setWeekStartDate(addDays(weekStartDate, -7))}><ChevronLeft className="h-4 w-4" />Prev</Button>
-          <h2 className="text-xl font-bold">Week of {format(weekStartDate, 'MMM d, yyyy')}</h2>
-          <Button variant="ghost" onClick={() => setWeekStartDate(addDays(weekStartDate, 7))}>Next<ChevronRight className="h-4 w-4" /></Button>
+        <div className="flex justify-between items-center mb-4 md:mb-6">
+          <Button variant="ghost" onClick={() => setWeekStartDate(addDays(weekStartDate, -7))}>
+            <ChevronLeft className="h-4 w-4" />Prev
+          </Button>
+          <h2 className="text-lg md:text-xl font-bold">Week of {format(weekStartDate, 'MMM d, yyyy')}</h2>
+          <Button variant="ghost" onClick={() => setWeekStartDate(addDays(weekStartDate, 7))}>
+            Next<ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
-        <div className="grid grid-cols-7 gap-2">
+
+        {/* MOBILE: Large vertical day cards */}
+        <div className="block md:hidden space-y-6">
+          {weekDays
+            .filter((day) => !isPast(startOfDay(day)) || isToday(day)) // Show today and future days only
+            .map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const dayEvents = events[dateKey] || [];
+              return (
+                <Card 
+                  key={dateKey}
+                  className="cursor-pointer transition-all duration-200 hover:shadow-lg border-2 hover:border-primary/20 p-6"
+                  onClick={() => {
+                    setSelectedDate(day);
+                    setSelectedDayEvents(dayEvents);
+                  }}
+                >
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-primary mb-1">
+                      {format(day, 'EEEE')}
+                    </h3>
+                    <p className="text-base text-muted-foreground">
+                      {format(day, 'MMMM d, yyyy')}
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {dayEvents.length > 0 ? (
+                      <>
+                        <div className="grid gap-3">
+                          {getPrioritizedEvents(dayEvents).slice(0, 4).map((event, i) => (
+                            <div key={i} className="flex items-center gap-3 bg-muted/30 rounded-lg p-4">
+                              <div className="flex-shrink-0">
+                                {getEventTypeIcon(event.event_type)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-semibold truncate mb-1">{event.company_name}</div>
+                                <div className="text-xs text-muted-foreground">{event.ticker}</div>
+                              </div>
+                              <div className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700 flex-shrink-0">
+                                {event.event_type}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {dayEvents.length > 4 && (
+                          <div className="text-center">
+                            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-3">
+                              <span className="text-sm font-medium">+{dayEvents.length - 4} more events</span>
+                              <ChevronRight className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-12">
+                        <div className="text-5xl mb-4">📅</div>
+                        <div className="text-lg text-muted-foreground">No events scheduled</div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+        </div>
+
+        {/* DESKTOP: Original grid layout */}
+        <div className="hidden md:grid md:grid-cols-7 gap-2">
           {weekDays.map((day) => {
             const dateKey = format(day, 'yyyy-MM-dd');
             const dayEvents = events[dateKey] || [];
