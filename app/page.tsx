@@ -160,7 +160,7 @@ export default function HomePage() {
     if (user && !loading && !onboardingChecked) {
       checkOnboardingStatus()
     }
-  }, [user, loading, onboardingChecked])
+  }, [user, loading]) // Removed onboardingChecked dependency to prevent re-runs
 
   // Utility function to reset onboarding (for testing)
   useEffect(() => {
@@ -650,9 +650,7 @@ export default function HomePage() {
               <p className="text-sm opacity-90 mb-2">
                 Click manage to customize your watch list. Drop your news on the screen and it will be placed in your stocks history.
               </p>
-              <div className="text-xs opacity-75">
-                Or use Ctrl+V or the green button ⬇️
-              </div>
+
             </div>
             <button 
               onClick={() => setShowInstructions(false)}
@@ -1010,9 +1008,12 @@ export default function HomePage() {
           isVisible={showOnboarding}
           onClose={async () => {
             console.log('Closing onboarding popup and marking as seen')
+            // Immediately hide the popup to prevent flickering
             setShowOnboarding(false)
             
-            // Mark that user has seen onboarding
+            // Mark that user has seen onboarding - even if API fails, don't show again this session
+            setOnboardingChecked(true)
+            
             if (user) {
               try {
                 const token = user.uid === 'test-user-localhost' ? 'dev-token-localhost' : await user.firebaseUser?.getIdToken()
