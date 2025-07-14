@@ -28,12 +28,24 @@ export function AppHeader() {
     return (
       <header className="bg-slate-900 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          {/* Mobile Welcome Message */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl font-bold">Welcome to ConcoreNews</h1>
-            <div className="flex items-center justify-center space-x-2 mt-1">
-              <TrendingUp className="h-4 w-4 text-blue-400" />
-              <span className="text-sm text-slate-400">Track . Analyze . Succeed</span>
+          {/* Mobile Top Bar with Welcome Message and Upper Right Controls */}
+          <div className="flex items-start justify-between mb-4">
+            {/* Welcome Message */}
+            <div className="text-center flex-1">
+              <h1 className="text-xl font-bold">Welcome to ConcoreNews</h1>
+              <div className="flex items-center justify-center space-x-2 mt-1">
+                <TrendingUp className="h-4 w-4 text-blue-400" />
+                <span className="text-sm text-slate-400">Track . Analyze . Succeed</span>
+              </div>
+            </div>
+            
+            {/* Upper Right Controls - Theme Toggle and Logout */}
+            <div className="flex items-center space-x-2">
+              <ThemeToggle />
+              <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                <LogOut className="h-4 w-4" />
+                <span className="sr-only">Log Out</span>
+              </Button>
             </div>
           </div>
           
@@ -72,17 +84,6 @@ export function AppHeader() {
               </div>
               <span className="mt-1 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Journal</span>
             </Link>
-          </div>
-          
-          {/* Mobile Theme Toggle and Logout */}
-          <div className="flex items-center justify-center space-x-4 mt-4">
-            <ThemeToggle />
-            <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
-              <div className="flex items-center space-x-2">
-                <LogOut className="h-4 w-4" />
-                <span>Log Out</span>
-              </div>
-            </Button>
           </div>
         </div>
       </header>
