@@ -180,8 +180,8 @@ export default function UpcomingEventsCalendar() {
           </h2>
         </div>
         
-        {/* Mobile: Stack days vertically, Desktop: Grid layout */}
-        <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
+        {/* Mobile: Simple day list, Desktop: Grid layout */}
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-5 sm:gap-4">
           {weekDays
             .filter((day) => {
               // On mobile, filter out past dates (only show today and future)
@@ -201,10 +201,10 @@ export default function UpcomingEventsCalendar() {
               <Card 
                 key={dateKey} 
                 className={cn(
-                  "relative cursor-pointer transition-colors duration-200 hover:bg-accent/50",
+                  "cursor-pointer transition-colors duration-200 hover:bg-accent/50",
                   dayEvents.length > 0 && "border-primary/20",
-                  // Mobile: horizontal layout, Desktop: vertical layout
-                  "p-3 sm:p-4"
+                  // Mobile: simple day card, Desktop: complex layout
+                  "p-4 sm:p-4"
                 )}
                 onClick={() => {
                   // Show day details in a modal
@@ -215,41 +215,29 @@ export default function UpcomingEventsCalendar() {
                   });
                 }}
               >
-                {/* Event count badge */}
-                {dayEvents.length > 0 && (
-                  <div className="absolute top-2 right-2 bg-primary/80 text-primary-foreground text-xs px-1.5 py-0.5 rounded font-medium">
-                    {dayEvents.length}
-                  </div>
-                )}
-                
-                {/* Mobile Layout: Vertical */}
-                <div className="sm:hidden flex flex-col items-center gap-3">
-                  <div className="text-center">
-                    <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
-                    <div className="text-sm text-muted-foreground">{format(day, 'MMM d')}</div>
-                  </div>
-                  <div className="w-full">
-                    {dayEvents.length > 0 ? (
-                      <div className="flex flex-col gap-2">
-                        {dayEvents.slice(0, 6).map((event, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
-                            <span className={`text-sm ${getImpactColor(event.impact)}`}>{getEventIcon(event)}</span>
-                            <div className="text-sm font-medium flex-1">{event.title}</div>
+                {/* Mobile Layout: Simple day card */}
+                <div className="sm:hidden">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xl font-bold">{format(day, 'EEEE')}</div>
+                      <div className="text-sm text-muted-foreground">{format(day, 'MMMM d, yyyy')}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {dayEvents.length > 0 ? (
+                        <>
+                          <div className="bg-primary/80 text-primary-foreground text-sm px-3 py-1 rounded-full font-medium">
+                            {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
                           </div>
-                        ))}
-                        {dayEvents.length > 6 && (
-                          <div className="text-center text-sm text-muted-foreground bg-muted rounded-lg px-3 py-2">
-                            +{dayEvents.length - 6} more events
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center text-sm text-muted-foreground py-4">No Economic Events</div>
-                    )}
+                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        </>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">No events</div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Desktop Layout: Vertical (original) */}
+                {/* Desktop Layout: Complex grid (original) */}
                 <div className="hidden sm:block">
                   <div className="text-center mb-4">
                     <div className="text-lg font-bold">{format(day, 'EEEE')}</div>
