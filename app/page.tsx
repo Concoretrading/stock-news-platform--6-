@@ -735,8 +735,8 @@ export default function HomePage() {
                       </>
                     )}
                     
-                    {/* Mobile Grid - 5 stocks per page */}
-                    <div className="grid grid-cols-5 gap-2 px-8">
+                    {/* Mobile Grid - 5 stocks per page with better spacing */}
+                    <div className="grid grid-cols-5 gap-3 px-4">
                       {visibleStocks.map((stock) => (
                         <div key={stock.symbol} className="transform transition-transform hover:scale-105">
                           <StockCard 

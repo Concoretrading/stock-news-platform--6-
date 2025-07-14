@@ -239,10 +239,10 @@ export function EarningsCalendar({ type = 'earnings' }: EarningsCalendarProps) {
   };
 
   const CompanyLogo = ({ event, size = "small" }: { event: EarningsEvent, size?: "small" | "large" }) => {
-    // Mobile-responsive logo sizes
+    // Mobile-responsive logo sizes - smaller on mobile
     const sizeClasses = size === "small" 
-      ? "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-14 lg:h-14" 
-      : "w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20";
+      ? "w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12" 
+      : "w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 lg:w-16 lg:h-16";
     
     // Find logo URL from tickers.json (case-insensitive)
     const tickerEntry = tickers.find(
