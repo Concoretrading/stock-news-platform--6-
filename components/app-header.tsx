@@ -28,10 +28,10 @@ export function AppHeader() {
     return (
       <header className="bg-slate-900 text-white shadow-lg">
         <div className="container mx-auto px-4 py-4">
-          {/* Mobile Top Bar with Welcome Message and Upper Right Controls */}
-          <div className="flex items-start justify-between mb-8">
-            {/* Welcome Message */}
-            <div className="text-center flex-1">
+          {/* Mobile Centered Layout with Right Corner Controls */}
+          <div className="relative mb-8">
+            {/* Centered Welcome Message */}
+            <div className="text-center">
               <h1 className="text-2xl font-bold">Welcome to ConcoreNews</h1>
               <div className="flex items-center justify-center space-x-2 mt-1">
                 <TrendingUp className="h-4 w-4 text-blue-400" />
@@ -39,17 +39,17 @@ export function AppHeader() {
               </div>
             </div>
             
-            {/* Upper Right Controls - Theme Toggle and Logout */}
-            <div className="flex items-center space-x-2">
-              <ThemeToggle />
-              <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
-                <LogOut className="h-4 w-4" />
+            {/* Upper Right Corner Controls - Stacked */}
+            <div className="absolute top-0 right-0 flex flex-col items-center space-y-1">
+              <Button variant="outline" size="sm" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white h-8 w-8 p-0">
+                <LogOut className="h-3 w-3" />
                 <span className="sr-only">Log Out</span>
               </Button>
+              <ThemeToggle />
             </div>
           </div>
           
-          {/* Mobile Navigation Icons */}
+          {/* Mobile Navigation Icons - Centered */}
           <div className="flex items-center justify-center space-x-8">
             {/* Calendar */}
             <Link href="/calendar" className="flex flex-col items-center group">
