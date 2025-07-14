@@ -14,6 +14,7 @@ import { fetchWithAuth } from '@/lib/fetchWithAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { StockSelector } from '@/components/stock-selector';
 import tickers from '@/lib/tickers.json';
 
 interface Stock {
@@ -38,6 +39,7 @@ export default function SplitScreenPage() {
   const [watchlist, setWatchlist] = useState<Stock[]>([]);
   const [isLoadingStocks, setIsLoadingStocks] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [showStockSelector, setShowStockSelector] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -64,9 +66,6 @@ export default function SplitScreenPage() {
 
   // Add state for tracking failed logo loads
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
-
-  // Add state for showing the StockSelector modal
-  const [showStockSelector, setShowStockSelector] = useState(false);
 
   // Load user's watchlist on component mount
   useEffect(() => {
@@ -296,8 +295,34 @@ export default function SplitScreenPage() {
   // Cancel editing
   const handleCancelEdit = () => {
     setEditingStock(null);
-    setEditStockSymbol('');
-    setEditStockName('');
+    setNewStockSymbol('');
+    setNewStockName('');
+  };
+
+  // Handle watchlist update from StockSelector
+  const handleUpdateWatchlist = async (newStocks: Stock[]) => {
+    try {
+      setWatchlist(newStocks.map((stock) => ({
+        symbol: stock.symbol,
+        name: stock.name
+      })));
+      
+      // If current selected stock is not in the new list, clear selection
+      if (selectedStock && !newStocks.some(s => s.symbol === selectedStock.symbol)) {
+        setSelectedStock(null);
+      }
+      
+      toast({
+        title: "Watchlist Updated",
+        description: "Your watchlist has been updated successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update watchlist",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderTabContent = (tabName: string, content: React.ReactNode) => {
@@ -375,8 +400,19 @@ export default function SplitScreenPage() {
 
               {/* Stock Selector */}
               <div className="p-4 border-b">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Select Stock</label>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Select Stock</label>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setShowStockSelector(true)}
+                      className="text-xs"
+                    >
+                      <Settings className="h-3 w-3 mr-1" />
+                      Manage
+                    </Button>
+                  </div>
                   <Select 
                     value={selectedStock?.symbol || ""} 
                     onValueChange={(value) => {
@@ -580,6 +616,18 @@ export default function SplitScreenPage() {
           </div>
         </div>
       </div>
+
+      {/* Stock Selector Modal */}
+      {showStockSelector && (
+        <StockSelector
+          isOpen={true}
+          onClose={() => setShowStockSelector(false)}
+          onUpdateWatchlist={handleUpdateWatchlist}
+          currentStocks={watchlist}
+          maxStocks={10}
+          isShowingDefaults={false}
+        />
+      )}
     </div>
   );
 } 
