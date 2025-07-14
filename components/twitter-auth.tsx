@@ -129,37 +129,37 @@ export function XAuth() {
 
   if (xUser) {
     return (
-      <Card className="w-full max-w-md mx-auto mt-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Image src="/images/x-logo.svg" alt="X" width={20} height={20} />
+      <Card className="w-full mx-auto shadow-lg">
+        <CardHeader className="pb-6">
+          <CardTitle className="flex items-center gap-3 text-2xl">
+            <Image src="/images/x-logo.svg" alt="X" width={32} height={32} />
             Connected to X
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-lg">
             Successfully connected as @{xUser.username}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-3 mb-4">
+        <CardContent className="pt-0">
+          <div className="flex items-center gap-4 mb-8">
             <Image 
               src={xUser.profileImageUrl} 
               alt={xUser.displayName}
-              width={40}
-              height={40}
+              width={60}
+              height={60}
               className="rounded-full"
             />
             <div>
-              <p className="font-semibold flex items-center gap-1">
+              <p className="font-semibold flex items-center gap-2 text-xl">
                 {xUser.displayName}
-                {xUser.verified && <span className="text-blue-500">✓</span>}
+                {xUser.verified && <span className="text-blue-500 text-2xl">✓</span>}
               </p>
-              <p className="text-sm text-muted-foreground">@{xUser.username}</p>
+              <p className="text-lg text-muted-foreground">@{xUser.username}</p>
             </div>
           </div>
           <Button 
             onClick={handleXLogout} 
             variant="outline" 
-            className="w-full"
+            className="w-full h-14 text-lg"
           >
             Disconnect X Account
           </Button>
@@ -169,35 +169,35 @@ export function XAuth() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Image src="/images/x-logo.svg" alt="X" width={20} height={20} />
+    <Card className="w-full mx-auto shadow-lg">
+      <CardHeader className="pb-6">
+        <CardTitle className="flex items-center gap-3 text-2xl">
+          <Image src="/images/x-logo.svg" alt="X" width={32} height={32} />
           X Integration
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-lg">
           Sign in with your X account to enable advanced features.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+            <p className="text-lg text-red-600">{error}</p>
           </div>
         )}
         
         {isLoading ? (
-          <div className="flex items-center justify-center gap-2 py-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-            <span>Connecting to X...</span>
+          <div className="flex items-center justify-center gap-3 py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+            <span className="text-lg">Connecting to X...</span>
           </div>
         ) : (
           <Button 
             onClick={handleXLogin} 
-            className="w-full bg-black text-white hover:bg-gray-900 flex items-center gap-2" 
+            className="w-full h-16 bg-black text-white hover:bg-gray-900 flex items-center gap-3 text-lg font-semibold" 
             aria-label="Sign in with X"
           >
-            <Image src="/images/x-logo.svg" alt="X" width={16} height={16} />
+            <Image src="/images/x-logo.svg" alt="X" width={24} height={24} />
             Sign in with X
           </Button>
         )}

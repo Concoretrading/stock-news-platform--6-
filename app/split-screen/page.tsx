@@ -316,38 +316,13 @@ export default function SplitScreenPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <ArrowLeft className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-              </Link>
-              <div>
-                <h1 className="text-xl font-semibold">Split Screen Mode</h1>
-                <p className="text-sm text-muted-foreground">ConcoreNews + X Integration</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Link href="/calendar">
-                <Calendar className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-              </Link>
-              <Link href="/stocks">
-                <BarChart3 className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Split Screen Container */}
       <div 
         className="relative"
       >
         <div 
           id="split-container"
-          className="flex h-[calc(100vh-80px)] relative mt-12"
+          className="flex h-screen relative"
           style={{ cursor: isDragging ? 'col-resize' : 'default' }}
         >
           {/* Left Panel - ConcoreNews */}
@@ -361,9 +336,6 @@ export default function SplitScreenPage() {
             onDrop={handleDrop}
           >
             <div className="h-full flex flex-col relative">
-              {/* ConcoreTwitter Logo and Description */}
-              {/* Removed ConcoreTwitter logo and its padding */}
-
               {/* Drop Zone Message */}
               {isDragOver && (
                 <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 backdrop-blur-sm z-10">
@@ -401,101 +373,98 @@ export default function SplitScreenPage() {
                 </div>
               )}
 
-              {/* Stock Watchlist Management */}
-              <div className="flex-1 overflow-y-auto p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Watchlist</h2>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowStockSelector(true)}
-                    className="touch-manipulation"
-                  >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Manage
-                  </Button>
-                </div>
-                {/* Watchlist Items (no add/edit/remove forms) */}
-                {isLoadingStocks ? (
-                  <div className="space-y-2">
-                    {[...Array(6)].map((_, i) => (
-                      <div key={i} className="h-16 bg-muted animate-pulse rounded" />
-                    ))}
+              {/* Stock Selector */}
+              <div className="p-4 border-b">
+                <StockSelector
+                  value={selectedStock}
+                  onChange={setSelectedStock}
+                />
+              </div>
+
+              {/* Watchlist */}
+              <div className="flex-1 flex flex-col min-h-0">
+                <div className="p-4 border-b">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm">Watchlist</h3>
+                    <button
+                      onClick={handleAddStock}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                    </button>
                   </div>
-                ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
                     {watchlist.map((stock) => (
                       <div
                         key={stock.symbol}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
-                          selectedStock?.symbol === stock.symbol 
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30' 
-                            : 'border-border hover:border-blue-300'
+                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
+                          selectedStock?.symbol === stock.symbol
+                            ? 'bg-blue-100 border-blue-300'
+                            : 'hover:bg-muted'
                         }`}
-                        onClick={() => handleStockClick(stock)}
+                        onClick={() => setSelectedStock(stock)}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center overflow-hidden">
-                              {/* Show logo if available and not failed, otherwise fallback to first letter */}
-                              {failedLogos.has(stock.symbol.toUpperCase()) ? (
-                                <span className="text-sm font-semibold text-blue-600">
-                                  {stock.symbol.charAt(0)}
-                                </span>
-                              ) : (
-                                <img
-                                  src={getLogoUrl(stock.symbol)}
-                                  alt={stock.symbol}
-                                  className="w-8 h-8 object-contain"
-                                  onError={(e) => {
-                                    setFailedLogos(prev => new Set([...Array.from(prev), stock.symbol.toUpperCase()]));
-                                  }}
-                                />
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="font-semibold">{stock.symbol}</div>
-                              <div className="text-sm text-muted-foreground truncate">{stock.name}</div>
-                            </div>
+                        <div className="flex items-center space-x-2">
+                          <img
+                            src={getLogoUrl(stock.symbol)}
+                            alt={stock.symbol}
+                            className="w-6 h-6 rounded object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = '/placeholder-logo.png';
+                            }}
+                          />
+                          <div>
+                            <div className="font-medium text-sm">{stock.symbol}</div>
+                            <div className="text-xs text-muted-foreground truncate">{stock.name}</div>
                           </div>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditStock(stock);
+                            }}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveStock(stock.symbol);
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-                {/* StockSelector Modal */}
-                {showStockSelector && (
-                  <StockSelector
-                    isOpen={showStockSelector}
-                    onClose={() => setShowStockSelector(false)}
-                    onUpdateWatchlist={(stocks) => { setWatchlist(stocks); setShowStockSelector(false); }}
-                    currentStocks={watchlist}
-                    maxStocks={10}
-                  />
-                )}
-              </div>
+                </div>
 
-              {/* Selected Stock Details */}
-              {selectedStock && (
-                <div className="border-t bg-muted/30">
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">{selectedStock.symbol}</h3>
-                        <p className="text-sm text-muted-foreground">{selectedStock.name}</p>
+                {/* Selected Stock Details */}
+                {selectedStock && (
+                  <div className="flex-1 flex flex-col min-h-0">
+                    <div className="p-4 border-b">
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={getLogoUrl(selectedStock.symbol)}
+                          alt={selectedStock.symbol}
+                          className="w-8 h-8 rounded object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder-logo.png';
+                          }}
+                        />
+                        <div>
+                          <h3 className="font-semibold">{selectedStock.symbol}</h3>
+                          <p className="text-sm text-muted-foreground">{selectedStock.name}</p>
+                        </div>
                       </div>
-                      <button
-                        onClick={handlePushBack}
-                        className="p-2 hover:bg-background rounded transition-colors"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
                     </div>
 
-                    {/* Tabs */}
-                    <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="space-y-4">
-                      <TabsList className="grid w-full grid-cols-4">
+                    <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="flex-1 flex flex-col min-h-0">
+                      <TabsList className="grid w-full grid-cols-4 mx-4 mt-4">
                         <TabsTrigger value="history" className="flex items-center space-x-1">
                           <History className="h-3 w-3" />
                           <span className="text-xs">History</span>
@@ -514,27 +483,27 @@ export default function SplitScreenPage() {
                         </TabsTrigger>
                       </TabsList>
 
-                      <div className="h-64 overflow-y-auto">
-                        <TabsContent value="history" className="mt-0">
+                      <div className="flex-1 overflow-y-auto px-4 pb-4">
+                        <TabsContent value="history" className="mt-4 h-full">
                           {renderTabContent("history", <StockNewsHistory ticker={selectedStock.symbol} refreshKey={refreshKey} />)}
                         </TabsContent>
 
-                        <TabsContent value="search" className="mt-0">
+                        <TabsContent value="search" className="mt-4 h-full">
                           {renderTabContent("search", <StockNewsSearch ticker={selectedStock.symbol} />)}
                         </TabsContent>
 
-                        <TabsContent value="news" className="mt-0">
+                        <TabsContent value="news" className="mt-4 h-full">
                           {renderTabContent("news", <StockManualNewsForm ticker={selectedStock.symbol} />)}
                         </TabsContent>
 
-                        <TabsContent value="alerts" className="mt-0">
+                        <TabsContent value="alerts" className="mt-4 h-full">
                           {renderTabContent("alerts", <StockAlertTab />)}
                         </TabsContent>
                       </div>
                     </Tabs>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
@@ -556,29 +525,40 @@ export default function SplitScreenPage() {
             className="bg-background"
             style={{ width: `${100 - leftPanelWidth}%` }}
           >
-            <div className="h-full flex flex-col">
-              <div className="flex flex-col items-center justify-center mb-8 py-8">
-                <div className="text-2xl md:text-3xl font-bold text-center">ConcoreNews + X Integration</div>
-              </div>
-              
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="w-full max-w-md transform scale-125 mb-8">
+            <div className="h-full flex flex-col items-center justify-center px-8">
+              {/* Twitter Sign-in Section - Made proportionate to left side */}
+              <div className="w-full max-w-lg">
+                <div className="mb-12">
                   <XAuth />
                 </div>
-                <div className="w-full flex flex-col items-center">
-                  <div className="p-4 bg-muted/30 rounded-lg w-full max-w-md flex flex-col items-center">
-                    <h3 className="font-semibold mb-4 text-center">Workflow Integration</h3>
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside text-center">
-                      <li>seamless data flow between x and concorenews</li>
-                      <li>drag & drop news in the drop zone</li>
-                      <li>copy and paste article processing</li>
-                      <li>automated news processing</li>
-                      <li>content categorization</li>
-                    </ul>
+                
+                {/* Workflow Integration Section */}
+                <div className="bg-muted/30 rounded-lg p-8">
+                  <h3 className="text-2xl font-semibold mb-6 text-center">Workflow Integration</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-lg">Seamless data flow between X and ConcoreNews</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-lg">Drag & drop news in the drop zone</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-lg">Copy and paste article processing</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-lg">Automated news processing</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-lg">Content categorization</span>
+                    </div>
                   </div>
                 </div>
               </div>
-              
             </div>
           </div>
         </div>
