@@ -385,51 +385,111 @@ export default function UpcomingEventsCalendar() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-sm">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-            <div key={day} className="p-2 text-center font-medium text-muted-foreground">
-              {day}
-            </div>
-          ))}
-          
-          {days.map(day => {
-            const dayEvents = eventsForMonth.filter(event => 
-              isSameDay(new Date(event.eventDate), day)
-            );
-            
-            return (
-              <div
-                key={day.toISOString()}
-                className={`min-h-[80px] p-1 border rounded ${
-                  isSameMonth(day, new Date()) ? 'bg-blue-50' : 'bg-gray-50'
-                }`}
-              >
-                <div className="text-xs font-medium mb-1">
-                  {format(day, 'd')}
-                </div>
-                <div className="space-y-1">
-                  {dayEvents.slice(0, 3).map(event => (
-                    <div
-                      key={event.id}
-                      className={`text-xs p-1 rounded text-white ${getEventColor(event)} cursor-pointer`}
-                      title={`${event.title} (${event.stockTicker})`}
-                    >
-                      <div className="flex items-center gap-1">
-                        <span>{getEventIcon(event)}</span>
-                        <span className="truncate">{event.stockTicker}</span>
+        {/* Mobile: Simple day list, Desktop: Grid calendar */}
+        {isMobile ? (
+          /* MOBILE: Simple day list for calendar view */
+          <div className="space-y-3">
+            {days
+              .filter(day => {
+                const dayEvents = eventsForMonth.filter(event => 
+                  isSameDay(new Date(event.eventDate), day)
+                );
+                return dayEvents.length > 0; // Only show days with events
+              })
+              .map(day => {
+                const dayEvents = eventsForMonth.filter(event => 
+                  isSameDay(new Date(event.eventDate), day)
+                );
+                
+                return (
+                  <div 
+                    key={day.toISOString()}
+                    className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
+                    onClick={() => {
+                      setOverflowModal({ 
+                        date: format(day, 'yyyy-MM-dd'), 
+                        events: dayEvents,
+                        dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                      });
+                    }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                          {format(day, 'EEEE')}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {format(day, 'MMMM d, yyyy')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm font-medium px-3 py-1 rounded-full">
+                          {dayEvents.length} {dayEvents.length === 1 ? 'event' : 'events'}
+                        </span>
+                        <ChevronRight className="h-5 w-5 text-gray-400" />
                       </div>
                     </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-xs text-muted-foreground text-center">
-                      +{dayEvents.length - 3} more
-                    </div>
-                  )}
-                </div>
+                  </div>
+                );
+              })}
+          </div>
+        ) : (
+          /* DESKTOP: Grid calendar view */
+          <div className="grid grid-cols-7 gap-1 text-sm">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+              <div key={day} className="p-2 text-center font-medium text-muted-foreground">
+                {day}
               </div>
-            );
-          })}
-        </div>
+            ))}
+            
+            {days.map(day => {
+              const dayEvents = eventsForMonth.filter(event => 
+                isSameDay(new Date(event.eventDate), day)
+              );
+              
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={`min-h-[80px] p-1 border rounded cursor-pointer hover:shadow-md transition-shadow ${
+                    isSameMonth(day, new Date()) ? 'bg-blue-50' : 'bg-gray-50'
+                  }`}
+                  onClick={() => {
+                    if (dayEvents.length > 0) {
+                      setOverflowModal({ 
+                        date: format(day, 'yyyy-MM-dd'), 
+                        events: dayEvents,
+                        dayTitle: format(day, 'EEEE, MMMM d, yyyy')
+                      });
+                    }
+                  }}
+                >
+                  <div className="text-xs font-medium mb-1">
+                    {format(day, 'd')}
+                  </div>
+                  <div className="space-y-1">
+                    {dayEvents.slice(0, 3).map(event => (
+                      <div
+                        key={event.id}
+                        className={`text-xs p-1 rounded text-white ${getEventColor(event)}`}
+                        title={`${event.title} (${event.stockTicker})`}
+                      >
+                        <div className="flex items-center gap-1">
+                          <span>{getEventIcon(event)}</span>
+                          <span className="truncate">{event.stockTicker}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {dayEvents.length > 3 && (
+                      <div className="text-xs text-muted-foreground text-center">
+                        +{dayEvents.length - 3} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     );
   };
