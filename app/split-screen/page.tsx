@@ -341,21 +341,31 @@ export default function SplitScreenPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Back Button */}
+      <div className="sticky top-0 z-50 bg-background border-b px-4 py-3">
+        <Link 
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Dashboard
+        </Link>
+      </div>
+
       {/* Split Screen Container */}
       <div 
         className="relative"
       >
         <div 
           id="split-container"
-          className="flex h-screen relative"
+          className="flex flex-col md:flex-row h-[calc(100vh-64px)] relative"
           style={{ cursor: isDragging ? 'col-resize' : 'default' }}
         >
           {/* Left Panel - ConcoreNews */}
           <div 
-            className={`bg-background border-r transition-colors ${
+            className={`bg-background md:border-r transition-colors w-full md:w-1/2 h-3/5 md:h-full ${
               isDragOver ? 'bg-blue-50 border-blue-300' : ''
             }`}
-            style={{ width: `${leftPanelWidth}%` }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
@@ -399,15 +409,15 @@ export default function SplitScreenPage() {
               )}
 
               {/* Stock Selector */}
-              <div className="p-4 border-b">
-                <div className="space-y-3">
+              <div className="p-3 md:p-4 border-b">
+                <div className="space-y-2 md:space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">Select Stock</label>
+                    <label className="text-xs md:text-sm font-medium">Select Stock</label>
                     <Button 
                       variant="outline" 
                       size="sm" 
                       onClick={() => setShowStockSelector(true)}
-                      className="text-xs"
+                      className="text-xs h-7 md:h-8"
                     >
                       <Settings className="h-3 w-3 mr-1" />
                       Manage
@@ -420,13 +430,13 @@ export default function SplitScreenPage() {
                       setSelectedStock(stock || null);
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 md:h-10">
                       <SelectValue placeholder="Choose a stock from your watchlist" />
                     </SelectTrigger>
                     <SelectContent>
                       {watchlist.map((stock) => (
                         <SelectItem key={stock.symbol} value={stock.symbol}>
-                          {stock.symbol} - {stock.name}
+                          <span className="text-xs md:text-sm">{stock.symbol} - {stock.name}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -517,39 +527,39 @@ export default function SplitScreenPage() {
                     </div>
 
                     <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="flex-1 flex flex-col min-h-0">
-                      <TabsList className="grid w-full grid-cols-4 mx-4 mt-4">
-                        <TabsTrigger value="history" className="flex items-center space-x-1">
+                      <TabsList className="grid w-full grid-cols-4 mx-2 md:mx-4 mt-2 md:mt-4">
+                        <TabsTrigger value="history" className="flex items-center space-x-1 text-xs">
                           <History className="h-3 w-3" />
-                          <span className="text-xs">History</span>
+                          <span className="hidden sm:inline">History</span>
                         </TabsTrigger>
-                        <TabsTrigger value="search" className="flex items-center space-x-1">
+                        <TabsTrigger value="search" className="flex items-center space-x-1 text-xs">
                           <Search className="h-3 w-3" />
-                          <span className="text-xs">Search</span>
+                          <span className="hidden sm:inline">Search</span>
                         </TabsTrigger>
-                        <TabsTrigger value="news" className="flex items-center space-x-1">
+                        <TabsTrigger value="news" className="flex items-center space-x-1 text-xs">
                           <Plus className="h-3 w-3" />
-                          <span className="text-xs">Add News</span>
+                          <span className="hidden sm:inline">Add News</span>
                         </TabsTrigger>
-                        <TabsTrigger value="alerts" className="flex items-center space-x-1">
+                        <TabsTrigger value="alerts" className="flex items-center space-x-1 text-xs">
                           <Bell className="h-3 w-3" />
-                          <span className="text-xs">Alerts</span>
+                          <span className="hidden sm:inline">Alerts</span>
                         </TabsTrigger>
                       </TabsList>
 
-                      <div className="flex-1 overflow-y-auto px-4 pb-4">
-                        <TabsContent value="history" className="mt-4 h-full">
+                      <div className="flex-1 overflow-y-auto px-2 md:px-4 pb-2 md:pb-4">
+                        <TabsContent value="history" className="mt-2 md:mt-4 h-full">
                           {renderTabContent("history", <StockNewsHistory ticker={selectedStock.symbol} refreshKey={refreshKey} />)}
                         </TabsContent>
 
-                        <TabsContent value="search" className="mt-4 h-full">
+                        <TabsContent value="search" className="mt-2 md:mt-4 h-full">
                           {renderTabContent("search", <StockNewsSearch ticker={selectedStock.symbol} />)}
                         </TabsContent>
 
-                        <TabsContent value="news" className="mt-4 h-full">
+                        <TabsContent value="news" className="mt-2 md:mt-4 h-full">
                           {renderTabContent("news", <StockManualNewsForm ticker={selectedStock.symbol} />)}
                         </TabsContent>
 
-                        <TabsContent value="alerts" className="mt-4 h-full">
+                        <TabsContent value="alerts" className="mt-2 md:mt-4 h-full">
                           {renderTabContent("alerts", <StockAlertTab />)}
                         </TabsContent>
                       </div>
@@ -560,9 +570,9 @@ export default function SplitScreenPage() {
             </div>
           </div>
 
-          {/* Resizable Divider */}
+          {/* Resizable Divider - Hidden on mobile */}
           <div
-            className="w-1 bg-border hover:bg-blue-500 cursor-col-resize relative group"
+            className="hidden md:block w-1 bg-border hover:bg-blue-500 cursor-col-resize relative group"
             onMouseDown={handleMouseDown}
           >
             {/* Grab Block */}
@@ -575,39 +585,38 @@ export default function SplitScreenPage() {
 
           {/* Right Panel - X Integration */}
           <div 
-            className="bg-background"
-            style={{ width: `${100 - leftPanelWidth}%` }}
+            className="bg-background w-full md:w-1/2 h-2/5 md:h-full"
           >
-            <div className="h-full flex flex-col items-center justify-center px-8">
+            <div className="h-full flex flex-col items-center justify-center px-4 md:px-8">
               {/* Twitter Sign-in Section - Made proportionate to left side */}
               <div className="w-full max-w-lg">
-                <div className="mb-12">
+                <div className="mb-6 md:mb-12">
                   <XAuth />
                 </div>
                 
                 {/* Workflow Integration Section */}
-                <div className="bg-muted/30 rounded-lg p-8">
-                  <h3 className="text-2xl font-semibold mb-6 text-center">Workflow Integration</h3>
-                  <div className="space-y-4">
+                <div className="bg-muted/30 rounded-lg p-4 md:p-8">
+                  <h3 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6 text-center">Workflow Integration</h3>
+                  <div className="space-y-2 md:space-y-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-lg">Seamless data flow between X and ConcoreNews</span>
+                      <span className="text-sm md:text-lg">Seamless data flow between X and ConcoreNews</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-lg">Drag & drop news in the drop zone</span>
+                      <span className="text-sm md:text-lg">Drag & drop news in the drop zone</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-lg">Copy and paste article processing</span>
+                      <span className="text-sm md:text-lg">Copy and paste article processing</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-lg">Automated news processing</span>
+                      <span className="text-sm md:text-lg">Automated news processing</span>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-lg">Content categorization</span>
+                      <span className="text-sm md:text-lg">Content categorization</span>
                     </div>
                   </div>
                 </div>
