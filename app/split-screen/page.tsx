@@ -40,6 +40,7 @@ export default function SplitScreenPage() {
   const [isLoadingStocks, setIsLoadingStocks] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showStockSelector, setShowStockSelector] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -59,6 +60,11 @@ export default function SplitScreenPage() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Track client-side rendering
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   // Handle mouse events for resizing
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,7 +78,7 @@ export default function SplitScreenPage() {
     const rect = container.getBoundingClientRect();
     
     // Check if we're on mobile (flex-col) or desktop (flex-row)
-    const isMobile = window.innerWidth < 768;
+    const isMobile = isClient && window.innerWidth < 768;
     
     if (isMobile) {
       // Mobile: vertical resize (Y axis)
@@ -315,10 +321,10 @@ export default function SplitScreenPage() {
         >
           {/* X Panel - Top on Mobile, Right on Desktop */}
           <div 
-            className="bg-background border-b md:border-b-0 md:border-l w-full order-first md:order-last"
+            className="bg-background border-b md:border-b-0 md:border-l w-full md:w-auto order-first md:order-last"
             style={{ 
               height: `${leftPanelWidth}%`,
-              width: window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%'
+              width: isClient && window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%'
             }}
           >
             <div className="h-full flex flex-col items-center justify-center px-4 md:px-8">
@@ -371,12 +377,12 @@ export default function SplitScreenPage() {
 
           {/* ConcoreNews Panel - Bottom on Mobile, Left on Desktop */}
           <div 
-            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full order-last md:order-first ${
+            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full md:w-auto order-last md:order-first ${
               isDragOver ? 'bg-blue-50 border-blue-300' : ''
             }`}
             style={{ 
               height: `${100 - leftPanelWidth}%`,
-              width: window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%'
+              width: isClient && window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%'
             }}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
