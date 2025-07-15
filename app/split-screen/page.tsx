@@ -98,7 +98,9 @@ export default function SplitScreenPage() {
   }, [isDragging, isClient]);
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!isDragging || !containerRef.current) return;
+    if (!isDragging || !containerRef.current || !e.touches[0]) return;
+    
+    e.preventDefault(); // Prevent scrolling
     
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
@@ -132,15 +134,17 @@ export default function SplitScreenPage() {
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
       
-      // Touch events
+      // Touch events with proper options
       document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      document.addEventListener('touchend', handleTouchEnd);
+      document.addEventListener('touchend', handleTouchEnd, { passive: false });
+      document.addEventListener('touchcancel', handleTouchEnd, { passive: false });
       
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
         document.removeEventListener('touchmove', handleTouchMove);
         document.removeEventListener('touchend', handleTouchEnd);
+        document.removeEventListener('touchcancel', handleTouchEnd);
       };
     }
   }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
@@ -408,7 +412,7 @@ export default function SplitScreenPage() {
 
           {/* Prominent Grab to Move Divider */}
           <div
-            className={`relative group touch-none transition-all duration-200 flex items-center justify-center ${
+            className={`relative group select-none transition-all duration-200 flex items-center justify-center ${
               isDragging 
                 ? 'h-12 md:h-full md:w-12 bg-blue-600 shadow-lg' 
                 : 'h-10 md:h-full md:w-10 bg-gray-200 hover:bg-blue-500'
@@ -424,7 +428,9 @@ export default function SplitScreenPage() {
                   : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
               }`}>
                 <Move className="h-4 w-4 mr-2" />
-                <span className="text-sm font-semibold whitespace-nowrap">Grab and Slide</span>
+                <span className="text-sm font-semibold whitespace-nowrap">
+                  {isClient && window.innerWidth < 768 ? 'Drag Up/Down' : 'Grab and Slide'}
+                </span>
               </div>
             </div>
           </div>
