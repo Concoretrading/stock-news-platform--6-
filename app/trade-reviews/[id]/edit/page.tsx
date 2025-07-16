@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Save, Eye, X, Upload, FileText, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
 import { fetchWithAuth } from '@/lib/fetchWithAuth';
@@ -145,7 +145,7 @@ export default function EditTradeReviewPage({ params }: { params: { id: string }
     }
   };
 
-  const handlePasteImage = async (e: ClipboardEvent) => {
+  const handlePasteImage = useCallback(async (e: ClipboardEvent) => {
     // Don't process paste if user is typing in an input/textarea
     const target = e.target as HTMLElement;
     if (target?.tagName === 'INPUT' || target?.tagName === 'TEXTAREA') {
@@ -186,17 +186,16 @@ export default function EditTradeReviewPage({ params }: { params: { id: string }
         reader.readAsDataURL(file);
       }
     }
-  };
+  }, [activeSectionForPaste, sections, toast, addImageToSection]);
 
   // Set up paste event listener
   useEffect(() => {
-    const handlePaste = (e: ClipboardEvent) => handlePasteImage(e);
-    document.addEventListener('paste', handlePaste);
+    document.addEventListener('paste', handlePasteImage);
     
     return () => {
-      document.removeEventListener('paste', handlePaste);
+      document.removeEventListener('paste', handlePasteImage);
     };
-  }, [activeSectionForPaste, sections]);
+  }, [handlePasteImage]);
 
   const handleSubmit = async () => {
     if (!user) {

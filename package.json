@@ -1,17 +1,19 @@
 {
-  "name": "concore-news-platform",
+  "name": "private-trading-edge",
   "version": "1.0.0",
+  "description": "Private AI Trading Analysis System - NOT FOR PUBLIC USE",
   "private": true,
   "scripts": {
-    "build": "next build",
     "dev": "next dev",
-    "lint": "next lint",
-    "start": "next start"
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@google-cloud/vision": "^5.2.0",
     "@heroicons/react": "latest",
     "@hookform/resolvers": "^3.9.1",
+    "@polygon.io/client-js": "^7.4.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-aspect-ratio": "1.1.1",

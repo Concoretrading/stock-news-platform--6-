@@ -6,7 +6,7 @@ const nextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    serverComponentsExternalPackages: ['firebase-admin']
+    serverComponentsExternalPackages: ['firebase-admin', '@polygon.io/client-js']
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -26,6 +26,13 @@ const nextConfig = {
         }
       };
     }
+
+    // Add support for the Polygon.io client
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@polygon.io/client-js': '@polygon.io/client-js'
+    };
+
     return config;
   }
 };
