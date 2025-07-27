@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import PremiumProbabilityDashboard from '@/components/premium-probability-dashboard';
 import TradingPsychologyDashboard from '../../components/trading-psychology-dashboard';
+import FutureIntelligenceDashboard from '../../components/future-intelligence-dashboard';
 
 interface MarketData {
   success: boolean;
@@ -235,11 +236,12 @@ export default function UnifiedMasteryPage() {
       {/* Detailed Analysis Tabs */}
       {marketData && optionsData && (
         <Tabs defaultValue="stock" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="stock">Stock Analysis</TabsTrigger>
             <TabsTrigger value="options">Options Analysis</TabsTrigger>
             <TabsTrigger value="probability">Probability Engine</TabsTrigger>
             <TabsTrigger value="psychology-engine">Psychology Engine</TabsTrigger>
+            <TabsTrigger value="future-intel">Future Intel</TabsTrigger>
             <TabsTrigger value="strikes">Strike Tracking</TabsTrigger>
             <TabsTrigger value="unified">Unified Strategy</TabsTrigger>
           </TabsList>
@@ -603,6 +605,40 @@ export default function UnifiedMasteryPage() {
               </div>
               
               <TradingPsychologyDashboard ticker={ticker} />
+            </div>
+          </TabsContent>
+
+          {/* Future Intelligence Tab */}
+          <TabsContent value="future-intel" className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg border">
+                <h3 className="text-xl font-bold text-indigo-800 mb-2">🔮 Future Intelligence Engine</h3>
+                <p className="text-indigo-700 mb-4">
+                  Elite event preparation and news interpretation system. Masters the past through historical 
+                  analysis, interprets the present with real-time intelligence, and prepares for the future 
+                  with comprehensive event strategies. Never be caught off guard again.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="bg-white/70 p-3 rounded border">
+                    <div className="font-semibold text-indigo-800">Event Preparation</div>
+                    <div className="text-indigo-600">7-day timeline strategies</div>
+                  </div>
+                  <div className="bg-white/70 p-3 rounded border">
+                    <div className="font-semibold text-indigo-800">News Intelligence</div>
+                    <div className="text-indigo-600">Real-time interpretation</div>
+                  </div>
+                  <div className="bg-white/70 p-3 rounded border">
+                    <div className="font-semibold text-indigo-800">Seasonal Patterns</div>
+                    <div className="text-indigo-600">Monthly & weekly biases</div>
+                  </div>
+                  <div className="bg-white/70 p-3 rounded border">
+                    <div className="font-semibold text-indigo-800">Contingency Plans</div>
+                    <div className="text-indigo-600">Multi-scenario preparation</div>
+                  </div>
+                </div>
+              </div>
+              
+              <FutureIntelligenceDashboard ticker={ticker} />
             </div>
           </TabsContent>
 
