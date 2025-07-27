@@ -23,6 +23,7 @@ import {
 import PremiumProbabilityDashboard from '@/components/premium-probability-dashboard';
 import TradingPsychologyDashboard from '../../components/trading-psychology-dashboard';
 import FutureIntelligenceDashboard from '../../components/future-intelligence-dashboard';
+import { ScenarioIntelligenceDashboard } from '@/components/scenario-intelligence-dashboard';
 
 interface MarketData {
   success: boolean;
@@ -244,6 +245,7 @@ export default function UnifiedMasteryPage() {
             <TabsTrigger value="future-intel">Future Intel</TabsTrigger>
             <TabsTrigger value="strikes">Strike Tracking</TabsTrigger>
             <TabsTrigger value="unified">Unified Strategy</TabsTrigger>
+            <TabsTrigger value="scenario-intelligence">Scenario Intelligence</TabsTrigger>
           </TabsList>
 
           {/* Stock Analysis Tab */}
@@ -821,6 +823,13 @@ export default function UnifiedMasteryPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Scenario Intelligence Tab */}
+          <TabsContent value="scenario-intelligence" className="space-y-6">
+            <div className="grid gap-6">
+              <ScenarioIntelligenceDashboard ticker={ticker} />
+            </div>
           </TabsContent>
         </Tabs>
       )}
