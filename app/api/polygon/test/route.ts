@@ -3,7 +3,8 @@ import { restClient } from '@polygon.io/client-js';
 
 export async function GET() {
   try {
-    const apiKey = process.env.POLYGON_API_KEY;
+    // ✅ PAID POLYGON API KEY ONLY - $79 STOCKS DEVELOPER PLAN
+    const apiKey = 'mTmTNRmv236VbU8ijndr1F5EOJz8NR3s'; // PAID $79 PLAN KEY ONLY
     if (!apiKey) {
       throw new Error('POLYGON_API_KEY environment variable is not set');
     }

@@ -70,7 +70,7 @@ class PolygonClient {
   private client: any;
 
   constructor() {
-    const apiKey = process.env.POLYGON_API_KEY;
+    const apiKey = 'mTmTNRmv236VbU8ijndr1F5EOJz8NR3s'; // PAID $79 PLAN KEY ONLY
     if (!apiKey) {
       throw new Error('POLYGON_API_KEY environment variable is required');
     }

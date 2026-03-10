@@ -24,6 +24,8 @@ import PremiumProbabilityDashboard from '@/components/premium-probability-dashbo
 import TradingPsychologyDashboard from '../../components/trading-psychology-dashboard';
 import FutureIntelligenceDashboard from '../../components/future-intelligence-dashboard';
 import { ScenarioIntelligenceDashboard } from '@/components/scenario-intelligence-dashboard';
+import WorldIntelligenceDashboard from '@/components/world-intelligence-dashboard';
+import { ExpertBooksDashboard } from '@/components/expert-books-dashboard';
 
 interface MarketData {
   success: boolean;
@@ -237,7 +239,7 @@ export default function UnifiedMasteryPage() {
       {/* Detailed Analysis Tabs */}
       {marketData && optionsData && (
         <Tabs defaultValue="stock" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="stock">Stock Analysis</TabsTrigger>
             <TabsTrigger value="options">Options Analysis</TabsTrigger>
             <TabsTrigger value="probability">Probability Engine</TabsTrigger>
@@ -246,6 +248,9 @@ export default function UnifiedMasteryPage() {
             <TabsTrigger value="strikes">Strike Tracking</TabsTrigger>
             <TabsTrigger value="unified">Unified Strategy</TabsTrigger>
             <TabsTrigger value="scenario-intelligence">Scenario Intelligence</TabsTrigger>
+            <TabsTrigger value="world">World Intelligence</TabsTrigger>
+            <TabsTrigger value="smart-money">Smart Money</TabsTrigger>
+            <TabsTrigger value="expert-books">Expert Books</TabsTrigger>
           </TabsList>
 
           {/* Stock Analysis Tab */}
@@ -830,6 +835,56 @@ export default function UnifiedMasteryPage() {
             <div className="grid gap-6">
               <ScenarioIntelligenceDashboard ticker={ticker} />
             </div>
+          </TabsContent>
+
+          {/* World Intelligence Tab */}
+          <TabsContent value="world" className="space-y-6">
+            <WorldIntelligenceDashboard />
+          </TabsContent>
+
+          {/* Smart Money Detection Tab */}
+          <TabsContent value="smart-money" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-6 w-6 text-purple-600" />
+                  Smart Money Manipulation Detection
+                </CardTitle>
+                <CardDescription>
+                  See through institutional manipulation and follow smart money patterns
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <Eye className="h-12 w-12 mx-auto mb-4 text-purple-600" />
+                  <p className="text-lg font-semibold mb-2">Smart Money Intelligence</p>
+                  <p className="text-gray-600 mb-4">
+                    Detecting institutional manipulation, tracking dark pool flow, and analyzing market internals
+                  </p>
+                  <Button 
+                    onClick={() => {
+                      // Fetch smart money data
+                      fetch(`/api/smart-money-detection?symbol=${ticker}`)
+                        .then(res => res.json())
+                        .then(data => {
+                          if (data.success) {
+                            console.log('Smart Money Analysis:', data.data);
+                            // Handle the response - could add state management here
+                          }
+                        });
+                    }}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    Analyze Smart Money Activity
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Expert Books Tab */}
+          <TabsContent value="expert-books" className="space-y-6">
+            <ExpertBooksDashboard />
           </TabsContent>
         </Tabs>
       )}

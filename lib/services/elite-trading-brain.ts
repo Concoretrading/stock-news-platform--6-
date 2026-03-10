@@ -181,6 +181,12 @@ interface EliteExecutionPlan {
       size: number;
       instrument: string;
       trigger: string;
+      ratio_configuration?: { // NEW: Ratio Hedging Support
+        long_leg: number; // e.g., 4 Calls
+        hedge_leg: number; // e.g., 1 Put
+        type: 'asymmetric_strangle' | 'ratio_spread' | 'directional';
+        structure: string; // "4 Calls : 1 Put"
+      };
     };
     scaling_entries: {
       price: number;
@@ -191,12 +197,18 @@ interface EliteExecutionPlan {
   exit_strategy: {
     profit_targets: {
       price: number;
-      size: number;
+      size: number; // Percentage to close (e.g., 0.75 for 3/4 units)
       stop_adjustment: number;
+      description: string; // "Sell 3/4 calls, hold 1 runner"
     }[];
     psychology_exits: {
       trigger: string;
       action: string;
+    }[];
+    hedge_management: { // NEW: Hedge specific management
+      action: string;
+      trigger: string;
+      description: string; // "Hold Put to cover Runner"
     }[];
   };
   timing_considerations: {
@@ -253,16 +265,16 @@ export class EliteTradingBrain {
 
     // STEP 1: Get comprehensive psychology analysis
     const psychologyAnalysis = await tradingPsychologyEngine.analyzeTradingPsychology(ticker);
-    
+
     // STEP 2: Analyze market context
     const marketContext = await this.analyzeMarketContext();
-    
+
     // STEP 3: Track institutional flow
     const institutionalFlow = await this.trackInstitutionalFlow(ticker, price, optionChain);
-    
+
     // STEP 4: Analyze advanced setup factors
     const advancedSetup = await this.analyzeAdvancedSetup(ticker, price, marketContext, institutionalFlow);
-    
+
     // STEP 5: Calculate elite setup quality (including psychology)
     const setupQuality = this.calculateSetupQuality(
       marketContext,
@@ -271,7 +283,7 @@ export class EliteTradingBrain {
       probabilitySignal,
       psychologyAnalysis // NEW: Include psychology in quality assessment
     );
-    
+
     // STEP 6: Generate risk framework (psychology-adjusted)
     const riskFramework = this.generateRiskFramework(
       setupQuality,
@@ -279,7 +291,7 @@ export class EliteTradingBrain {
       marketContext,
       psychologyAnalysis // NEW: Psychology-adjusted risk management
     );
-    
+
     // STEP 7: Create execution plan (psychology-aware)
     const executionPlan = this.createExecutionPlan(
       price,
@@ -482,43 +494,43 @@ export class EliteTradingBrain {
     psychologyAnalysis: PsychologyEngineOutput,
     marketContext: MarketContext
   ): EliteSetup['elite_decision'] {
-    
+
     const technicalScore = setupQuality.overall_score || 70;
     const probabilityScore = probabilitySignal.probabilityAssessment.breakoutProbability;
     const psychologyScore = psychologyAnalysis.trade_filter.confidence_level;
-    
+
     // Elite edge factors
     const edgeFactors: string[] = [];
     const concerns: string[] = [];
-    
+
     // Check for psychology override
     const psychologyOverride = !psychologyAnalysis.trade_filter.should_trade;
-    
+
     if (psychologyOverride) {
       concerns.push('Psychology engine recommends avoiding trades');
       concerns.push(...psychologyAnalysis.trade_filter.primary_concerns);
     }
-    
+
     // Check for elite edge conditions
     if (psychologyAnalysis.crowd_behavior.divergence_score > 70) {
       edgeFactors.push(`High retail/institutional divergence (${psychologyAnalysis.crowd_behavior.divergence_score}%)`);
     }
-    
-    if (psychologyAnalysis.market_emotional_state.primary_emotion === 'fear' && 
-        psychologyAnalysis.market_emotional_state.intensity_level > 60) {
+
+    if (psychologyAnalysis.market_emotional_state.primary_emotion === 'fear' &&
+      psychologyAnalysis.market_emotional_state.intensity_level > 60) {
       edgeFactors.push('Fear-based opportunity - contrarian edge available');
     }
-    
+
     if (psychologyAnalysis.trading_environment.factors.correlation_breakdown) {
       edgeFactors.push('Stock-picking environment - individual names breaking correlation');
     }
-    
+
     // Calculate composite confidence
     let confidenceScore = (technicalScore * 0.4 + probabilityScore * 0.4 + psychologyScore * 0.2);
-    
+
     // Determine final recommendation
     let finalRecommendation: EliteSetup['elite_decision']['final_recommendation'];
-    
+
     if (psychologyOverride && psychologyAnalysis.trade_filter.recommended_action === 'cash') {
       finalRecommendation = 'PASS';
       confidenceScore *= 0.3; // Heavily discount confidence
@@ -534,14 +546,14 @@ export class EliteTradingBrain {
       finalRecommendation = 'PASS';
       concerns.push('Insufficient confidence for elite standards');
     }
-    
+
     // Adaptive sizing based on psychology
     const adaptiveSizing = psychologyAnalysis.trade_filter.position_sizing_modifier;
-    
+
     // Time horizon adjustment
-    const timeHorizonAdjustment = 
+    const timeHorizonAdjustment =
       psychologyAnalysis.trade_filter.time_horizon_adjustment === 'shorten' ? 'SHORTEN' :
-      psychologyAnalysis.trade_filter.time_horizon_adjustment === 'extend' ? 'EXTEND' : 'NORMAL';
+        psychologyAnalysis.trade_filter.time_horizon_adjustment === 'extend' ? 'EXTEND' : 'NORMAL';
 
     return {
       final_recommendation: finalRecommendation,
@@ -562,16 +574,16 @@ export class EliteTradingBrain {
     probabilitySignal: RealTimeProbabilitySignal,
     psychologyAnalysis: PsychologyEngineOutput // NEW parameter
   ): EliteSetupQuality {
-    
+
     let overallScore = 60; // Base score
     const factors: string[] = [];
-    
+
     // Technical factors (existing logic)
     if (probabilitySignal.probabilityAssessment.breakoutProbability > 75) {
       overallScore += 15;
       factors.push('High breakout probability');
     }
-    
+
     // Psychology factors (NEW)
     if (psychologyAnalysis.trade_filter.should_trade) {
       overallScore += 10;
@@ -580,7 +592,7 @@ export class EliteTradingBrain {
       overallScore -= 20;
       factors.push('Psychology advises caution');
     }
-    
+
     if (psychologyAnalysis.trading_environment.overall_rating === 'PRIME') {
       overallScore += 15;
       factors.push('Prime trading environment');
@@ -588,30 +600,30 @@ export class EliteTradingBrain {
       overallScore -= 25;
       factors.push('Poor trading environment');
     }
-    
+
     // Crowd behavior edge
     if (psychologyAnalysis.crowd_behavior.divergence_score > 70) {
       overallScore += 10;
       factors.push('High crowd divergence - opportunity');
     }
-    
+
     // Market emotion edge
-    if (psychologyAnalysis.market_emotional_state.primary_emotion === 'fear' && 
-        psychologyAnalysis.market_emotional_state.intensity_level > 60) {
+    if (psychologyAnalysis.market_emotional_state.primary_emotion === 'fear' &&
+      psychologyAnalysis.market_emotional_state.intensity_level > 60) {
       overallScore += 12;
       factors.push('Fear-based contrarian opportunity');
     } else if (psychologyAnalysis.market_emotional_state.primary_emotion === 'euphoria') {
       overallScore -= 15;
       factors.push('Euphoria increases reversal risk');
     }
-    
+
     // Determine overall rating
-    const overallRating = 
+    const overallRating =
       overallScore >= 90 ? 'S' :
-      overallScore >= 80 ? 'A' :
-      overallScore >= 70 ? 'B' :
-      overallScore >= 60 ? 'C' : 'D';
-    
+        overallScore >= 80 ? 'A' :
+          overallScore >= 70 ? 'B' :
+            overallScore >= 60 ? 'C' : 'D';
+
     return {
       overall_score: Math.max(0, Math.min(100, overallScore)),
       overall_rating: overallRating,
@@ -632,20 +644,20 @@ export class EliteTradingBrain {
     marketContext: MarketContext,
     psychologyAnalysis: PsychologyEngineOutput // NEW parameter
   ): EliteRiskFramework {
-    
+
     // Base sizing adjusted by psychology
     const psychologyMultiplier = psychologyAnalysis.trade_filter.position_sizing_modifier;
-    const baseSize = 
+    const baseSize =
       setupQuality.overall_rating === 'S' ? 0.4 :
-      setupQuality.overall_rating === 'A' ? 0.3 :
-      setupQuality.overall_rating === 'B' ? 0.2 :
-      setupQuality.overall_rating === 'C' ? 0.1 : 0.05;
+        setupQuality.overall_rating === 'A' ? 0.3 :
+          setupQuality.overall_rating === 'B' ? 0.2 :
+            setupQuality.overall_rating === 'C' ? 0.1 : 0.05;
 
     const adjustedBaseSize = baseSize * psychologyMultiplier;
     const maxSize = adjustedBaseSize * 1.5;
 
     // Adjust stops based on psychology
-    const psychologyStopAdjustment = 
+    const psychologyStopAdjustment =
       psychologyAnalysis.trade_filter.time_horizon_adjustment === 'shorten' ? 0.7 : 1.0;
 
     return {
@@ -661,7 +673,7 @@ export class EliteTradingBrain {
         ]
       },
       stop_strategies: {
-        initial_stop: (probabilitySignal.consolidation.isConsolidating ? 
+        initial_stop: (probabilitySignal.consolidation.isConsolidating ?
           probabilitySignal.consolidation.breakoutProbability * 0.01 : 0.02) * psychologyStopAdjustment,
         breakeven_trigger: probabilitySignal.probabilityAssessment.expectedMoveSize * 0.3,
         trailing_parameters: {
@@ -677,10 +689,10 @@ export class EliteTradingBrain {
           'Momentum exhaustion',
           'Psychology regime shift' // NEW: Psychology-based hedge trigger
         ],
-        recommended_instruments: 
-          psychologyAnalysis.market_emotional_state.primary_emotion === 'greed' ? 
-          ['ATM Puts', 'VIX Calls', 'Inverse ETF Calls'] :
-          ['OTM Calls', 'QQQ Calls', 'Momentum ETF Calls'],
+        recommended_instruments:
+          psychologyAnalysis.market_emotional_state.primary_emotion === 'greed' ?
+            ['ATM Puts', 'VIX Calls', 'Inverse ETF Calls'] :
+            ['OTM Calls', 'QQQ Calls', 'Momentum ETF Calls'],
         hedge_ratio: psychologyAnalysis.trade_filter.recommended_action === 'defensive' ? 0.5 : 0.3,
         adjustment_rules: [
           'Increase on psychology deterioration',
@@ -691,18 +703,19 @@ export class EliteTradingBrain {
     };
   }
 
-  // Enhanced execution plan with psychology
+  // Enhanced execution plan with psychology AND Ratio Hedging logic
   private createExecutionPlan(
     price: number,
     setupQuality: EliteSetupQuality,
     riskFramework: EliteRiskFramework,
     probabilitySignal: RealTimeProbabilitySignal,
-    psychologyAnalysis: PsychologyEngineOutput // NEW parameter
+    psychologyAnalysis: PsychologyEngineOutput
   ): EliteExecutionPlan {
-    
+
     // Adjust execution based on psychology
     const psychologyTiming = psychologyAnalysis.trade_filter.recommended_action;
-    
+    const isHighConviction = setupQuality.overall_rating === 'S' || setupQuality.overall_rating === 'A';
+
     let entryTrigger = 'Breakout confirmation with volume';
     if (psychologyTiming === 'defensive') {
       entryTrigger = 'Wait for multiple confirmations and reduced size';
@@ -710,46 +723,92 @@ export class EliteTradingBrain {
       entryTrigger = 'Early entry on setup completion';
     }
 
+    // RATIO STRATEGY LOGIC (The "Free Roll")
+    // If High Conviction and Psychology supports = 4:1 Ratio
+    const useRatioStrategy = isHighConviction && psychologyAnalysis.trade_filter.should_trade;
+
+    // Define Targets based on Strategy
+    const profitTargets = useRatioStrategy ? [
+      {
+        price: price * 1.015, // Target 1 (Quick Scalp to lock risk)
+        size: 0.75, // Sell 3 out of 4 units (75%)
+        stop_adjustment: price, // Move stop to Breakeven
+        description: 'Sell 3/4 Calls to fund the trade and lock "Free Roll"'
+      },
+      {
+        price: price * 1.03, // Target 2 (Runner extensions)
+        size: 0.125, // Sell half of remainder
+        stop_adjustment: price * 1.01,
+        description: 'Trim Runner'
+      },
+      {
+        price: price * 1.05, // Moon bag
+        size: 0.125, // Final piece
+        stop_adjustment: price * 1.02,
+        description: 'Close final runner'
+      }
+    ] : [
+      // Standard scaling for lower conviction
+      {
+        price: price * 1.02,
+        size: 0.5,
+        stop_adjustment: price * 1.005,
+        description: 'Take 50% profit'
+      },
+      {
+        price: price * 1.04,
+        size: 0.5,
+        stop_adjustment: price * 1.01,
+        description: 'Close remainder'
+      }
+    ];
+
+    // Define Hedge Management
+    const hedgeManagement = useRatioStrategy ? [
+      {
+        action: 'HOLD',
+        trigger: 'Target 1 Hit',
+        description: 'Keep 1 Put open to hedge the remaining 1 Call (Risk-Free Strangle)'
+      },
+      {
+        action: 'CLOSE',
+        trigger: 'Price drops below entry - 1%',
+        description: 'Monetize Put hedge if trade fails'
+      }
+    ] : [
+      {
+        action: 'NONE',
+        trigger: 'N/A',
+        description: 'Standard stop loss management'
+      }
+    ];
+
     return {
       entry_strategy: {
         primary_entry: {
           price: price,
           size: riskFramework.position_sizing.base_size,
-          instrument: '1 ATR Call',
-          trigger: entryTrigger
+          instrument: useRatioStrategy ? '4:1 Call Ratio (4 Calls + 1 Put)' : '1 ATR Call',
+          trigger: entryTrigger,
+          ratio_configuration: useRatioStrategy ? {
+            long_leg: 4,
+            hedge_leg: 1,
+            type: 'asymmetric_strangle',
+            structure: '4 Calls : 1 Put'
+          } : undefined
         },
-        scaling_entries: psychologyAnalysis.trade_filter.should_trade ? [
+        scaling_entries: (psychologyAnalysis.trade_filter.should_trade && !useRatioStrategy) ? [
+          // Only scale in for standard trades, Ratio is "all in" upfront for the math to work
           {
             price: price * 1.01,
             size: riskFramework.position_sizing.base_size * 0.5,
             trigger: 'First target hit with momentum'
-          },
-          {
-            price: price * 1.02,
-            size: riskFramework.position_sizing.base_size * 0.5,
-            trigger: 'Second target hit with volume confirmation'
           }
-        ] : [] // No scaling if psychology says avoid
+        ] : []
       },
       exit_strategy: {
-        profit_targets: [
-          {
-            price: price * (psychologyAnalysis.trade_filter.time_horizon_adjustment === 'shorten' ? 1.015 : 1.02),
-            size: 0.4, // Take profits faster if psychology suggests shorter horizon
-            stop_adjustment: price * 1.005
-          },
-          {
-            price: price * (psychologyAnalysis.trade_filter.time_horizon_adjustment === 'shorten' ? 1.025 : 1.03),
-            size: 0.4,
-            stop_adjustment: price * 1.015
-          },
-          {
-            price: price * (psychologyAnalysis.trade_filter.time_horizon_adjustment === 'shorten' ? 1.04 : 1.05),
-            size: 0.2,
-            stop_adjustment: price * 1.025
-          }
-        ],
-        psychology_exits: [ // NEW: Psychology-based exit triggers
+        profit_targets: profitTargets,
+        psychology_exits: [
           {
             trigger: 'Market emotion shifts to euphoria',
             action: 'Exit 50% immediately'
@@ -762,7 +821,8 @@ export class EliteTradingBrain {
             trigger: 'Trading environment deteriorates to AVOID',
             action: 'Exit all positions immediately'
           }
-        ]
+        ],
+        hedge_management: hedgeManagement
       },
       timing_considerations: {
         optimal_entry_window: psychologyAnalysis.trade_filter.should_trade ? 'Immediate to 15 minutes' : 'Wait for better conditions',
@@ -781,7 +841,7 @@ export class EliteTradingBrain {
   ): EliteSetup['setup_type'] {
     const momentumStrength = advancedSetup.momentum_factors.momentum_quality;
     const technicalAlignment = advancedSetup.technical_alignment.alignment_score;
-    
+
     if (momentumStrength > 70 && technicalAlignment > 80) return 'momentum';
     if (advancedSetup.momentum_factors.squeeze_status === 'off') return 'breakout';
     return 'mean_reversion';
@@ -789,9 +849,9 @@ export class EliteTradingBrain {
 
   // Enhanced logging with psychology
   private logEliteAnalysis(
-    setupQuality: any, 
-    riskFramework: any, 
-    executionPlan: any, 
+    setupQuality: any,
+    riskFramework: any,
+    executionPlan: any,
     eliteDecision: EliteSetup['elite_decision']
   ): void {
     console.log('🧠 ELITE TRADING BRAIN ANALYSIS COMPLETE:');
@@ -801,12 +861,12 @@ export class EliteTradingBrain {
     console.log(`💯 Elite Confidence: ${eliteDecision.confidence_score}%`);
     console.log(`📊 Adaptive Sizing: ${Math.round(eliteDecision.adaptive_sizing * 100)}%`);
     console.log(`⏰ Time Horizon: ${eliteDecision.time_horizon_adjustment}`);
-    
+
     if (eliteDecision.elite_edge_factors.length > 0) {
       console.log('🎯 ELITE EDGE FACTORS:');
       eliteDecision.elite_edge_factors.forEach(factor => console.log(`   ✓ ${factor}`));
     }
-    
+
     if (eliteDecision.key_concerns.length > 0) {
       console.log('⚠️  KEY CONCERNS:');
       eliteDecision.key_concerns.forEach(concern => console.log(`   - ${concern}`));
