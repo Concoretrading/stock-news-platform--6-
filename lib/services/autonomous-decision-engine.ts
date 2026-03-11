@@ -11,6 +11,8 @@ import { futureIntelligenceEngine } from './future-intelligence-engine';
 import { multiContractPositionManager } from './multi-contract-position-manager';
 import { timeframeCouncil } from './timeframe-council';
 import { dynamicProbabilityOrchestrator } from './dynamic-probability-orchestrator';
+import { nemotronService } from './nemotron-service';
+
 
 // ... (RiskParameters and MarketContext interfaces remain same)
 
@@ -211,14 +213,28 @@ export class AutonomousDecisionEngine {
             positionSetup
         );
 
+        // Step 6.5: Consult Nemotron 3 Super (The Main Brain)
+        console.log('🧠 Step 6.5: Consulting NVIDIA Nemotron 3 Super (Main Brain)...\n');
+        const nemotronSynthesis = await nemotronService.synthesizeIntelligence({
+            ticker: marketContext.ticker,
+            currentPrice: marketContext.current_price,
+            expertSignals: intelligence,
+            macroContext: councilDecision.rationale_summary,
+            reasoningBudget: 75 // High depth for autonomous thinking
+        });
+
+        console.log(`   Nemotron Thesis: ${nemotronSynthesis.autonomous_thesis}`);
+        console.log(`   Nemotron Direction: ${nemotronSynthesis.final_trade_direction}`);
+        console.log(`   Nemotron Confidence: ${nemotronSynthesis.confidence}%\n`);
+
         // Step 7: Final decision
         const decision: AutonomousDecision = {
             decision_id: decisionId,
             timestamp: new Date().toISOString(),
             ticker: marketContext.ticker,
-            should_trade: true,
-            trade_direction: direction.trade_direction,
-            confidence_score: confidence,
+            should_trade: nemotronSynthesis.final_trade_direction !== 'NEUTRAL',
+            trade_direction: nemotronSynthesis.final_trade_direction,
+            confidence_score: (confidence + nemotronSynthesis.confidence) / 2, // Blend statistical + LLM confidence
             position_setup: positionSetup,
             intelligence_consensus: {
                 psychology_signal: intelligence.psychology.signal,
@@ -228,9 +244,22 @@ export class AutonomousDecisionEngine {
                 monte_carlo_win_rate: monteCarloResults.statistics.probability_profit,
                 expert_agreement: this.calculateExpertAgreement(intelligence)
             },
-            reasoning: this.generateReasoning(intelligence, positionSetup, monteCarloResults),
-            warnings: this.generateWarnings(intelligence, marketContext),
-            execution_plan: executionPlan
+            reasoning: [
+                ...this.generateReasoning(intelligence, positionSetup, monteCarloResults),
+                `Nemotron Thesis: ${nemotronSynthesis.autonomous_thesis}`,
+                `Nemotron Logic: ${nemotronSynthesis.internal_reasoning}`
+            ],
+            warnings: [
+                ...this.generateWarnings(intelligence, marketContext),
+                ...nemotronSynthesis.potential_traps_identified.map(t => `⚠️ Nemotron Warning: ${t}`)
+            ],
+            execution_plan: {
+                ...executionPlan,
+                scenario_rules: [
+                    ...executionPlan.scenario_rules,
+                    `Nemotron Adjustment: ${nemotronSynthesis.adjustment_advice}`
+                ]
+            }
         };
 
         // Update daily risk tracking
