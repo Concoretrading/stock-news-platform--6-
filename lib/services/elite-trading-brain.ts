@@ -530,6 +530,12 @@ export class EliteTradingBrain {
 
     // Determine final recommendation
     let finalRecommendation: EliteSetup['elite_decision']['final_recommendation'];
+    const dailyPrep = this.getDailyPrep(probabilitySignal.ticker || '');
+
+    if (dailyPrep && dailyPrep.score > 70) {
+      edgeFactors.push(`Daily Prep Confirmation: ${dailyPrep.sentiment} bias with high conviction`);
+      confidenceScore = Math.min(100, confidenceScore + 10);
+    }
 
     if (psychologyOverride && psychologyAnalysis.trade_filter.recommended_action === 'cash') {
       finalRecommendation = 'PASS';
@@ -538,7 +544,14 @@ export class EliteTradingBrain {
       finalRecommendation = 'HEDGE_ONLY';
       confidenceScore *= 0.5;
     } else if (confidenceScore > 80 && edgeFactors.length >= 2) {
-      finalRecommendation = 'TAKE_TRADE';
+      // REQUIRE PRICE ACTION CONFIRMATION (PREPARATION vs PREDICTION)
+      if (probabilitySignal.probabilityAssessment.expectedMoveSize > 0 && psychologyAnalysis.trading_environment.score > 70) {
+        finalRecommendation = 'TAKE_TRADE';
+        edgeFactors.push('Confirmed by Movement - System is Prepared');
+      } else {
+        finalRecommendation = 'WAIT';
+        concerns.push('Waiting for "Movement confirmation" (Prep mode active)');
+      }
     } else if (confidenceScore > 60) {
       finalRecommendation = 'WAIT';
       concerns.push('Waiting for higher confidence setup');
@@ -845,6 +858,21 @@ export class EliteTradingBrain {
     if (momentumStrength > 70 && technicalAlignment > 80) return 'momentum';
     if (advancedSetup.momentum_factors.squeeze_status === 'off') return 'breakout';
     return 'mean_reversion';
+  }
+
+  private getDailyPrep(ticker: string): any {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const prepPath = path.join(process.cwd(), 'logs', 'daily_prep.json');
+      if (fs.existsSync(prepPath)) {
+        const prep = JSON.parse(fs.readFileSync(prepPath, 'utf8'));
+        return (prep.data && prep.data[ticker]) || null;
+      }
+    } catch (e) {
+      // Silence failsafe for file access
+    }
+    return null;
   }
 
   // Enhanced logging with psychology

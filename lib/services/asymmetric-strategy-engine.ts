@@ -1,5 +1,5 @@
-// Asymmetric Strategy Engine - Elite Probability-Based Positioning
 // Favors high-probability direction while ensuring hedge profitability if wrong
+import { MarketScenario } from './scenario-intelligence-engine';
 
 export interface HistoricalEventAnalysis {
   event_type: string;
@@ -81,32 +81,41 @@ export class AsymmetricStrategyEngine {
   }
 
   async generateAsymmetricStrategy(
-    event_type: string,
+    scenarios: MarketScenario[],
     current_price: number,
-    historical_data: any,
     market_conditions: any
   ): Promise<{
     position_strategy: AsymmetricPosition;
     transformation_plan: PositionTransformation;
     risk_management: any;
-  }> {
-    // Analyze historical patterns
-    const eventAnalysis = await this.analyzeEventPatterns(event_type, historical_data);
+  } | null> {
+    if (!scenarios || scenarios.length === 0) {
+      return null;
+    }
 
-    // Generate asymmetric position
-    const position = await this.createAsymmetricPosition(
-      eventAnalysis,
+    // 1. Identify Dominant Scenario vs Shock Scenario
+    const dominant = scenarios.reduce((prev, curr) => (curr.probability > prev.probability ? curr : prev), scenarios[0]);
+    const shock = scenarios.find(s => s.scenario_id !== dominant.scenario_id && s.probability > 15) || scenarios[1] || scenarios[0];
+
+    console.log(`🧠 ASYMMETRIC ENGINE: Ingesting Scenario Intelligence...`);
+    console.log(`   - Dominant: ${dominant.scenario_name} (${dominant.probability}%)`);
+    console.log(`   - Shock/Hedge: ${shock.scenario_name} (${shock.probability}%)`);
+
+    // 2. Generate asymmetric position based on these scenarios
+    const position = await this.createScenarioLedPosition(
+      dominant,
+      shock,
       current_price,
       market_conditions
     );
 
-    // Create transformation rules
+    // 3. Create transformation rules (how we flip to the shock scenario)
     const transformationPlan = this.createTransformationPlan(
       position,
-      eventAnalysis
+      shock
     );
 
-    // Generate risk management rules
+    // 4. Generate risk management rules
     const riskRules = this.generateRiskManagement(
       position,
       transformationPlan
@@ -206,108 +215,46 @@ export class AsymmetricStrategyEngine {
     };
   }
 
-  private async createAsymmetricPosition(
-    analysis: HistoricalEventAnalysis,
+  private async createScenarioLedPosition(
+    dominant: MarketScenario,
+    shock: MarketScenario,
     current_price: number,
     market_conditions: any
   ): Promise<AsymmetricPosition> {
-    // Example: Bearish CPI Setup
-    if (analysis.historical_bias.directional_tendency === 'DOWNWARD' &&
-        analysis.historical_bias.bias_strength > 70) {
-      return {
-        primary_side: {
-          direction: 'SHORT',
-          size: 100, // Full size
-          structure: 'PUT_SPREAD',
-          entry_price: current_price,
-          target_price: current_price * 0.95,
-          initial_stop: current_price * 1.01
-        },
-        hedge_side: {
-          structure: 'CALL_BACKSPREAD',
-          entry_price: current_price,
-          size: 50, // 50% hedge ratio
-          conversion_triggers: [
-            'Price breaks above initial stop',
-            'Volume surge on upside',
-            'Momentum divergence resolved up'
-          ],
-          profit_zones: [
-            {
-              start_price: current_price * 1.02,
-              end_price: current_price * 1.04,
-              max_profit: current_price * 0.02
-            }
-          ]
-        }
-      };
-    }
+    const primaryOutcome = dominant.expected_outcomes[0];
+    const shockOutcome = shock.expected_outcomes[0];
 
-    // Example: Bullish FOMC Setup
-    if (analysis.historical_bias.directional_tendency === 'UPWARD' &&
-        analysis.historical_bias.bias_strength > 60) {
-      return {
-        primary_side: {
-          direction: 'LONG',
-          size: 100,
-          structure: 'CALL_SPREAD',
-          entry_price: current_price,
-          target_price: current_price * 1.03,
-          initial_stop: current_price * 0.99
-        },
-        hedge_side: {
-          structure: 'PUT_BACKSPREAD',
-          entry_price: current_price,
-          size: 40,
-          conversion_triggers: [
-            'Price breaks below initial stop',
-            'Heavy put buying detected',
-            'Breadth deterioration confirmed'
-          ],
-          profit_zones: [
-            {
-              start_price: current_price * 0.97,
-              end_price: current_price * 0.95,
-              max_profit: current_price * 0.02
-            }
-          ]
-        }
-      };
-    }
+    // Determine structures based on volatility
+    const vix = market_conditions?.vix || 20;
+    const structure_primary = vix > 25 ? 'VERTICAL_SPREAD' : 'LONG_OPTIONS';
+    const structure_hedge = 'BACKSPREAD'; // Predators favor backspreads for hedges
 
-    // Default neutral setup
     return {
       primary_side: {
-        direction: 'LONG',
-        size: 75,
-        structure: 'STRADDLE',
+        direction: primaryOutcome.direction === 'UP' ? 'LONG' : 'SHORT',
+        size: dominant.probability > 60 ? 100 : 75,
+        structure: structure_primary,
         entry_price: current_price,
-        target_price: current_price * 1.02,
-        initial_stop: current_price * 0.98
+        target_price: current_price * (1 + (primaryOutcome.direction === 'UP' ? 1 : -1) * primaryOutcome.magnitude),
+        initial_stop: current_price * (1 - (primaryOutcome.direction === 'UP' ? 1 : -1) * (primaryOutcome.magnitude * 0.5))
       },
       hedge_side: {
-        structure: 'IRON_CONDOR',
+        structure: structure_hedge,
         entry_price: current_price,
-        size: 50,
-        conversion_triggers: [
-          'Extreme move in either direction',
-          'Volatility spike above 90th percentile',
-          'Volume > 3x average'
-        ],
-        profit_zones: [
-          {
-            start_price: current_price * 0.97,
-            end_price: current_price * 1.03,
-            max_profit: current_price * 0.01
-          }
-        ]
+        size: shock.probability > 30 ? 60 : 40, // Hedge size based on shock probability
+        conversion_triggers: shock.trigger_conditions.map(c => c.condition),
+        profit_zones: shock.expected_outcomes.map(o => ({
+          start_price: current_price * (1 + (o.direction === 'UP' ? 0.01 : -0.01)),
+          end_price: current_price * (1 + (o.direction === 'UP' ? 1 : -1) * o.magnitude),
+          max_profit: current_price * o.magnitude * 2 // Backspread power
+        }))
       }
     };
   }
 
   private createTransformationPlan(
     position: AsymmetricPosition,
-    analysis: HistoricalEventAnalysis
+    shock: MarketScenario
   ): PositionTransformation {
     return {
       trigger_conditions: {

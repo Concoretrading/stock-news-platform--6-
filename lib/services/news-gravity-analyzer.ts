@@ -57,7 +57,7 @@ export class NewsGravityAnalyzer {
     /**
      * Core Analysis Function: The "Brain" of NewsGravity
      */
-    async analyzeGravity(ticker: string, upcomingEvent: string | null = null): Promise<GravityAnalysis> {
+    async analyzeGravity(ticker: string, upcomingEvent: string | null = null, liveContext?: any): Promise<GravityAnalysis> {
         console.log(`🌌 Analyzing News Gravity for ${ticker}...`);
 
         // 1. Get Psychology (The Soul)
@@ -74,8 +74,8 @@ export class NewsGravityAnalyzer {
         // 4. Generate Scenarios (The Vision)
         const scenarios = this.generateScenarios(ticker, upcomingEvent, psychology, levels, activeNarratives);
 
-        // 5. Detect Traps (The Instinct)
-        const trap = this.detectTraps(psychology, scenarios);
+        // 5. Detect Traps (The Instinct) - Enhanced with Live Context
+        const trap = this.detectTraps(psychology, scenarios, liveContext);
 
         // 6. Determine Market State
         const marketState = upcomingEvent ? 'WAITING' : 'DIGESTING';
@@ -208,12 +208,14 @@ export class NewsGravityAnalyzer {
         event: string | null,
         psychology: PsychologyEngineOutput,
         levels: GravityLevel[],
-        activeNarratives: any[]
+        activeNarratives: any[],
+        liveContext?: any
     ): NewsScenario[] {
 
         const scenarios: NewsScenario[] = [];
+        const batonPhase = liveContext?.baton_phase || 'IDLE';
 
-        if (!event) {
+        if (!event && batonPhase === 'IDLE') {
             // No specific event? Standard Market Logic
             scenarios.push({
                 name: 'BASE_CASE',
@@ -226,36 +228,51 @@ export class NewsGravityAnalyzer {
             return scenarios;
         }
 
-        // Event Logic (e.g. CPI)
+        // Event/Baton Logic
         const isFearful = psychology.market_emotional_state.primary_emotion === 'fear';
 
-        // Scenario A: Bullish Surprise (The "Rip")
-        const isShock = activeNarratives.some(n => n.expectation_status === 'SHOCK');
-        const shockMultiplier = isShock ? 1.5 : 1.0;
+        // ADJUST PROBABILITIES BASED ON BATON PHASE
+        let bullProb = isFearful ? 40 : 25;
+        let bearProb = isFearful ? 30 : 50;
+
+        if (batonPhase === 'VALIDATED_WHISPER') {
+            console.log(`🔥 SCENARIO SHIFT: Validated rumor detected. Increasing probability.`);
+            // If rumor is validated by internals, pump the probability of that scenario
+            // (Assuming bullish for this example, would be dynamic in real implementation)
+            bullProb += 30;
+            bearProb -= 15;
+        } else if (batonPhase === 'RAW_WHISPER') {
+            console.log(`📡 SCENARIO SHIFT: Raw whisper detected. Slight probability adjustment.`);
+            bullProb += 15;
+            bearProb -= 5;
+        } else if (batonPhase === 'CONFIRMED_NARRATIVE') {
+            console.log(`📡 SCENARIO SHIFT: Narrative confirmed by Finnhub. Stability mode.`);
+            bullProb = 45;
+            bearProb = 45;
+        }
 
         scenarios.push({
             name: 'BULL_CASE',
-            probability: isFearful ? 40 : 25, // Contrarian: If fearful, upside surprise captures more
-            description: isShock ? 'UNEXPECTED BULLISH SHOCK! Deep squeeze likely.' : 'Data comes in soft/dovish. Shorts squeeze.',
-            price_targets: levels.filter(l => l.type === 'RIP_TO').map(l => l.price * shockMultiplier), // Wider targets for shock
+            probability: Math.min(90, bullProb),
+            description: batonPhase === 'VALIDATED_WHISPER' ? 'Validated social rumor suggests upside surprise.' : 'Soft data leads to squeeze.',
+            price_targets: levels.filter(l => l.type === 'RIP_TO').map(l => l.price),
             reaction_profile: {
-                immediate: isShock ? 'Parabolic Rip' : 'Vertical Rip',
-                sustained: isShock ? 'Multi-day squeeze' : 'Flag and Go'
+                immediate: 'Vertical Rip',
+                sustained: 'Flag and Go'
             },
-            required_triggers: ['Data < Expected', 'Dovish comms']
+            required_triggers: ['Data < Expected']
         });
 
-        // Scenario B: Bearish Reality (The "Rug")
         scenarios.push({
             name: 'BEAR_CASE',
-            probability: isFearful ? 30 : 50, // If already fearful, downside might be priced in
-            description: isShock ? 'UNEXPECTED BEARISH SHOCK! Massive rug pull.' : 'Data hot/hawkish. Reality check.',
-            price_targets: levels.filter(l => l.type === 'RIP_FROM').map(l => l.price / shockMultiplier), // Wider targets for shock
+            probability: Math.min(90, bearProb),
+            description: 'Data hot/hawkish. Reality check.',
+            price_targets: levels.filter(l => l.type === 'RIP_FROM').map(l => l.price),
             reaction_profile: {
-                immediate: isShock ? 'Gap and Flush' : 'Flush',
-                sustained: isShock ? 'Systemic liquidation' : 'Grind lower'
+                immediate: 'Flush',
+                sustained: 'Grind lower'
             },
-            required_triggers: ['Data > Expected', 'Hawkish surprise']
+            required_triggers: ['Data > Expected']
         });
 
         return scenarios;
@@ -265,9 +282,30 @@ export class NewsGravityAnalyzer {
      * Detect "Traps" by analyzing Crowd vs. Reality
      * "The Gravity of the situation"
      */
-    private detectTraps(psychology: PsychologyEngineOutput, scenarios: NewsScenario[]): TrapSetup {
+    private detectTraps(psychology: PsychologyEngineOutput, scenarios: NewsScenario[], liveContext?: any): TrapSetup {
         const primaryEmotion = psychology.market_emotional_state.primary_emotion;
         const intensity = psychology.market_emotional_state.intensity_level;
+
+        // DUAL NEWS EXPERT DIVERGENCE (The Core Predatory Edge)
+        if (liveContext?.specific_events?.includes('bull_trap_divergence')) {
+            return {
+                active: true,
+                type: 'BULL_TRAP',
+                conviction: 'HIGH',
+                description: '🚨 DIVERGENCE DETECTED: Finnhub (Official) is bullish but Grok (Social Rumors) is bearish. Institutional trap likely.',
+                trigger_level: 0
+            };
+        }
+
+        if (liveContext?.specific_events?.includes('bear_trap_divergence')) {
+            return {
+                active: true,
+                type: 'BEAR_TRAP',
+                conviction: 'HIGH',
+                description: '🚨 DIVERGENCE DETECTED: Finnhub (Official) is bearish but Grok (Social Rumors) is bullish. Bear trap likely.',
+                trigger_level: 0
+            };
+        }
 
         // Bull Trap: Euphoria + Bearish Scenario exists
         if (primaryEmotion === 'euphoria' || primaryEmotion === 'greed') {

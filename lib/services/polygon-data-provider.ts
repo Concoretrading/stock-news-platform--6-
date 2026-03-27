@@ -10,9 +10,12 @@ export class PolygonDataProvider {
   private apiKey: string;
 
   private constructor() {
-    this.apiKey = process.env.POLYGON_API_KEY || HARDCODED_KEY;
-    // ✅ FORCE PAID KEY ONLY - VERSION STAMP TO FORCE RELOAD
-    console.log(`🔑 USING KEY: ${this.apiKey.substring(0, 8)}... (${VERSION_STAMP})`);
+    this.apiKey = process.env.POLYGON_API_KEY || '';
+    if (!this.apiKey) {
+      console.warn('⚠️ POLYGON_API_KEY NOT FOUND: DataProvider will use simulation mode.');
+    } else {
+      console.log(`🔑 POLYGON DATA CONNECTED: ${this.apiKey.substring(0, 8)}... (${VERSION_STAMP})`);
+    }
   }
 
   public static getInstance(): PolygonDataProvider {

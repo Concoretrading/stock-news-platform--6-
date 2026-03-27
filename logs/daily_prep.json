@@ -1,0 +1,41 @@
+{
+  "session": "NIGHTLY_REVIEW",
+  "updated_at": "2026-03-16T18:24:21.772Z",
+  "data": {
+    "NVDA": {
+      "sentiment": "neutral",
+      "score": 0,
+      "catalysts": [],
+      "is_whisper": false,
+      "timestamp": "2026-03-16T18:24:21.416Z"
+    },
+    "TSLA": {
+      "sentiment": "neutral",
+      "score": 0,
+      "catalysts": [],
+      "is_whisper": false,
+      "timestamp": "2026-03-16T18:24:21.488Z"
+    },
+    "AAPL": {
+      "sentiment": "neutral",
+      "score": 0,
+      "catalysts": [],
+      "is_whisper": false,
+      "timestamp": "2026-03-16T18:24:21.621Z"
+    },
+    "AMD": {
+      "sentiment": "neutral",
+      "score": 0,
+      "catalysts": [],
+      "is_whisper": false,
+      "timestamp": "2026-03-16T18:24:21.692Z"
+    },
+    "MSFT": {
+      "sentiment": "neutral",
+      "score": 0,
+      "catalysts": [],
+      "is_whisper": false,
+      "timestamp": "2026-03-16T18:24:21.771Z"
+    }
+  }
+}

@@ -12,6 +12,7 @@ import { multiContractPositionManager } from './multi-contract-position-manager'
 import { timeframeCouncil } from './timeframe-council';
 import { dynamicProbabilityOrchestrator } from './dynamic-probability-orchestrator';
 import { nemotronService } from './nemotron-service';
+import { asymmetricStrategyEngine, AsymmetricPosition, PositionTransformation } from './asymmetric-strategy-engine';
 
 
 // ... (RiskParameters and MarketContext interfaces remain same)
@@ -98,6 +99,11 @@ export interface AutonomousDecision {
         stop_loss: number;
         profit_targets: number[];
         scenario_rules: string[];
+    };
+    asymmetric_strategy?: {
+        position: AsymmetricPosition;
+        transformation: PositionTransformation;
+        risk: any;
     };
 }
 
@@ -261,6 +267,22 @@ export class AutonomousDecisionEngine {
                 ]
             }
         };
+
+        // Step 6.7: Generate Asymmetric Strike Orchestration
+        console.log('🎯 Step 6.7: Orchestrating Asymmetric Strike Plan...\n');
+        const asymmetricStrategy = await asymmetricStrategyEngine.generateAsymmetricStrategy(
+            nemotronSynthesis.final_trade_direction !== 'NEUTRAL' ? intelligence.scenarios.all_scenarios : [],
+            marketContext.current_price,
+            { vix: marketContext.internals.vix }
+        );
+
+        if (asymmetricStrategy) {
+            decision.asymmetric_strategy = {
+                position: asymmetricStrategy.position_strategy,
+                transformation: asymmetricStrategy.transformation_plan,
+                risk: asymmetricStrategy.risk_management
+            };
+        }
 
         // Update daily risk tracking
         this.dailyRiskUsed += positionSetup.max_risk;

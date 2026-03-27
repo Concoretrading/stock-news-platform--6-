@@ -20,6 +20,7 @@ export interface MarketContext {
     price_action: 'breakout' | 'breakdown' | 'chop' | 'rejection' | 'flush';
     participant_state: 'greed' | 'fear' | 'doubt' | 'relief' | 'unknown';
     specific_events?: string[]; // e.g., ['fed', 'earnings', 'apple', 'witching', 'upgrade']
+    baton_phase?: 'IDLE' | 'RAW_WHISPER' | 'VALIDATED_WHISPER' | 'CONFIRMED_NARRATIVE';
 }
 
 export interface KnowledgeInsight {
