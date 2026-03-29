@@ -5,111 +5,84 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
+    <main className="flex min-h-screen flex-col items-center justify-center p-8 bg-slate-950 text-slate-200">
       <div className="max-w-4xl w-full text-center">
-        <h1 className="text-6xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          🚀 AI Breakout Analyzer
+        <h1 className="text-7xl font-bold mb-8 bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 bg-clip-text text-transparent tracking-tighter">
+          THE PREDATOR
         </h1>
-        
-        <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
-          Advanced AI-powered stock analysis system for detecting breakouts, momentum patterns, and trading opportunities using real-time market data.
+
+        <p className="text-2xl text-slate-400 mb-12 max-w-2xl mx-auto font-light">
+          Autonomous Trading Intelligence System. <br />
+          <span className="text-blue-500 font-semibold tracking-widest text-sm uppercase">Hunt • Analyze • Compound</span>
         </p>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
-          <a
-            href="/api/polygon/test"
-            className="group p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-300"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div className="text-3xl mb-3">🔍</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">Test API Connection</h3>
-            <p className="text-sm text-gray-600">
-              Verify live market data connection and API functionality
-            </p>
-          </a>
 
-          <a
-            href="/api/breakout?ticker=AAPL"
-            className="group p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:border-green-300"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <Link
+            href="/news-gravity"
+            className="group p-8 bg-slate-900/50 border border-slate-800 rounded-2xl shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 hover:border-blue-500/50"
           >
-            <div className="text-3xl mb-3">📈</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">Analyze AAPL</h3>
-            <p className="text-sm text-gray-600">
-              Run comprehensive breakout analysis on Apple stock
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🌌</div>
+            <h3 className="text-xl font-bold mb-2 text-white">News Gravity</h3>
+            <p className="text-sm text-slate-400">
+              Analyze narrative arcs and sentiment distribution across institutional benchmarks
             </p>
-          </a>
+          </Link>
 
-          <a
-            href="/api/breakout?ticker=TSLA"
-            className="group p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:border-purple-300"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/split-screen"
+            className="group p-8 bg-slate-900/50 border border-slate-800 rounded-2xl shadow-2xl hover:shadow-purple-500/10 transition-all duration-300 hover:border-purple-500/50"
           >
-            <div className="text-3xl mb-3">⚡</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">Analyze TSLA</h3>
-            <p className="text-sm text-gray-600">
-              Detect momentum and volatility patterns in Tesla stock
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">🛡️</div>
+            <h3 className="text-xl font-bold mb-2 text-white">Advanced Split Mode</h3>
+            <p className="text-sm text-slate-400">
+              Dual-pillar situational awareness integrating catalysts with raw price action
             </p>
-          </a>
+          </Link>
 
-          <a
-            href="/chart-analysis"
-            className="group p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:border-orange-300"
+          <Link
+            href="/trade-reviews"
+            className="group p-8 bg-slate-900/50 border border-slate-800 rounded-2xl shadow-2xl hover:shadow-amber-500/10 transition-all duration-300 hover:border-amber-500/50"
           >
-            <div className="text-3xl mb-3">📊</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">Chart Analysis</h3>
-            <p className="text-sm text-gray-600">
-              Upload charts for AI-powered pattern recognition
+            <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">📔</div>
+            <h3 className="text-xl font-bold mb-2 text-white">Evolution Journal</h3>
+            <p className="text-sm text-slate-400">
+              Compound knowledge by reviewing historical patterns and strategy refinements
             </p>
-          </a>
-
-          <a
-            href="/premium"
-            className="group p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 hover:border-purple-300"
-          >
-            <div className="text-3xl mb-3">💰</div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900">Premium & Squeeze Pro</h3>
-            <p className="text-sm text-gray-600">
-              Advanced options analysis with squeeze indicators
-            </p>
-          </a>
+          </Link>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-900">Key Features</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+        <div className="bg-slate-900/30 rounded-3xl p-10 border border-slate-800/50 backdrop-blur-sm">
+          <h2 className="text-3xl font-bold mb-8 text-white">The 5-Pillar Model</h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-left">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">🎯 Breakout Detection</h3>
-              <p className="text-sm text-gray-600">
-                Advanced algorithms detect consolidation periods and breakout signals with confidence scoring
+              <h3 className="font-bold text-blue-400 mb-2 uppercase tracking-wider text-xs">Technical</h3>
+              <p className="text-sm text-slate-400">
+                Multi-timeframe internals and volatility compression analysis
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">💰 Premium Analysis</h3>
-              <p className="text-sm text-gray-600">
-                Options chain analysis, volatility skew, and institutional flow tracking for premium insights
+              <h3 className="font-bold text-purple-400 mb-2 uppercase tracking-wider text-xs">Sentiment</h3>
+              <p className="text-sm text-slate-400">
+                Institutional narrative arcs and retail expectation shocks
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">🎢 Squeeze Pro</h3>
-              <p className="text-sm text-gray-600">
-                Bollinger vs Keltner band analysis for volatility compression and momentum detection
+              <h3 className="font-bold text-red-400 mb-2 uppercase tracking-wider text-xs">Flow</h3>
+              <p className="text-sm text-slate-400">
+                Real-time options premium and institutional positioning tracks
               </p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">🤖 AI Integration</h3>
-              <p className="text-sm text-gray-600">
-                Machine learning models process chart patterns and market data for intelligent trading insights
+              <h3 className="font-bold text-green-400 mb-2 uppercase tracking-wider text-xs">Macro</h3>
+              <p className="text-sm text-slate-400">
+                Global regime detection and divergence exploitation logic
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 text-sm text-gray-500">
-          <p>Powered by Polygon API • Built with Next.js & TypeScript</p>
+        <div className="mt-12 text-xs text-slate-600 uppercase tracking-[0.2em] font-medium">
+          <p>The Predator Intelligence System • Owned Power Architecture</p>
         </div>
       </div>
     </main>

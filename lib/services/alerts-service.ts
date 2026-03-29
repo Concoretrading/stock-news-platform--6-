@@ -1,8 +1,8 @@
-import { getFirestore } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 
 // Helper function to get database safely
 async function getDatabase() {
-  return await getFirestore();
+  return adminDb;
 }
 
 interface StockPrice {
@@ -48,10 +48,10 @@ interface TriggeredAlert extends Alert {
 export async function checkAlerts(userId: string, ticker: string, currentPrice: number) {
   try {
     const db = await getDatabase();
-    
+
     // Simple mock alert checking
     const triggeredAlerts: any[] = [];
-    
+
     return triggeredAlerts;
   } catch (error) {
     console.error('Error checking alerts:', error);
@@ -62,13 +62,13 @@ export async function checkAlerts(userId: string, ticker: string, currentPrice: 
 export async function createAlert(userId: string, alertData: any) {
   try {
     const db = await getDatabase();
-    
+
     const docRef = await db.collection('alerts').add({
       ...alertData,
       userId,
       createdAt: new Date().toISOString()
     });
-    
+
     return docRef.id;
   } catch (error) {
     console.error('Error creating alert:', error);

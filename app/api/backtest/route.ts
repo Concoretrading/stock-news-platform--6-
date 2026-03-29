@@ -6,19 +6,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const ticker = searchParams.get('ticker');
     const lookbackYears = parseInt(searchParams.get('years') || '2');
-    
+
     if (!ticker) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Ticker parameter is required' 
+      return NextResponse.json({
+        success: false,
+        error: 'Ticker parameter is required'
       }, { status: 400 });
     }
-    
+
     console.log(`🔍 Performing ${lookbackYears}-year historical backtest for ${ticker}...`);
-    
+
     // Comprehensive analysis with historical pattern learning
     const comprehensiveAnalysis = await polygonClient.analyzeBreakoutWithBacktest(ticker);
-    
+
     return NextResponse.json({
       success: true,
       ticker,
@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
           timeframeEffectiveness: comprehensiveAnalysis.historicalInsights.timeframeEffectiveness,
           volumePatterns: comprehensiveAnalysis.historicalInsights.volumePatternInsights,
           premiumOpportunities: comprehensiveAnalysis.historicalInsights.premiumInsights,
-          mostSuccessfulPatterns: Object.entries(comprehensiveAnalysis.historicalInsights.commonPatterns)
-            .sort(([,a], [,b]) => b.successRate - a.successRate)
+          mostSuccessfulPatterns: Object.entries(comprehensiveAnalysis.historicalInsights.commonPatterns as Record<string, any>)
+            .sort(([, a], [, b]) => b.successRate - a.successRate)
             .slice(0, 3)
             .map(([pattern, data]) => ({
               pattern,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const { searchParams } = new URL(request.url);
     const ticker = searchParams.get('ticker') || 'unknown';
-    
+
     console.error('Backtest analysis error for', ticker, ':', error);
     return NextResponse.json({
       success: false,

@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { patternEngine } from '@/lib/services/pattern-recognition-engine';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing pattern recognition engine...');
-    
+
     // Initialize pattern recognition for core symbols
     const symbols = ['META', 'TSLA', 'SPY', 'QQQ', 'NFLX', 'NVDA'];
-    
+
     for (const symbol of symbols) {
       await patternEngine.initializeSymbol(symbol);
     }
@@ -43,7 +45,7 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Pattern Recognition Test Error:', error);
-    
+
     return NextResponse.json({
       success: false,
       error: 'Failed to test pattern recognition',

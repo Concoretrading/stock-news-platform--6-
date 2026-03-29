@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuth, getFirestore } from "@/lib/firebase-admin";
+import { adminAuth, adminDb } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!idToken) {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 
     let decodedToken;
     try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken);
+      decodedToken = await adminAuth.verifyIdToken(idToken);
     } catch (err) {
       return NextResponse.json({ success: false, error: "Invalid or expired token" }, { status: 401 });
     }
@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
 
     // Fetch catalysts from database
     let query = db.collection('catalysts').where('userId', '==', userId);
-    
+
     if (ticker) {
       query = query.where('stockTickers', 'array-contains', ticker.toUpperCase());
     }
-    
+
     const catalystsSnap = await query.orderBy('date', 'desc').limit(300).get();
-    const catalysts = catalystsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const catalysts = catalystsSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
     return NextResponse.json({ success: true, data: catalysts });
   } catch (error) {

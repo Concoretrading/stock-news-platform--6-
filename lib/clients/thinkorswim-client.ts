@@ -1,6 +1,4 @@
 
-import { AuthenticationService } from './authentication-service'; // Placeholder
-import { Order, OrderType, ComplexOrderStrategyType } from './order-types'; // Placeholder
 
 export class ThinkOrSwimClient {
     private authToken: string | null = null;

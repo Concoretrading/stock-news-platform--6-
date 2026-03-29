@@ -36,7 +36,7 @@ export class PatternStorage {
   private static instance: PatternStorage;
   private patterns: Map<string, PatternData> = new Map();
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): PatternStorage {
     if (!PatternStorage.instance) {
@@ -51,7 +51,7 @@ export class PatternStorage {
   async storePattern(pattern: PatternData): Promise<string> {
     try {
       const patternId = `${pattern.symbol}_${pattern.pattern_type}_${Date.now()}`;
-      
+
       this.patterns.set(patternId, {
         ...pattern,
         created_at: new Date().toISOString(),
@@ -91,7 +91,7 @@ export class PatternStorage {
   async queryPatterns(options: PatternQueryOptions): Promise<PatternData[]> {
     try {
       let patterns = Array.from(this.patterns.values());
-      
+
       // Apply filters
       if (options.symbol) {
         patterns = patterns.filter(p => p.symbol === options.symbol);
@@ -102,14 +102,14 @@ export class PatternStorage {
       if (options.timeframe) {
         patterns = patterns.filter(p => p.timeframe === options.timeframe);
       }
-      if (options.min_success_rate) {
-        patterns = patterns.filter(p => p.success_rate >= options.min_success_rate);
+      if (options.min_success_rate !== undefined) {
+        patterns = patterns.filter(p => p.success_rate >= options.min_success_rate!);
       }
-      if (options.min_profit) {
-        patterns = patterns.filter(p => p.avg_profit >= options.min_profit);
+      if (options.min_profit !== undefined) {
+        patterns = patterns.filter(p => p.avg_profit >= options.min_profit!);
       }
       if (options.date_range) {
-        patterns = patterns.filter(p => 
+        patterns = patterns.filter(p =>
           p.start_date >= options.date_range!.start &&
           p.start_date <= options.date_range!.end
         );
@@ -191,7 +191,7 @@ export class PatternStorage {
   }> {
     try {
       const patterns = Array.from(this.patterns.values());
-      
+
       const stats = {
         total_patterns: patterns.length,
         patterns_by_type: {} as { [key: string]: number },
@@ -202,13 +202,13 @@ export class PatternStorage {
 
       patterns.forEach(pattern => {
         // Count by type
-        stats.patterns_by_type[pattern.pattern_type] = 
+        stats.patterns_by_type[pattern.pattern_type] =
           (stats.patterns_by_type[pattern.pattern_type] || 0) + 1;
-        
+
         // Count by symbol
-        stats.patterns_by_symbol[pattern.symbol] = 
+        stats.patterns_by_symbol[pattern.symbol] =
           (stats.patterns_by_symbol[pattern.symbol] || 0) + 1;
-        
+
         // Add to averages
         stats.avg_success_rate += pattern.success_rate;
         stats.avg_profit += pattern.avg_profit;

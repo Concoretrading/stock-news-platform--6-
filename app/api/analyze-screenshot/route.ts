@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getAuth } from "@/lib/firebase-admin";
+import { adminAuth } from "@/lib/firebase-admin";
 import { getWatchlistTickers, analyzeScreenshot } from "@/lib/services/screenshot-service";
 
 export async function POST(request: NextRequest) {
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
       }
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       price: result.price,
       source: result.source,
       imageStoragePath: result.imageStoragePath,
-      newsEntryResults: result.newsEntryResults,
+      catalystEntryResults: result.catalystEntryResults,
       message: result.message
     });
   } catch (error) {

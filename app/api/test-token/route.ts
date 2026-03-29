@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth } from '@/lib/firebase-admin'
+import { adminAuth } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,11 +14,11 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const decodedToken = await (await getAuth()).verifyIdToken(idToken)
-      return NextResponse.json({ 
-        valid: true, 
+      const decodedToken = await adminAuth.verifyIdToken(idToken)
+      return NextResponse.json({
+        valid: true,
         uid: decodedToken.uid,
-        email: decodedToken.email 
+        email: decodedToken.email
       })
     } catch (err) {
       return NextResponse.json({ valid: false, error: 'Invalid token' })

@@ -6,7 +6,7 @@ export interface MarketScenario {
   scenario_name: string;
   probability: number; // 0-100%
   confidence_level: 'HIGH' | 'MEDIUM' | 'LOW';
-  
+
   // Trigger conditions
   trigger_conditions: {
     condition: string;
@@ -15,7 +15,7 @@ export interface MarketScenario {
     status: 'MET' | 'APPROACHING' | 'NOT_MET';
     proximity_percentage: number; // How close to trigger (0-100%)
   }[];
-  
+
   // Expected outcomes
   expected_outcomes: {
     asset: string;
@@ -24,7 +24,7 @@ export interface MarketScenario {
     timeframe: 'minutes' | 'hours' | 'days' | 'weeks';
     probability: number; // 0-100%
   }[];
-  
+
   // Trading implications
   trading_implications: {
     current_positions: {
@@ -46,7 +46,7 @@ export interface MarketScenario {
       reasoning: string;
     };
   };
-  
+
   // Real-time updates
   last_updated: string;
   data_inputs: string[];
@@ -135,19 +135,19 @@ export class ScenarioIntelligenceEngine {
 
     // Generate primary scenarios based on current market conditions
     const primaryScenarios = await this.generatePrimaryScenarios(ticker, marketContext);
-    
+
     // Build scenario tree with correlations and transitions
     const scenarioTree = await this.buildScenarioTree(primaryScenarios);
-    
+
     // Map current positions to scenario outcomes
     const positionMappings = await this.mapPositionsToScenarios(currentPositions, primaryScenarios);
-    
+
     // Generate trading recommendations based on scenarios
     const tradingRecommendations = this.generateScenarioBasedRecommendations(
-      scenarioTree, 
+      scenarioTree,
       positionMappings
     );
-    
+
     // Setup real-time monitoring
     const realTimeMonitoring = this.setupRealTimeMonitoring(primaryScenarios);
 
@@ -376,7 +376,7 @@ export class ScenarioIntelligenceEngine {
 
   private async buildScenarioTree(scenarios: MarketScenario[]): Promise<ScenarioTree> {
     // Determine dominant scenario based on probability and data strength
-    const dominantScenario = scenarios.reduce((prev, current) => 
+    const dominantScenario = scenarios.reduce((prev, current) =>
       (prev.probability > current.probability) ? prev : current
     );
 
@@ -422,7 +422,7 @@ export class ScenarioIntelligenceEngine {
   }
 
   private async mapPositionsToScenarios(
-    positions: any[], 
+    positions: any[],
     scenarios: MarketScenario[]
   ): Promise<PositionScenarioMap[]> {
     const mappings: PositionScenarioMap[] = [];
@@ -470,7 +470,7 @@ export class ScenarioIntelligenceEngine {
     scenarioTree: ScenarioTree,
     positionMappings: PositionScenarioMap[]
   ): any {
-    
+
     const dominantScenario = scenarioTree.base_scenario;
     const totalProbabilityWeightedPnl = positionMappings.reduce(
       (sum, mapping) => sum + mapping.probability_weighted_pnl, 0
@@ -510,15 +510,15 @@ export class ScenarioIntelligenceEngine {
 
   private setupRealTimeMonitoring(scenarios: MarketScenario[]): any {
     return {
-      monitored_triggers: scenarios.flatMap(scenario => 
+      monitored_triggers: scenarios.flatMap(scenario =>
         scenario.trigger_conditions.map(condition => ({
           scenario_id: scenario.scenario_id,
           condition: condition.condition,
           current_value: condition.current_value,
           threshold: condition.threshold_value,
           proximity: condition.proximity_percentage,
-          alert_level: condition.proximity_percentage > 90 ? 'HIGH' : 
-                      condition.proximity_percentage > 70 ? 'MEDIUM' : 'LOW'
+          alert_level: condition.proximity_percentage > 90 ? 'HIGH' :
+            condition.proximity_percentage > 70 ? 'MEDIUM' : 'LOW'
         }))
       ),
       update_frequency: 'Every 30 seconds',
@@ -538,21 +538,21 @@ export class ScenarioIntelligenceEngine {
   // Real-time scenario update method
   async updateScenariosWithNewData(dataFeed: RealTimeDataFeed): Promise<void> {
     console.log(`📊 UPDATING SCENARIOS with new ${dataFeed.data_type} data...`);
-    
+
     this.dataFeedBuffer.push(dataFeed);
-    
+
     // Process impact on each scenario
-    for (const [scenarioId, scenario] of this.activeScenarios) {
+    for (const [scenarioId, scenario] of Array.from(this.activeScenarios.entries())) {
       const impact = dataFeed.impact_assessment.probability_changes.find(
         change => change.scenario_id === scenarioId
       );
-      
+
       if (impact) {
         scenario.probability = impact.new_probability;
         scenario.last_updated = new Date().toISOString();
-        
+
         console.log(`🎯 Scenario ${scenarioId} probability updated: ${impact.old_probability}% → ${impact.new_probability}%`);
-        
+
         // Determine if this triggers a position adjustment
         if (Math.abs(impact.new_probability - impact.old_probability) > 10) {
           await this.triggerPositionReview(scenarioId, impact);
@@ -564,7 +564,7 @@ export class ScenarioIntelligenceEngine {
   private async triggerPositionReview(scenarioId: string, impact: any): Promise<void> {
     console.log(`⚡ TRIGGERING POSITION REVIEW for scenario ${scenarioId}`);
     console.log(`📈 Probability change: ${impact.change_reason}`);
-    
+
     // This would integrate with position management system
     // For now, just log the recommended actions
   }

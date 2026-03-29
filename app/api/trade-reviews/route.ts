@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@/lib/firebase-admin';
-import { getFirestore } from '@/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 function generateProfessionalTradeReview(data: {
   ticker: string;
@@ -18,7 +17,7 @@ function generateProfessionalTradeReview(data: {
     month: 'long',
     day: 'numeric'
   });
-  
+
   let formattedContent = `
 █████████████████████████████████████████████████████████████████████████████████
 ██                                                                             ██
@@ -81,28 +80,28 @@ export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    
+
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
       }
       userId = decodedToken.uid;
     }
 
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     // Get user's trade reviews
     const reviewsSnapshot = await db.collection('trade_reviews')
       .where('userId', '==', userId)
@@ -110,7 +109,7 @@ export async function GET(request: NextRequest) {
       .orderBy('createdAt', 'desc')
       .get();
 
-    const reviews = reviewsSnapshot.docs.map(doc => ({
+    const reviews = reviewsSnapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     }));
@@ -132,20 +131,20 @@ export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    
+
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
       }
@@ -159,8 +158,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     // Generate professional formatted content
     const formattedContent = generateProfessionalTradeReview({
       ticker: ticker.toUpperCase(),
@@ -168,7 +167,7 @@ export async function POST(request: NextRequest) {
       positionType: positionType.toUpperCase(),
       sections
     });
-    
+
     // Create the trade review
     const reviewData = {
       userId,

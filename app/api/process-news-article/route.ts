@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth, getFirestore } from '@/lib/firebase-admin'
+import { adminAuth, adminDb } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -22,9 +22,9 @@ function extractTickersFromText(text: string): string[] {
     /\b([A-Z]{1,5})\s+(?:stock|shares|equity|ticker)/gi,  // AAPL stock
     /(?:NYSE|NASDAQ):\s*([A-Z]{1,5})/gi,  // NYSE: AAPL
   ];
-  
+
   const found = new Set<string>();
-  
+
   patterns.forEach(pattern => {
     const matches = text.match(pattern);
     if (matches) {
@@ -36,21 +36,21 @@ function extractTickersFromText(text: string): string[] {
       });
     }
   });
-  
+
   return Array.from(found);
 }
 
 // Extract headline from article
 function extractHeadline(text: string): string {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-  
+
   // Look for the first substantial line that could be a headline
   for (const line of lines) {
     if (line.length > 20 && line.length < 200 && !line.includes('http') && !line.includes('www')) {
       return line;
     }
   }
-  
+
   // Fallback to first line
   return lines[0] || 'News Article';
 }
@@ -63,7 +63,7 @@ function extractDate(text: string): string {
     /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s+\d{4}/i,  // Month DD, YYYY
     /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}/i,  // Full month name
   ];
-  
+
   for (const pattern of datePatterns) {
     const match = text.match(pattern);
     if (match) {
@@ -78,7 +78,7 @@ function extractDate(text: string): string {
       }
     }
   }
-  
+
   return new Date().toISOString().split('T')[0];
 }
 
@@ -90,38 +90,38 @@ function extractSnippet(text: string, maxLength: number = 300): string {
     .replace(/www\.[^\s]+/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  
+
   if (cleaned.length <= maxLength) {
     return cleaned;
   }
-  
+
   // Try to cut at sentence boundary
   const sentences = cleaned.split(/[.!?]+/);
   let snippet = '';
-  
+
   for (const sentence of sentences) {
     if (snippet.length + sentence.length > maxLength) {
       break;
     }
     snippet += sentence + '. ';
   }
-  
+
   return snippet.trim() || cleaned.substring(0, maxLength) + '...';
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     // Authenticate user
     const authHeader = request.headers.get('authorization') || '';
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!idToken) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
-    
+
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
       }
@@ -140,9 +140,9 @@ export async function POST(request: NextRequest) {
     const { articleText } = body;
 
     if (!articleText || typeof articleText !== 'string' || articleText.length < 300) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Article text is required and must be at least 300 characters long' 
+      return NextResponse.json({
+        success: false,
+        error: 'Article text is required and must be at least 300 characters long'
       }, { status: 400 });
     }
 
@@ -150,8 +150,8 @@ export async function POST(request: NextRequest) {
     const stocksSnap = await db.collection('stocks')
       .where('userId', '==', userId)
       .get();
-    
-    const watchlistTickers = stocksSnap.docs.map(doc => doc.data().ticker);
+
+    const watchlistTickers = stocksSnap.docs.map((doc: any) => doc.data().ticker);
 
     // Extract information from article
     const extractedTickers = extractTickersFromText(articleText);
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     console.log('User watchlist:', watchlistTickers);
 
     // Filter tickers to only include those in user's watchlist
-    const matchedTickers = extractedTickers.filter(ticker => 
+    const matchedTickers = extractedTickers.filter(ticker =>
       watchlistTickers.includes(ticker.toUpperCase())
     );
 
@@ -192,13 +192,13 @@ export async function POST(request: NextRequest) {
         };
 
         const docRef = await db.collection('catalysts').add(catalystData);
-        
+
         results.push({
           ticker: ticker.toUpperCase(),
           success: true,
           id: docRef.id,
         });
-        
+
         successCount++;
         console.log(`Created catalyst entry for ${ticker}:`, docRef.id);
       } catch (error) {
@@ -219,16 +219,16 @@ export async function POST(request: NextRequest) {
       snippet,
       results,
       successCount,
-      message: successCount > 0 
+      message: successCount > 0
         ? `Successfully created ${successCount} catalyst entries from news article`
         : 'No matching stocks found in your watchlist'
     });
-    
+
   } catch (error) {
     console.error('Error processing news article:', error);
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Failed to process news article' 
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to process news article'
     }, { status: 500 });
   }
 } 

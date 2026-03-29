@@ -1,9 +1,9 @@
-import { getFirestore } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 import { getQuarterFromDate, getCategoryFromEventType, getImpactFromConfidence } from '@/lib/utils';
 
 // Helper function to get database safely
 async function getDatabase() {
-  return await getFirestore();
+  return adminDb;
 }
 
 interface BaseEvent {
@@ -73,7 +73,7 @@ async function getUpcomingEarnings(stockTicker: string | null, startDate: string
     }
 
     const snapshot = await query.get();
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc: any) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -113,7 +113,7 @@ async function getAIDetectedEvents(stockTicker: string | null, startDate: string
     }
 
     const snapshot = await query.get();
-    return snapshot.docs.map(doc => {
+    return snapshot.docs.map((doc: any) => {
       const data = doc.data();
       return {
         id: doc.id,
@@ -181,4 +181,4 @@ async function getRegulatoryEvents(stockTicker: string | null, startDate: string
     return mockRegulatoryEvents.filter(event => event.stockTicker === stockTicker.toUpperCase());
   }
   return mockRegulatoryEvents;
-} 
+}

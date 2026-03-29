@@ -1,10 +1,10 @@
 // Price Action Foundation - Reading the Story of Market Battles
 // Understanding how candles form going into key levels - the 5th pillar
 
-export interface PriceActionFoundation {
+export interface PriceActionFoundationAnalysis {
   symbol: string;
   timestamp: string;
-  
+
   // CANDLE FORMATION INTELLIGENCE
   candle_formation: {
     current_candle: CandleAnalysis;
@@ -12,7 +12,7 @@ export interface PriceActionFoundation {
     formation_quality: FormationQuality;
     battle_narrative: BattleNarrative;
   };
-  
+
   // KEY LEVEL INTERACTION
   level_interaction: {
     approaching_behavior: ApproachingBehavior;
@@ -20,7 +20,7 @@ export interface PriceActionFoundation {
     rejection_patterns: RejectionPattern[];
     acceptance_patterns: AcceptancePattern[];
   };
-  
+
   // CANDLE PATTERNS & SETUPS
   pattern_recognition: {
     single_candle_patterns: SingleCandlePattern[];
@@ -28,7 +28,7 @@ export interface PriceActionFoundation {
     continuation_patterns: ContinuationPattern[];
     reversal_patterns: ReversalPattern[];
   };
-  
+
   // PRICE ACTION MOMENTUM
   price_momentum: {
     impulse_moves: ImpulseMove[];
@@ -36,7 +36,7 @@ export interface PriceActionFoundation {
     momentum_shifts: MomentumShift[];
     exhaustion_signals: ExhaustionSignal[];
   };
-  
+
   // BATTLE ZONE ANALYSIS
   battle_zones: {
     support_battles: SupportBattle[];
@@ -44,7 +44,7 @@ export interface PriceActionFoundation {
     breakout_attempts: BreakoutAttempt[];
     false_break_signals: FalseBreakSignal[];
   };
-  
+
   // PRICE ACTION CONFLUENCE
   pa_confluence: {
     strength_score: number; // 0-100 how strong price action is
@@ -266,25 +266,25 @@ export class PriceActionFoundation {
     console.log('🕯️ Price Action Intelligence ONLINE');
   }
 
-  async analyzePriceAction(symbol: string): Promise<PriceActionFoundation> {
+  async analyzePriceAction(symbol: string): Promise<PriceActionFoundationAnalysis> {
     console.log(`🕯️ PRICE ACTION ANALYSIS: ${symbol}`);
     console.log('Reading the story of market battles...');
-    
+
     // Analyze current candle formation
     const candleFormation = await this.analyzeCandleFormation(symbol);
-    
+
     // Analyze key level interactions
     const levelInteraction = await this.analyzeLevelInteraction(symbol);
-    
+
     // Recognize patterns and setups
     const patternRecognition = await this.recognizePatterns(symbol);
-    
+
     // Analyze price momentum
     const priceMomentum = await this.analyzePriceMomentum(symbol);
-    
+
     // Analyze battle zones
     const battleZones = await this.analyzeBattleZones(symbol);
-    
+
     // Calculate price action confluence
     const paConfluence = await this.calculatePriceActionConfluence(
       candleFormation, levelInteraction, patternRecognition, priceMomentum, battleZones
@@ -302,7 +302,7 @@ export class PriceActionFoundation {
     };
   }
 
-  private async analyzeCandleFormation(symbol: string): Promise<PriceActionFoundation['candle_formation']> {
+  private async analyzeCandleFormation(symbol: string): Promise<PriceActionFoundationAnalysis['candle_formation']> {
     // Analyze how candles are forming
     return {
       current_candle: {
@@ -345,7 +345,7 @@ export class PriceActionFoundation {
     };
   }
 
-  private async analyzeLevelInteraction(symbol: string): Promise<PriceActionFoundation['level_interaction']> {
+  private async analyzeLevelInteraction(symbol: string): Promise<PriceActionFoundationAnalysis['level_interaction']> {
     // How price action behaves at key levels
     return {
       approaching_behavior: {
@@ -378,7 +378,7 @@ export class PriceActionFoundation {
     };
   }
 
-  private async recognizePatterns(symbol: string): Promise<PriceActionFoundation['pattern_recognition']> {
+  private async recognizePatterns(symbol: string): Promise<PriceActionFoundationAnalysis['pattern_recognition']> {
     // Recognize candle patterns and setups
     return {
       single_candle_patterns: [
@@ -415,7 +415,7 @@ export class PriceActionFoundation {
     };
   }
 
-  private async analyzePriceMomentum(symbol: string): Promise<PriceActionFoundation['price_momentum']> {
+  private async analyzePriceMomentum(symbol: string): Promise<PriceActionFoundationAnalysis['price_momentum']> {
     // Analyze momentum through price action
     return {
       impulse_moves: [
@@ -452,7 +452,7 @@ export class PriceActionFoundation {
     };
   }
 
-  private async analyzeBattleZones(symbol: string): Promise<PriceActionFoundation['battle_zones']> {
+  private async analyzeBattleZones(symbol: string): Promise<PriceActionFoundationAnalysis['battle_zones']> {
     // Analyze battles at support/resistance
     return {
       support_battles: [
@@ -499,50 +499,50 @@ export class PriceActionFoundation {
   }
 
   private async calculatePriceActionConfluence(
-    candleFormation: PriceActionFoundation['candle_formation'],
-    levelInteraction: PriceActionFoundation['level_interaction'],
-    patternRecognition: PriceActionFoundation['pattern_recognition'],
-    priceMomentum: PriceActionFoundation['price_momentum'],
-    battleZones: PriceActionFoundation['battle_zones']
-  ): Promise<PriceActionFoundation['pa_confluence']> {
-    
-    const confirmationSignals = [];
-    const warningSignals = [];
-    
+    candleFormation: PriceActionFoundationAnalysis['candle_formation'],
+    levelInteraction: PriceActionFoundationAnalysis['level_interaction'],
+    patternRecognition: PriceActionFoundationAnalysis['pattern_recognition'],
+    priceMomentum: PriceActionFoundationAnalysis['price_momentum'],
+    battleZones: PriceActionFoundationAnalysis['battle_zones']
+  ): Promise<PriceActionFoundationAnalysis['pa_confluence']> {
+
+    const confirmationSignals: string[] = [];
+    const warningSignals: string[] = [];
+
     // Check candle formation quality
     if (candleFormation.formation_quality.overall_quality > 80) {
       confirmationSignals.push('HIGH_QUALITY_CANDLE_FORMATION');
     }
-    
+
     // Check level interaction
     if (levelInteraction.acceptance_patterns.length > 0) {
       confirmationSignals.push('LEVEL_ACCEPTANCE_PATTERNS');
     }
-    
+
     // Check patterns
     if (patternRecognition.continuation_patterns.length > 0) {
       confirmationSignals.push('CONTINUATION_PATTERNS_PRESENT');
     }
-    
+
     // Check momentum
     if (priceMomentum.impulse_moves.length > 0) {
       confirmationSignals.push('IMPULSE_MOMENTUM_DETECTED');
     }
-    
+
     // Check battle zones
     if (battleZones.breakout_attempts.length > 0) {
       confirmationSignals.push('BREAKOUT_ATTEMPTS_QUALITY');
     }
-    
+
     const strengthScore = Math.min(100, confirmationSignals.length * 20);
-    
+
     let qualityRating: 'EXCELLENT' | 'GOOD' | 'AVERAGE' | 'POOR' | 'TERRIBLE';
     if (strengthScore >= 90) qualityRating = 'EXCELLENT';
     else if (strengthScore >= 75) qualityRating = 'GOOD';
     else if (strengthScore >= 60) qualityRating = 'AVERAGE';
     else if (strengthScore >= 40) qualityRating = 'POOR';
     else qualityRating = 'TERRIBLE';
-    
+
     return {
       strength_score: strengthScore,
       quality_rating: qualityRating,

@@ -4,7 +4,7 @@
 export interface MarketFoundation {
   symbol: string;
   timestamp: string;
-  
+
   // THE 5 PILLARS WORKING TOGETHER
   foundation_analysis: {
     key_levels: KeyLevelAnalysis;
@@ -13,7 +13,7 @@ export interface MarketFoundation {
     premium: PremiumAnalysis;
     price_action: PriceActionAnalysis;
   };
-  
+
   // THE BEAUTIFUL CONNECTION
   interconnected_signals: {
     confluence_score: number; // 0-100
@@ -21,7 +21,7 @@ export interface MarketFoundation {
     clarity_rating: number; // Market clarity from connections
     probability_advantage: number; // Our edge from understanding
   };
-  
+
   // HISTORICAL PATTERN LEARNING
   pattern_intelligence: {
     successful_combinations: SuccessfulPattern[];
@@ -29,7 +29,7 @@ export interface MarketFoundation {
     event_correlations: EventCorrelation[];
     adaptation_rules: AdaptationRule[];
   };
-  
+
   // REAL-TIME ADAPTATION
   adaptive_positioning: {
     current_strategy: string;
@@ -196,22 +196,22 @@ export class MarketFoundationIntelligence {
 
   async analyzeMarketFoundation(symbol: string): Promise<MarketFoundation> {
     console.log(`🎯 ANALYZING MARKET FOUNDATION: ${symbol}`);
-    
+
     // Analyze each pillar individually
     const keyLevels = await this.analyzeKeyLevels(symbol);
     const momentum = await this.analyzeMomentum(symbol);
     const volume = await this.analyzeVolume(symbol);
     const premium = await this.analyzePremium(symbol);
     const priceAction = await this.analyzePriceAction(symbol);
-    
+
     // Understand the beautiful connection
     const interconnectedSignals = this.analyzeInterconnections(
       keyLevels, momentum, volume, premium, priceAction
     );
-    
+
     // Learn from historical patterns
     const patternIntelligence = await this.analyzePatternIntelligence(symbol);
-    
+
     // Real-time adaptation
     const adaptivePositioning = this.generateAdaptivePositioning(
       interconnectedSignals, patternIntelligence
@@ -319,22 +319,22 @@ export class MarketFoundationIntelligence {
     priceAction: PriceActionAnalysis
   ): MarketFoundation['interconnected_signals'] {
     // THE BEAUTIFUL CONNECTION - How everything works together
-    
+
     // Calculate confluence score
     const confluenceScore = this.calculateConfluenceScore(
       keyLevels, momentum, volume, premium, priceAction
     );
-    
+
     // Connection strength - how well they reinforce each other
     const connectionStrength = this.calculateConnectionStrength(
       keyLevels, momentum, volume, premium, priceAction
     );
-    
+
     // Market clarity from the connections
     const clarityRating = this.calculateMarketClarity(
       confluenceScore, connectionStrength
     );
-    
+
     // Our probability advantage
     const probabilityAdvantage = this.calculateProbabilityAdvantage(
       confluenceScore, connectionStrength, clarityRating
@@ -364,7 +364,7 @@ export class MarketFoundationIntelligence {
       priceAction: 0.15   // 15% - Quality
     };
 
-    const score = 
+    const score =
       (keyLevels.level_strength * weights.keyLevels) +
       (momentum.momentum_quality * weights.momentum) +
       (volume.breakout_quality * weights.volume) +
@@ -385,7 +385,7 @@ export class MarketFoundationIntelligence {
     let totalConnections = 0;
 
     // Key Levels + Momentum connection
-    if (momentum.momentum_confluence) connectionPoints += 20;
+    if (keyLevels.momentum_confluence) connectionPoints += 20;
     totalConnections += 20;
 
     // Volume + Momentum connection
@@ -414,30 +414,30 @@ export class MarketFoundationIntelligence {
   private calculateMarketClarity(confluenceScore: number, connectionStrength: number): number {
     // When everything connects well, we get clarity
     const clarityBase = (confluenceScore + connectionStrength) / 2;
-    
+
     // Bonus for strong connections
     const connectionBonus = connectionStrength > 80 ? 10 : 0;
-    
+
     return Math.min(100, Math.round(clarityBase + connectionBonus));
   }
 
   private calculateProbabilityAdvantage(
-    confluenceScore: number, 
-    connectionStrength: number, 
+    confluenceScore: number,
+    connectionStrength: number,
     clarityRating: number
   ): number {
     // Our edge comes from understanding the connections
     const baseAdvantage = (confluenceScore + connectionStrength + clarityRating) / 3;
-    
+
     // Elite advantage when everything aligns
     if (confluenceScore > 85 && connectionStrength > 85 && clarityRating > 85) {
       return Math.min(95, Math.round(baseAdvantage + 15)); // Elite edge
     }
-    
+
     if (confluenceScore > 75 && connectionStrength > 75) {
       return Math.min(85, Math.round(baseAdvantage + 10)); // Strong edge
     }
-    
+
     return Math.round(baseAdvantage);
   }
 
@@ -551,7 +551,7 @@ export class MarketFoundationIntelligence {
     patternIntelligence: MarketFoundation['pattern_intelligence']
   ): MarketFoundation['adaptive_positioning'] {
     const { confluence_score, connection_strength, probability_advantage } = interconnectedSignals;
-    
+
     // Determine current strategy based on foundation analysis
     let currentStrategy = 'WAIT_FOR_CLARITY';
     if (confluence_score > 85 && connection_strength > 85) {

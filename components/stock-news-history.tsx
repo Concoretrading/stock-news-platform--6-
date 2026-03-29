@@ -62,27 +62,7 @@ function getWeekOfMonth(date: Date) {
   return Math.ceil(day / 7)
 }
 
-export function NewsImage({ imagePath, source }: { imagePath: string; source?: string }) {
-  const [url, setUrl] = useState<string | null>(null)
-  
-  // Don't display if no image path
-  if (!imagePath) {
-    return null
-  }
-  
-  useEffect(() => {
-    let isMounted = true
-    if (imagePath) {
-      getDownloadURL(storageRef(storage, imagePath))
-        .then((downloadUrl) => { if (isMounted) setUrl(downloadUrl) })
-        .catch(() => { if (isMounted) setUrl(null) })
-    }
-    return () => { isMounted = false }
-  }, [imagePath])
-  
-  if (!url) return null
-  return <img src={url} alt="News Image" className="mt-2 max-h-32 rounded" />
-}
+// NewsImage component removed to comply with "background processing" requirement
 
 export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { ticker?: string, searchQuery?: string, refreshKey?: number }) {
   const [catalysts, setCatalysts] = useState<Catalyst[]>([])
@@ -97,7 +77,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   const { toast } = useToast()
   const { user, loading: authLoading } = useAuth()
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [editForm, setEditForm] = useState<{title: string, description?: string, source?: string, date?: string}>({title: ""})
+  const [editForm, setEditForm] = useState<{ title: string, description?: string, source?: string, date?: string }>({ title: "" })
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [undoData, setUndoData] = useState<Catalyst | null>(null)
   const [undoTimeout, setUndoTimeout] = useState<NodeJS.Timeout | null>(null)
@@ -119,10 +99,10 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   // Render expandable description
   const renderDescription = (catalyst: Catalyst) => {
     if (!catalyst.description) return null
-    
+
     const isExpanded = expandedDescriptions.has(catalyst.id)
     const shouldTruncate = catalyst.description.length > 150
-    const displayText = shouldTruncate && !isExpanded 
+    const displayText = shouldTruncate && !isExpanded
       ? catalyst.description.substring(0, 150) + "..."
       : catalyst.description
 
@@ -290,9 +270,9 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
   // Filter catalysts by search query if provided
   const filteredCatalysts = searchQuery && searchQuery.trim().length > 0
     ? catalysts.filter((c: Catalyst) =>
-        (c.title && c.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
+      (c.title && c.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (c.description && c.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    )
     : catalysts
 
   const getCatalystsForWeek = (weekStart: Date, weekEnd: Date) => {
@@ -461,7 +441,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     console.error('Error creating today date:', error);
     todayIso = '1970-01-01'; // Fallback date
   }
-  
+
   const missingTodayCatalysts = catalysts.filter(c => c.date === todayIso);
   const shownCatalystIds = new Set();
   months.forEach(month => {
@@ -481,7 +461,7 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
     <div className="space-y-4">
       {/* Debug Panel - Remove this in production */}
       {(() => { console.log('Rendering catalyst ids:', catalysts.map(c => c && typeof c.id === 'string' ? c.id : '[INVALID]'), 'Types:', catalysts.map(c => typeof c.id)); return null; })()}
-      
+
       {error && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="p-4">
@@ -779,8 +759,8 @@ export function StockNewsHistory({ ticker = "all", searchQuery, refreshKey }: { 
                                       ✕
                                     </Button>
                                   </div>
-                                  <StockManualNewsForm 
-                                    ticker={ticker === "all" ? "AAPL" : ticker} 
+                                  <StockManualNewsForm
+                                    ticker={ticker === "all" ? "AAPL" : ticker}
                                     onSuccess={handleCatalystAdded}
                                     defaultDate={format(week.start, "yyyy-MM-dd")}
                                   />

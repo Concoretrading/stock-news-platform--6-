@@ -215,7 +215,7 @@ function calculateCompositeOpportunityScore(
 
 // IDENTIFY MULTIPLE CATALYSTS
 function identifyMultipleCatalysts(ema21: any, squeeze: any, breakout: any, premium: any): any[] {
-  const catalysts = [];
+  const catalysts = [] as any[];
   
   // 21 EMA Catalyst
   if (ema21?.opportunityType?.priority === 'HIGH') {
@@ -272,7 +272,7 @@ function identifyMultipleCatalysts(ema21: any, squeeze: any, breakout: any, prem
 
 // DETECT TRADING EDGES
 function detectTradingEdges(ema21: any, squeeze: any, premium: any, conflicting: any): any[] {
-  const edges = [];
+  const edges = [] as any[];
   
   // Multi-timeframe edge
   if (squeeze?.timeframes) {
@@ -330,9 +330,9 @@ function analyzeOptimalTiming(ema21: any, squeeze: any, breakout: any, quote: an
   const timing = {
     immediacy: 'MONITOR',
     optimalEntryWindow: '1-3 days',
-    catalystTiming: [],
+    catalystTiming: [] as string[],
     urgency: 'LOW',
-    waitingFor: []
+    waitingFor: [] as string[]
   };
   
   // Immediate entry signals
@@ -421,9 +421,9 @@ function generateExecutionPlan(
 ): any {
   const plan = {
     phase: 'MONITORING',
-    actions: [],
-    checkpoints: [],
-    contingencies: []
+    actions: [] as string[],
+    checkpoints: [] as string[],
+    contingencies: [] as string[]
   };
   
   if (opportunityScore.totalScore >= 65 && timing.immediacy === 'IMMEDIATE') {
@@ -470,8 +470,8 @@ function generateFinalRecommendation(
   const rec = {
     action: 'MONITOR',
     conviction: 'LOW',
-    reasoning: [],
-    nextSteps: []
+    reasoning: [] as string[],
+    nextSteps: [] as string[] as string[]
   };
   
   if (opportunityScore.totalScore >= 75) {

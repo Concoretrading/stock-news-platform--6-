@@ -447,7 +447,7 @@ export class DualDirectionStrategyEngine {
     }));
 
     // Return highest scoring strategy
-    return scoredStrategies.reduce((prev, current) => 
+    return scoredStrategies.reduce((prev, current) =>
       prev.score > current.score ? prev : current
     ).strategy;
   }
@@ -459,21 +459,21 @@ export class DualDirectionStrategyEngine {
     let score = 0;
 
     // Score based on historical move patterns
-    if (strategy.primary_structure.structure_type === 'STRADDLE' && 
-        profile.historical_moves.average_magnitude > 2.0) {
+    if ((strategy.primary_structure as any).structure_type === 'STRADDLE' &&
+      profile.historical_moves.average_magnitude > 2.0) {
       score += 30;
     }
 
     // Score based on IV crush expectations
-    if (strategy.primary_structure.structure_type === 'IRON_BUTTERFLY' && 
-        profile.volatility_characteristics.expected_iv_crush > 25) {
+    if ((strategy.primary_structure as any).structure_type === 'IRON_BUTTERFLY' &&
+      profile.volatility_characteristics.expected_iv_crush > 25) {
       score += 25;
     }
 
     // Score based on skew patterns
-    if ('structure' in strategy.primary_structure && 
-        strategy.primary_structure.structure.side === 'PUT' && 
-        profile.volatility_characteristics.skew_pattern === 'PUT_HEAVY') {
+    if ('structure' in strategy.primary_structure &&
+      strategy.primary_structure.structure.side === 'PUT' &&
+      profile.volatility_characteristics.skew_pattern === 'PUT_HEAVY') {
       score += 25;
     }
 

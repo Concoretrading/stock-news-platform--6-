@@ -1,10 +1,10 @@
 // Multi-Timeframe Price Action - Reading the Complete Story
 // Understanding how candles form across ALL timeframes: 1m, 5m, 15m, 30m, 1h, 4h, Daily
 
-export interface MultiTimeframePriceAction {
+export interface MultiTimeframePriceActionAnalysis {
   symbol: string;
   timestamp: string;
-  
+
   // TIMEFRAME CASCADE ANALYSIS
   timeframe_cascade: {
     m1: TimeframeCandleAnalysis;
@@ -15,7 +15,7 @@ export interface MultiTimeframePriceAction {
     h4: TimeframeCandleAnalysis;
     daily: TimeframeCandleAnalysis;
   };
-  
+
   // CROSS-TIMEFRAME CONFLUENCE
   cross_timeframe_signals: {
     alignment_score: number; // 0-100 how aligned candles are across timeframes
@@ -23,7 +23,7 @@ export interface MultiTimeframePriceAction {
     divergence_warnings: DivergenceWarning[];
     dominant_narrative: string; // The story being told across timeframes
   };
-  
+
   // KEY LEVEL TIMEFRAME ANALYSIS
   level_timeframe_behavior: {
     approaching_across_timeframes: ApproachingBehavior[];
@@ -31,7 +31,7 @@ export interface MultiTimeframePriceAction {
     acceptance_across_timeframes: AcceptanceBehavior[];
     breakout_quality_by_timeframe: BreakoutQuality[];
   };
-  
+
   // TIMEFRAME LEADERSHIP
   timeframe_leadership: {
     leading_timeframes: string[]; // Which timeframes are leading the story
@@ -39,7 +39,7 @@ export interface MultiTimeframePriceAction {
     catching_up_timeframes: string[]; // Which are starting to align
     conflicting_timeframes: string[]; // Which are telling different stories
   };
-  
+
   // PATTERN HIERARCHY
   pattern_hierarchy: {
     higher_timeframe_patterns: HigherTimeframePattern[];
@@ -47,7 +47,7 @@ export interface MultiTimeframePriceAction {
     pattern_conflicts: PatternConflict[];
     resolution_predictions: ResolutionPrediction[];
   };
-  
+
   // UNIFIED STORY
   unified_story: {
     primary_narrative: string; // The main story across all timeframes
@@ -210,25 +210,25 @@ export class MultiTimeframePriceAction {
     console.log('🕯️ Multi-Timeframe Price Action ONLINE');
   }
 
-  async analyzeMultiTimeframePriceAction(symbol: string): Promise<MultiTimeframePriceAction> {
+  async analyzeMultiTimeframePriceAction(symbol: string): Promise<MultiTimeframePriceActionAnalysis> {
     console.log(`🕯️ MULTI-TIMEFRAME PRICE ACTION: ${symbol}`);
     console.log('Reading the complete story across all timeframes...');
-    
+
     // Analyze each timeframe
     const timeframeCascade = await this.analyzeTimeframeCascade(symbol);
-    
+
     // Analyze cross-timeframe signals
     const crossTimeframeSignals = await this.analyzeCrossTimeframeSignals(timeframeCascade);
-    
+
     // Analyze level behavior across timeframes
     const levelTimeframeBehavior = await this.analyzeLevelTimeframeBehavior(symbol, timeframeCascade);
-    
+
     // Determine timeframe leadership
     const timeframeLeadership = await this.analyzeTimeframeLeadership(timeframeCascade);
-    
+
     // Analyze pattern hierarchy
     const patternHierarchy = await this.analyzePatternHierarchy(timeframeCascade);
-    
+
     // Create unified story
     const unifiedStory = await this.createUnifiedStory(
       timeframeCascade, crossTimeframeSignals, timeframeLeadership, patternHierarchy
@@ -246,9 +246,9 @@ export class MultiTimeframePriceAction {
     };
   }
 
-  private async analyzeTimeframeCascade(symbol: string): Promise<MultiTimeframePriceAction['timeframe_cascade']> {
+  private async analyzeTimeframeCascade(symbol: string): Promise<MultiTimeframePriceActionAnalysis['timeframe_cascade']> {
     console.log('⏰ Analyzing candle formations across all timeframes...');
-    
+
     return {
       m1: await this.analyzeTimeframe(symbol, 'm1'),
       m5: await this.analyzeTimeframe(symbol, 'm5'),
@@ -518,9 +518,9 @@ export class MultiTimeframePriceAction {
   }
 
   private async analyzeCrossTimeframeSignals(
-    timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']
-  ): Promise<MultiTimeframePriceAction['cross_timeframe_signals']> {
-    
+    timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']
+  ): Promise<MultiTimeframePriceActionAnalysis['cross_timeframe_signals']> {
+
     const alignmentScore = this.calculateTimeframeAlignment(timeframeCascade);
     const confluencePatterns = this.identifyConfluencePatterns(timeframeCascade);
     const divergenceWarnings = this.identifyDivergenceWarnings(timeframeCascade);
@@ -534,13 +534,13 @@ export class MultiTimeframePriceAction {
     };
   }
 
-  private calculateTimeframeAlignment(timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']): number {
+  private calculateTimeframeAlignment(timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']): number {
     const timeframes = Object.values(timeframeCascade);
     const bullishCount = timeframes.filter(tf => tf.momentum_expression.momentum_direction === 'BULLISH').length;
     return Math.round((bullishCount / timeframes.length) * 100);
   }
 
-  private identifyConfluencePatterns(timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']): ConfluencePattern[] {
+  private identifyConfluencePatterns(timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']): ConfluencePattern[] {
     return [
       {
         pattern_name: 'BULLISH_MOMENTUM_CONFLUENCE',
@@ -553,7 +553,7 @@ export class MultiTimeframePriceAction {
     ];
   }
 
-  private identifyDivergenceWarnings(timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']): DivergenceWarning[] {
+  private identifyDivergenceWarnings(timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']): DivergenceWarning[] {
     return [
       {
         divergence_type: 'HOURLY_MOMENTUM_LAG',
@@ -572,15 +572,15 @@ export class MultiTimeframePriceAction {
     ];
   }
 
-  private determineDominantNarrative(timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']): string {
+  private determineDominantNarrative(timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']): string {
     return 'Lower timeframes leading bullish momentum, higher timeframes starting to confirm';
   }
 
   private async analyzeLevelTimeframeBehavior(
     symbol: string,
-    timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']
-  ): Promise<MultiTimeframePriceAction['level_timeframe_behavior']> {
-    
+    timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']
+  ): Promise<MultiTimeframePriceActionAnalysis['level_timeframe_behavior']> {
+
     return {
       approaching_across_timeframes: [
         {
@@ -617,9 +617,9 @@ export class MultiTimeframePriceAction {
   }
 
   private async analyzeTimeframeLeadership(
-    timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']
-  ): Promise<MultiTimeframePriceAction['timeframe_leadership']> {
-    
+    timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']
+  ): Promise<MultiTimeframePriceActionAnalysis['timeframe_leadership']> {
+
     return {
       leading_timeframes: ['m1', 'm5', 'm15'],
       lagging_timeframes: ['h1'],
@@ -629,9 +629,9 @@ export class MultiTimeframePriceAction {
   }
 
   private async analyzePatternHierarchy(
-    timeframeCascade: MultiTimeframePriceAction['timeframe_cascade']
-  ): Promise<MultiTimeframePriceAction['pattern_hierarchy']> {
-    
+    timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade']
+  ): Promise<MultiTimeframePriceActionAnalysis['pattern_hierarchy']> {
+
     return {
       higher_timeframe_patterns: [
         {
@@ -666,12 +666,12 @@ export class MultiTimeframePriceAction {
   }
 
   private async createUnifiedStory(
-    timeframeCascade: MultiTimeframePriceAction['timeframe_cascade'],
-    crossTimeframeSignals: MultiTimeframePriceAction['cross_timeframe_signals'],
-    timeframeLeadership: MultiTimeframePriceAction['timeframe_leadership'],
-    patternHierarchy: MultiTimeframePriceAction['pattern_hierarchy']
-  ): Promise<MultiTimeframePriceAction['unified_story']> {
-    
+    timeframeCascade: MultiTimeframePriceActionAnalysis['timeframe_cascade'],
+    crossTimeframeSignals: MultiTimeframePriceActionAnalysis['cross_timeframe_signals'],
+    timeframeLeadership: MultiTimeframePriceActionAnalysis['timeframe_leadership'],
+    patternHierarchy: MultiTimeframePriceActionAnalysis['pattern_hierarchy']
+  ): Promise<MultiTimeframePriceActionAnalysis['unified_story']> {
+
     return {
       primary_narrative: 'Lower timeframes are leading a bullish momentum push that is starting to be confirmed by higher timeframes. The daily engulfing pattern provides the backdrop while 5m and 15m timeframes drive immediate momentum.',
       supporting_evidence: [

@@ -2,6 +2,8 @@ import React from 'react'
 import { Metadata } from 'next'
 import "./globals.css"
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "AI Breakout Analyzer - Advanced Trading Analysis",
   description: "AI-powered breakout analysis, momentum tracking, and chart pattern recognition platform",

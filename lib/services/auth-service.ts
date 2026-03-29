@@ -1,8 +1,8 @@
-import { getAuth } from '@/lib/firebase-admin';
+import { adminAuth } from '@/lib/firebase-admin';
 
 export async function verifyAuthToken(token: string) {
   try {
-    const auth = await getAuth();
+    const auth = adminAuth;
     return auth.verifyIdToken(token);
   } catch (error) {
     // During build time, Firebase admin may not be initialized
@@ -15,7 +15,7 @@ export async function verifyAuthToken(token: string) {
 
 export async function verifyAdminToken(token: string) {
   try {
-    const auth = await getAuth();
+    const auth = adminAuth;
     const decodedToken = await auth.verifyIdToken(token);
     if (decodedToken.email !== 'handrigannick@gmail.com') {
       throw new Error('Admin access required');

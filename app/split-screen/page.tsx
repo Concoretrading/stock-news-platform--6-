@@ -1,8 +1,10 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Twitter, Calendar, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X, GripVertical, Bell, PlusCircle, Trash2, Edit2, Settings, Move } from 'lucide-react';
+import { ArrowLeft, Twitter, BarChart3, TrendingUp, ChevronRight, Star, Activity, History, Search, Plus, FileText, Upload, X, GripVertical, Bell, PlusCircle, Trash2, Edit2, Settings, Move } from 'lucide-react';
 import { XAuth } from '@/components/twitter-auth';
 import { StockNewsHistory } from '@/components/stock-news-history';
 import { StockNewsSearch } from '@/components/stock-news-search';
@@ -43,7 +45,7 @@ export default function SplitScreenPage() {
   const [isClient, setIsClient] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   // Mock watchlist data - in real implementation, this would come from user's watchlist
   const mockWatchlist: Stock[] = [
     { symbol: 'AAPL', name: 'Apple Inc.' },
@@ -79,13 +81,13 @@ export default function SplitScreenPage() {
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !containerRef.current) return;
-    
+
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
-    
+
     // Check if we're on mobile (flex-col) or desktop (flex-row)
     const isMobile = isClient && window.innerWidth < 768;
-    
+
     if (isMobile) {
       // Mobile: vertical resize (Y axis)
       const percentage = ((e.clientY - rect.top) / rect.height) * 100;
@@ -99,16 +101,16 @@ export default function SplitScreenPage() {
 
   const handleTouchMove = useCallback((e: TouchEvent) => {
     if (!isDragging || !containerRef.current || !e.touches[0]) return;
-    
+
     e.preventDefault(); // Prevent scrolling
-    
+
     const container = containerRef.current;
     const rect = container.getBoundingClientRect();
     const touch = e.touches[0];
-    
+
     // Check if we're on mobile (flex-col) or desktop (flex-row)
     const isMobile = isClient && window.innerWidth < 768;
-    
+
     if (isMobile) {
       // Mobile: vertical resize (Y axis)
       const percentage = ((touch.clientY - rect.top) / rect.height) * 100;
@@ -133,12 +135,12 @@ export default function SplitScreenPage() {
       // Mouse events
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
-      
+
       // Touch events with proper options
       document.addEventListener('touchmove', handleTouchMove, { passive: false });
       document.addEventListener('touchend', handleTouchEnd, { passive: false });
       document.addEventListener('touchcancel', handleTouchEnd, { passive: false });
-      
+
       return () => {
         document.removeEventListener('mousemove', handleMouseMove);
         document.removeEventListener('mouseup', handleMouseUp);
@@ -151,7 +153,7 @@ export default function SplitScreenPage() {
 
   const loadUserWatchlist = async () => {
     if (!user) return;
-    
+
     try {
       const response = await fetchWithAuth('/api/watchlist');
       if (response.ok) {
@@ -197,11 +199,11 @@ export default function SplitScreenPage() {
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
       setUploadedFiles(prev => [...prev, ...files]);
-      
+
       // Process each file
       files.forEach(file => {
         if (file.type.startsWith('image/')) {
@@ -243,10 +245,10 @@ export default function SplitScreenPage() {
           title: "Screenshot Processed",
           description: `Successfully analyzed screenshot for ${selectedStock.symbol}`,
         });
-        
+
         // Refresh the history tab
         setRefreshKey(prev => prev + 1);
-        
+
         // Remove the processed file
         setUploadedFiles(prev => prev.filter(f => f !== file));
       } else {
@@ -343,7 +345,7 @@ export default function SplitScreenPage() {
     <div className="min-h-screen bg-background">
       {/* Back Button */}
       <div className="sticky top-0 z-50 bg-background border-b px-4 py-3">
-        <Link 
+        <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
@@ -353,19 +355,19 @@ export default function SplitScreenPage() {
       </div>
 
       {/* Split Screen Container */}
-      <div 
+      <div
         ref={containerRef}
         className="relative"
       >
-        <div 
+        <div
           id="split-container"
           className="flex flex-col md:flex-row h-[calc(100vh-64px)] relative"
           style={{ cursor: isDragging ? 'row-resize md:col-resize' : 'default' }}
         >
           {/* X Panel - Top on Mobile, Right on Desktop */}
-          <div 
+          <div
             className="bg-background border-b md:border-b-0 md:border-l w-full md:w-auto order-first md:order-last flex-none"
-            style={{ 
+            style={{
               height: isClient && window.innerWidth < 768 ? `${Math.min(leftPanelWidth, 45)}%` : 'auto',
               width: isClient && window.innerWidth >= 768 ? `${100 - leftPanelWidth}%` : '100%',
               minHeight: isClient && window.innerWidth < 768 ? '200px' : '100%',
@@ -380,7 +382,7 @@ export default function SplitScreenPage() {
                   <div className="mb-6 md:mb-12">
                     <XAuth />
                   </div>
-                  
+
                   {/* Workflow Integration Section */}
                   <div className="bg-muted/30 rounded-lg p-4 md:p-8">
                     <h3 className="text-lg md:text-2xl font-semibold mb-4 md:mb-6 text-center">Workflow Integration</h3>
@@ -395,7 +397,7 @@ export default function SplitScreenPage() {
                         <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
                           <span className="text-white text-xs md:text-sm font-bold">2</span>
                         </div>
-                        <span className="text-sm md:text-base">Drop news content on ConcoreNews</span>
+                        <span className="text-sm md:text-base">Drop catalyst content on Sentiment Pillar</span>
                       </div>
                       <div className="flex items-center space-x-2 md:space-x-3">
                         <div className="w-4 h-4 md:w-6 md:h-6 bg-blue-500 rounded-full flex items-center justify-center">
@@ -412,21 +414,19 @@ export default function SplitScreenPage() {
 
           {/* Prominent Grab to Move Divider */}
           <div
-            className={`relative group select-none transition-all duration-200 flex items-center justify-center ${
-              isDragging 
-                ? 'h-12 md:h-full md:w-12 bg-blue-600 shadow-lg' 
-                : 'h-10 md:h-full md:w-10 bg-gray-200 hover:bg-blue-500'
-            } cursor-row-resize md:cursor-col-resize`}
+            className={`relative group select-none transition-all duration-200 flex items-center justify-center ${isDragging
+              ? 'h-12 md:h-full md:w-12 bg-blue-600 shadow-lg'
+              : 'h-10 md:h-full md:w-10 bg-gray-200 hover:bg-blue-500'
+              } cursor-row-resize md:cursor-col-resize`}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
           >
             {/* Simple Grab and Slide Button */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`flex items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                isDragging 
-                  ? 'bg-white/20 text-white scale-105' 
-                  : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
-              }`}>
+              <div className={`flex items-center justify-center px-3 py-2 rounded-lg transition-all duration-200 ${isDragging
+                ? 'bg-white/20 text-white scale-105'
+                : 'bg-black/10 text-gray-700 hover:bg-white/80 hover:text-blue-600'
+                }`}>
                 <Move className="h-4 w-4 mr-2" />
                 <span className="text-sm font-semibold whitespace-nowrap">
                   {isClient && window.innerWidth < 768 ? 'Drag Up/Down' : 'Grab and Slide'}
@@ -436,11 +436,10 @@ export default function SplitScreenPage() {
           </div>
 
           {/* ConcoreNews Panel - Bottom on Mobile, Left on Desktop */}
-          <div 
-            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full md:w-auto order-last md:order-first flex-1 ${
-              isDragOver ? 'bg-blue-50 border-blue-300' : ''
-            }`}
-            style={{ 
+          <div
+            className={`bg-background md:border-r border-t md:border-t-0 transition-colors w-full md:w-auto order-last md:order-first flex-1 ${isDragOver ? 'bg-blue-50 border-blue-300' : ''
+              }`}
+            style={{
               height: isClient && window.innerWidth < 768 ? `${Math.max(100 - Math.min(leftPanelWidth, 45), 55)}%` : 'auto',
               width: isClient && window.innerWidth >= 768 ? `${leftPanelWidth}%` : '100%',
               minHeight: isClient && window.innerWidth < 768 ? '55vh' : '100%',
@@ -450,13 +449,16 @@ export default function SplitScreenPage() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           >
+            <div className="absolute top-4 left-4 z-10">
+              <span className="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-full uppercase tracking-tighter">Sentiment Pillar</span>
+            </div>
             <div className="h-full flex flex-col relative">
               {/* Drop Zone Message */}
               {isDragOver && (
                 <div className="absolute inset-0 flex items-center justify-center bg-blue-50/80 backdrop-blur-sm z-10">
                   <div className="text-center">
                     <Upload className="h-12 w-12 mx-auto mb-4 text-blue-500" />
-                    <p className="text-lg font-semibold text-blue-700">Drop news anywhere on ConcoreNews section</p>
+                    <p className="text-lg font-semibold text-blue-700">Drop catalyst anywhere on Sentiment Pillar section</p>
                     <p className="text-sm text-blue-600">Screenshots, articles, or documents</p>
                   </div>
                 </div>
@@ -496,11 +498,10 @@ export default function SplitScreenPage() {
                     {watchlist.map((stock) => (
                       <div
                         key={stock.symbol}
-                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${
-                          selectedStock?.symbol === stock.symbol
-                            ? 'bg-blue-100 border-blue-300'
-                            : 'hover:bg-muted'
-                        }`}
+                        className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors ${selectedStock?.symbol === stock.symbol
+                          ? 'bg-blue-100 border-blue-300'
+                          : 'hover:bg-muted'
+                          }`}
                         onClick={() => setSelectedStock(stock)}
                       >
                         <div className="flex items-center space-x-2">

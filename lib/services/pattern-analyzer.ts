@@ -42,7 +42,7 @@ export class PatternAnalyzer {
    */
   async analyzeAllStocks(days: number = 180): Promise<{ [key: string]: StockAnalysis }> {
     const results: { [key: string]: StockAnalysis } = {};
-    
+
     for (const symbol of this.core_symbols) {
       console.log(`\n📊 Analyzing ${symbol}...`);
       results[symbol] = await this.analyzeStock(symbol, days);
@@ -126,7 +126,7 @@ export class PatternAnalyzer {
       if (lowerBB > lowerKC && upperBB < upperKC) {
         // Found squeeze, analyze outcome
         const outcome = this.analyzeSqueezeOutcome(data, i);
-        
+
         if (outcome.valid) {
           patterns.push({
             symbol,
@@ -166,13 +166,13 @@ export class PatternAnalyzer {
 
       // Detect breakout
       if (
-        data[i].c > high && 
-        data[i].v > data[i-1].v * 1.5 &&
+        data[i].c > high &&
+        data[i].v > data[i - 1].v * 1.5 &&
         this.hasConsolidation(data.slice(i - lookback, i))
       ) {
         // Found bullish breakout, analyze outcome
         const outcome = this.analyzeBreakoutOutcome(data, i, 'bullish');
-        
+
         if (outcome.valid) {
           patterns.push({
             symbol,
@@ -209,7 +209,7 @@ export class PatternAnalyzer {
       if (this.hasConsolidation(data.slice(i - lookback, i))) {
         // Found consolidation, analyze outcome
         const outcome = this.analyzeConsolidationOutcome(data, i);
-        
+
         if (outcome.valid) {
           patterns.push({
             symbol,
@@ -234,8 +234,8 @@ export class PatternAnalyzer {
   private calculateATR(data: any[]): number {
     const tr = data.map((d, i) => {
       if (i === 0) return d.h - d.l;
-      const ych = Math.abs(d.h - data[i-1].c);
-      const ycl = Math.abs(d.l - data[i-1].c);
+      const ych = Math.abs(d.h - data[i - 1].c);
+      const ycl = Math.abs(d.l - data[i - 1].c);
       const hl = d.h - d.l;
       return Math.max(hl, ych, ycl);
     });
@@ -259,7 +259,7 @@ export class PatternAnalyzer {
     for (let i = 1; i <= 10 && start + i < data.length; i++) {
       const move = Math.abs(data[start + i].c - data[start].c);
       const profit = move / data[start].c;
-      
+
       if (profit > 0.01) { // 1% move
         success_count++;
         total_profit += profit;
@@ -287,9 +287,9 @@ export class PatternAnalyzer {
       const move = direction === 'bullish'
         ? data[start + i].c - data[start].c
         : data[start].c - data[start + i].c;
-      
+
       const profit = move / data[start].c;
-      
+
       if (profit > 0.01) { // 1% move
         success_count++;
         total_profit += profit;
@@ -316,7 +316,7 @@ export class PatternAnalyzer {
     for (let i = 1; i <= 10 && start + i < data.length; i++) {
       const move = Math.abs(data[start + i].c - data[start].c);
       const profit = move / data[start].c;
-      
+
       if (profit > 0.02) { // 2% move
         success_count++;
         total_profit += profit;
@@ -336,13 +336,13 @@ export class PatternAnalyzer {
   private analyzeVolume(data: any[]) {
     const volumes = data.map(d => d.v);
     const avgVolume = volumes.reduce((a, b) => a + b) / volumes.length;
-    
+
     // Calculate volume trend
     const firstHalf = volumes.slice(0, Math.floor(volumes.length / 2));
     const secondHalf = volumes.slice(Math.floor(volumes.length / 2));
     const firstHalfAvg = firstHalf.reduce((a, b) => a + b) / firstHalf.length;
     const secondHalfAvg = secondHalf.reduce((a, b) => a + b) / secondHalf.length;
-    
+
     let volume_trend: 'increasing' | 'decreasing' | 'neutral';
     if (secondHalfAvg > firstHalfAvg * 1.1) volume_trend = 'increasing';
     else if (secondHalfAvg < firstHalfAvg * 0.9) volume_trend = 'decreasing';
@@ -356,32 +356,32 @@ export class PatternAnalyzer {
 
   private findLevelsForRange(data: any[]): number[] {
     const levels = new Set<number>();
-    
+
     // Find price clusters
     for (const bar of data) {
       const price = bar.c;
-      const touches = data.filter(d => 
+      const touches = data.filter(d =>
         Math.abs(d.h - price) / price < 0.001 ||
         Math.abs(d.l - price) / price < 0.001
       ).length;
-      
+
       if (touches >= 3) {
         levels.add(Number(price.toFixed(2)));
       }
     }
-    
+
     return Array.from(levels).sort((a, b) => a - b);
   }
 
   private analyzeMomentum(data: any[]) {
     const closes = data.map(d => d.c);
-    
+
     // Calculate momentum trend
     const firstHalf = closes.slice(0, Math.floor(closes.length / 2));
     const secondHalf = closes.slice(Math.floor(closes.length / 2));
     const firstHalfAvg = firstHalf.reduce((a, b) => a + b) / firstHalf.length;
     const secondHalfAvg = secondHalf.reduce((a, b) => a + b) / secondHalf.length;
-    
+
     let trend: 'bullish' | 'bearish' | 'neutral';
     if (secondHalfAvg > firstHalfAvg * 1.01) trend = 'bullish';
     else if (secondHalfAvg < firstHalfAvg * 0.99) trend = 'bearish';
@@ -391,11 +391,11 @@ export class PatternAnalyzer {
     const strength = ((secondHalfAvg - firstHalfAvg) / firstHalfAvg) * 100;
 
     // Check timeframe alignment
-    const timeframe_alignment = trend === 'bullish' 
+    const timeframe_alignment = trend === 'bullish'
       ? closes[closes.length - 1] > closes[closes.length - 2]
       : trend === 'bearish'
-      ? closes[closes.length - 1] < closes[closes.length - 2]
-      : true;
+        ? closes[closes.length - 1] < closes[closes.length - 2]
+        : true;
 
     return {
       trend,
@@ -449,7 +449,7 @@ export class PatternAnalyzer {
 
   private findBestTimeframes(patterns: PatternResult[]): string[] {
     const timeframe_stats = new Map<string, { count: number, success: number }>();
-    
+
     patterns.forEach(p => {
       if (!timeframe_stats.has(p.timeframe)) {
         timeframe_stats.set(p.timeframe, { count: 0, success: 0 });
@@ -467,6 +467,12 @@ export class PatternAnalyzer {
       .sort((a, b) => b.success_rate - a.success_rate)
       .filter(tf => tf.success_rate > 0.5)
       .map(tf => tf.timeframe);
+  }
+
+  private findKeyLevels(patterns: PatternResult[]): number[] {
+    const levels = new Set<number>();
+    patterns.forEach(p => p.key_levels.forEach(l => levels.add(l)));
+    return Array.from(levels).sort((a, b) => a - b);
   }
 }
 

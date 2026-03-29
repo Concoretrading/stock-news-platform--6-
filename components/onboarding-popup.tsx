@@ -22,13 +22,13 @@ export function OnboardingPopup({ isVisible, onClose }: OnboardingPopupProps) {
           <div className="flex items-start justify-between mb-4">
             <div className="space-y-2 flex-1 pr-2">
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Welcome to ConcoreNews! 👋
+                Welcome to The Predator! 🦅
               </h3>
               <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                 Click <strong>manage</strong> to customize your watch list. Drop your news on the screen and it will be placed in your stocks history.
               </p>
             </div>
-            
+
             <Button
               variant="ghost"
               size="sm"

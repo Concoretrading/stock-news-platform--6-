@@ -1,6 +1,16 @@
-# ConcoreNews Stock Platform
+# The Predator Intelligence System
 
-A comprehensive stock news and catalyst tracking platform with AI-powered analysis.
+A full-on autonomous trading intelligence engine designed for high-probability SPX trading, leveraging a 5-pillar intelligence model and local "Owned Power" architecture.
+
+## 🦅 The Transition
+Originally a stock news tracker, this project has evolved into a comprehensive **Live Predator** system. It now prioritizes local compute (PGlite + RTX 5070 Ti) to minimize cloud costs while maximizing decision-making speed and accuracy.
+
+## 🧠 Core Intelligence Pillars
+1. **Technical**: Advanced price action and trend analysis.
+2. **Flow**: Real-time options premium and institutional flow interpretation.
+3. **Sentiment**: News narrative arc and social sentiment analysis.
+4. **Behavioral**: Market psychology and "Emotional Flow" detection.
+5. **Macro**: Economic calendar and high-impact event correlation.
 
 ## Environment Setup
 

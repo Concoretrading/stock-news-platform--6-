@@ -1,17 +1,19 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Brain, 
-  TrendingUp, 
-  TrendingDown, 
-  Target, 
-  BarChart3, 
+import {
+  Brain,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  BarChart3,
   Zap,
   DollarSign,
   Activity,
@@ -115,7 +117,7 @@ export default function UnifiedMasteryPage() {
           </h1>
           <p className="text-gray-600 mt-1">Complete Stock + Options Analysis</p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <Input
             value={ticker}
@@ -123,7 +125,7 @@ export default function UnifiedMasteryPage() {
             placeholder="Enter ticker"
             className="w-24 text-center font-mono"
           />
-          <Button 
+          <Button
             onClick={() => fetchAllAnalysis(ticker)}
             disabled={loading}
             variant="outline"
@@ -151,13 +153,13 @@ export default function UnifiedMasteryPage() {
               {autoUpdate && <span className="ml-2 text-green-600">● Live</span>}
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             <div className="grid md:grid-cols-4 gap-6">
               {/* Stock Signal */}
               <div className="text-center">
                 <div className="text-sm text-gray-600 mb-1">Stock Signal</div>
-                <Badge 
+                <Badge
                   className={`text-lg px-3 py-1 ${getSignalColor(marketData.summary?.signal || 'HOLD')}`}
                   variant="secondary"
                 >
@@ -171,7 +173,7 @@ export default function UnifiedMasteryPage() {
               {/* Options Signal */}
               <div className="text-center">
                 <div className="text-sm text-gray-600 mb-1">Options Strategy</div>
-                <Badge 
+                <Badge
                   className={`text-lg px-3 py-1 ${getSignalColor(optionsData.summary?.strategy || 'WAIT')}`}
                   variant="secondary"
                 >
@@ -212,7 +214,7 @@ export default function UnifiedMasteryPage() {
                   <Target className="h-5 w-5 text-blue-600" />
                   <span className="font-semibold">Stock-Options Alignment</span>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-1">
                     <CheckCircle className="h-4 w-4 text-green-600" />
@@ -310,11 +312,11 @@ export default function UnifiedMasteryPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Volume Flow:</span>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={
-                          marketData.summary?.real_time_insights?.volume_flow === 'buying' 
-                            ? 'text-green-600' 
+                          marketData.summary?.real_time_insights?.volume_flow === 'buying'
+                            ? 'text-green-600'
                             : 'text-red-600'
                         }
                       >
@@ -348,28 +350,26 @@ export default function UnifiedMasteryPage() {
                   {marketData.summary?.key_factors?.map((factor: string, index: number) => (
                     <div
                       key={index}
-                      className={`flex items-center gap-2 p-3 rounded-lg ${
-                        factor.includes('CRITICAL')
+                      className={`flex items-center gap-2 p-3 rounded-lg ${factor.includes('CRITICAL')
                           ? 'bg-red-50 border border-red-200'
                           : 'bg-green-50 border border-green-200'
-                      }`}
+                        }`}
                     >
                       {factor.includes('CRITICAL') ? (
                         <AlertTriangle className="h-4 w-4 text-red-600" />
                       ) : (
                         <CheckCircle className="h-4 w-4 text-green-600" />
                       )}
-                      <span className={`text-sm font-medium ${
-                        factor.includes('CRITICAL') ? 'text-red-700' : 'text-green-700'
-                      }`}>
+                      <span className={`text-sm font-medium ${factor.includes('CRITICAL') ? 'text-red-700' : 'text-green-700'
+                        }`}>
                         {factor}
                       </span>
                     </div>
                   )) || (
-                    <div className="text-gray-500 col-span-2 text-center py-4">
-                      No confluence factors detected
-                    </div>
-                  )}
+                      <div className="text-gray-500 col-span-2 text-center py-4">
+                        No confluence factors detected
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -393,7 +393,7 @@ export default function UnifiedMasteryPage() {
                         ${optionsData.analysis.atrAnalysis.currentATR.toFixed(2)}
                       </div>
                     </div>
-                    
+
                     <div className="bg-white/70 rounded-lg p-3">
                       <div className="text-sm text-indigo-600 mb-1">Consolidation Status</div>
                       <div className={`text-lg font-bold ${optionsData.analysis.atrAnalysis.patternInsights.consolidationDetected ? 'text-green-600' : 'text-gray-600'}`}>
@@ -403,26 +403,25 @@ export default function UnifiedMasteryPage() {
                         {optionsData.analysis.atrAnalysis.patternInsights.daysInConsolidation} days
                       </div>
                     </div>
-                    
+
                     <div className="bg-white/70 rounded-lg p-3">
                       <div className="text-sm text-indigo-600 mb-1">IV Compression</div>
                       <div className="text-xl font-bold text-purple-900">
                         {optionsData.analysis.atrAnalysis.patternInsights.ivCompressionLevel}%
                       </div>
                     </div>
-                    
+
                     <div className="bg-white/70 rounded-lg p-3">
                       <div className="text-sm text-indigo-600 mb-1">Entry Timing</div>
-                      <div className={`text-xs font-bold px-2 py-1 rounded ${
-                        optionsData.analysis.atrAnalysis.patternInsights.optimalEntryTiming === 'NOW' ? 'bg-green-100 text-green-800' :
-                        optionsData.analysis.atrAnalysis.patternInsights.optimalEntryTiming === 'WAIT_FOR_BREAKOUT_SIGNAL' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
+                      <div className={`text-xs font-bold px-2 py-1 rounded ${optionsData.analysis.atrAnalysis.patternInsights.optimalEntryTiming === 'NOW' ? 'bg-green-100 text-green-800' :
+                          optionsData.analysis.atrAnalysis.patternInsights.optimalEntryTiming === 'WAIT_FOR_BREAKOUT_SIGNAL' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-blue-100 text-blue-800'
+                        }`}>
                         {optionsData.analysis.atrAnalysis.patternInsights.optimalEntryTiming.replace(/_/g, ' ')}
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-white/70 rounded-lg p-3">
                       <div className="text-sm font-medium text-indigo-800 mb-2">1 ATR Call Strike</div>
@@ -436,7 +435,7 @@ export default function UnifiedMasteryPage() {
                         Success Rate: {optionsData.analysis.atrAnalysis.recommendedStrikes.calls.atr_1.historicalSuccessRate}%
                       </div>
                     </div>
-                    
+
                     <div className="bg-white/70 rounded-lg p-3">
                       <div className="text-sm font-medium text-indigo-800 mb-2">2 ATR Call Strike</div>
                       <div className="text-2xl font-bold text-indigo-900">
@@ -449,7 +448,7 @@ export default function UnifiedMasteryPage() {
                         Success Rate: {optionsData.analysis.atrAnalysis.recommendedStrikes.calls.atr_2.historicalSuccessRate}%
                       </div>
                     </div>
-                    
+
                     <div className="bg-white/70 rounded-lg p-3">
                       <div className="text-sm font-medium text-indigo-800 mb-1">Expected Premium Expansion</div>
                       <div className="text-2xl font-bold text-green-600">
@@ -461,7 +460,7 @@ export default function UnifiedMasteryPage() {
                 </CardContent>
               </Card>
             )}
-            
+
             <div className="grid md:grid-cols-2 gap-4">
               {/* Premium Environment */}
               <Card>
@@ -506,14 +505,14 @@ export default function UnifiedMasteryPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between">
                       <span>Flow Bias:</span>
-                      <Badge 
+                      <Badge
                         variant="outline"
                         className={
                           optionsData.summary?.flow_insights?.bias === 'bullish'
                             ? 'text-green-600'
                             : optionsData.summary?.flow_insights?.bias === 'bearish'
-                            ? 'text-red-600'
-                            : 'text-gray-600'
+                              ? 'text-red-600'
+                              : 'text-gray-600'
                         }
                       >
                         {optionsData.summary?.flow_insights?.bias || 'neutral'}
@@ -575,8 +574,8 @@ export default function UnifiedMasteryPage() {
 
           {/* Probability Engine Tab */}
           <TabsContent value="probability" className="space-y-4">
-            <PremiumProbabilityDashboard 
-              ticker={ticker} 
+            <PremiumProbabilityDashboard
+              ticker={ticker}
               onRefresh={() => fetchAllAnalysis(ticker)}
             />
           </TabsContent>
@@ -587,8 +586,8 @@ export default function UnifiedMasteryPage() {
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-lg border">
                 <h3 className="text-xl font-bold text-purple-800 mb-2">🧠 Trading Psychology Engine</h3>
                 <p className="text-purple-700 mb-4">
-                  Elite psychological market intelligence that analyzes fear/greed cycles, crowd behavior, 
-                  and determines when NOT to trade. This engine provides the psychological edge that 
+                  Elite psychological market intelligence that analyzes fear/greed cycles, crowd behavior,
+                  and determines when NOT to trade. This engine provides the psychological edge that
                   separates elite traders from the rest.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -610,7 +609,7 @@ export default function UnifiedMasteryPage() {
                   </div>
                 </div>
               </div>
-              
+
               <TradingPsychologyDashboard ticker={ticker} />
             </div>
           </TabsContent>
@@ -621,8 +620,8 @@ export default function UnifiedMasteryPage() {
               <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 rounded-lg border">
                 <h3 className="text-xl font-bold text-indigo-800 mb-2">🔮 Future Intelligence Engine</h3>
                 <p className="text-indigo-700 mb-4">
-                  Elite event preparation and news interpretation system. Masters the past through historical 
-                  analysis, interprets the present with real-time intelligence, and prepares for the future 
+                  Elite event preparation and news interpretation system. Masters the past through historical
+                  analysis, interprets the present with real-time intelligence, and prepares for the future
                   with comprehensive event strategies. Never be caught off guard again.
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -644,7 +643,7 @@ export default function UnifiedMasteryPage() {
                   </div>
                 </div>
               </div>
-              
+
               <FutureIntelligenceDashboard ticker={ticker} />
             </div>
           </TabsContent>
@@ -701,8 +700,8 @@ export default function UnifiedMasteryPage() {
                               <div className="text-sm text-gray-600">{alert.message}</div>
                             </div>
                             <Badge variant="outline" className={
-                              alert.urgency === 'HIGH' ? 'text-red-600' : 
-                              alert.urgency === 'MEDIUM' ? 'text-yellow-600' : 'text-gray-600'
+                              alert.urgency === 'HIGH' ? 'text-red-600' :
+                                alert.urgency === 'MEDIUM' ? 'text-yellow-600' : 'text-gray-600'
                             }>
                               {alert.urgency}
                             </Badge>
@@ -755,8 +754,8 @@ export default function UnifiedMasteryPage() {
                             <span>Entry Window:</span>
                             <span className="text-sm">
                               {marketData.analysis?.optimal_entry_window?.immediate ? 'Immediate' :
-                               marketData.analysis?.optimal_entry_window?.wait_for_confirmation ? 'Wait for confirmation' :
-                               'Wait for pullback'}
+                                marketData.analysis?.optimal_entry_window?.wait_for_confirmation ? 'Wait for confirmation' :
+                                  'Wait for pullback'}
                             </span>
                           </div>
                         </div>
@@ -861,7 +860,7 @@ export default function UnifiedMasteryPage() {
                   <p className="text-gray-600 mb-4">
                     Detecting institutional manipulation, tracking dark pool flow, and analyzing market internals
                   </p>
-                  <Button 
+                  <Button
                     onClick={() => {
                       // Fetch smart money data
                       fetch(`/api/smart-money-detection?symbol=${ticker}`)

@@ -260,7 +260,7 @@ export class SystematicTrainingEngine {
     }
 
     // Calculate and log success rates by pattern type
-    const pattern_types = [...new Set(patterns.map(p => p.type))];
+    const pattern_types = Array.from(new Set(patterns.map(p => p.type)));
     for (const type of pattern_types) {
       const type_patterns = patterns.filter(p => p.type === type && p.success_rate !== undefined);
       if (type_patterns.length === 0) continue;
@@ -693,17 +693,17 @@ export class SystematicTrainingEngine {
     const patterns: { [key: string]: any } = {};
 
     // Helper to check if conditions match
-    const matchesConditions = (move: MarketMove, conditions: any) => {
+    const matchesConditions = (move: MarketMove, conditions: any): boolean => {
       return Object.entries(conditions).every(([key, value]) => {
         if (typeof value === 'object') {
           return matchesConditions(move, value);
         }
-        return move.preceding_conditions[key] === value;
+        return (move.preceding_conditions as any)[key] === value;
       });
     };
 
     // Analyze volume patterns
-    const volume_patterns = moves.reduce((acc, move) => {
+    const volume_patterns = moves.reduce((acc: any, move) => {
       const key = `${move.preceding_conditions.volume_patterns.volume_trend}_volume_${move.type}`;
       if (!acc[key]) {
         acc[key] = {
@@ -717,7 +717,7 @@ export class SystematicTrainingEngine {
       if (move.success) acc[key].success++;
       acc[key].total_magnitude += move.magnitude;
       return acc;
-    }, {});
+    }, {} as any);
 
     // Calculate success rates
     Object.entries(volume_patterns).forEach(([key, data]: [string, any]) => {
@@ -761,9 +761,9 @@ export class SystematicTrainingEngine {
       const matching_moves = moves.filter(move =>
         Object.entries(pattern.conditions).every(([category, conditions]) =>
           Object.entries(conditions).every(([key, condition]) => {
-            const value = move.preceding_conditions[category][key];
+            const value = (move.preceding_conditions as any)[category][key];
             return typeof condition === 'function' ?
-              condition(value) : value === condition;
+              (condition as (v: any) => boolean)(value) : value === condition;
           })
         )
       );
@@ -1279,8 +1279,8 @@ export class SystematicTrainingEngine {
         '4hour': { patterns: [], expertise_level: 0, success_rate: 0 },
         'day': { patterns: [], expertise_level: 0, success_rate: 0 }
       },
-      collaboration_patterns: [],
-      best_probability_setups: []
+      collaboration_patterns: [] as any[],
+      best_probability_setups: [] as any[]
     };
 
     // 🔍 STEP 2: Load each expert's learned patterns

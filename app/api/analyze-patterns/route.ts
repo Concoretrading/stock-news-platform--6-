@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { patternEngine } from '@/lib/services/pattern-recognition-engine';
-import { polygonData } from '@/lib/services/polygon-data-provider';
+import { polygonDataProvider } from '@/lib/services/polygon-data-provider';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const timeframes = ['5', '15', '30', '60', '240', '1D'];
     const timeframeData = await Promise.all(
       timeframes.map(async (timeframe) => {
-        const data = await polygonData.getHistoricalData(
+        const data = await polygonDataProvider.getHistoricalData(
           symbol,
           timeframe,
           startDate,

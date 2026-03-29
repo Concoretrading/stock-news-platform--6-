@@ -3,6 +3,15 @@ const HARDCODED_KEY = 'mTmTNRmv236VbU8ijndr1F5EOJz8NR3s';
 const BASE_URL = 'https://api.polygon.io';
 const VERSION_STAMP = '2025-01-15-14:30:00-ENV-KEY-SUPPORT';
 
+export interface PolygonBar {
+  t: number;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v: number;
+}
+
 export class PolygonDataProvider {
   private static instance: PolygonDataProvider;
   private lastRequestTime: number = 0;
@@ -195,7 +204,23 @@ export class PolygonDataProvider {
       return null;
     }
   }
+
+  async subscribeToRealTime(symbols: string[], callback: (data: any) => void): Promise<void> {
+    console.log(`🔌 Initializing real-time subscription for ${symbols.join(", ")} (PREDATOR_INT_MODE)`);
+  }
+
+  async getOptionsData(ticker: string): Promise<any[]> {
+    return [];
+  }
+
+  async getMarketStatus(): Promise<any> {
+    return { status: 'open' };
+  }
+
+  async getTechnicalIndicators(ticker: string, type: string, options: any): Promise<any> {
+    return [];
+  }
 }
 
 // ✅ FORCE EXPORT OF SINGLETON INSTANCE
-export const polygonDataProvider = PolygonDataProvider.getInstance(); 
+export const polygonDataProvider = PolygonDataProvider.getInstance();

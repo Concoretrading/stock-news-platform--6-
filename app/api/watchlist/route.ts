@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth, getFirestore } from '@/lib/firebase-admin'
+import { adminAuth, adminDb } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -8,16 +8,16 @@ export const revalidate = 0;
 // GET /api/watchlist - Get user's watchlist
 export async function GET(request: NextRequest) {
   try {
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     const authHeader = request.headers.get('authorization') || '';
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!idToken) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
-    
+
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
       }
@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
       .where('userId', '==', userId)
       .orderBy('createdAt', 'desc')
       .get();
-    
-    const stocks = stocksSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    
+
+    const stocks = stocksSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
+
     return NextResponse.json({ success: true, data: stocks });
   } catch (error) {
     console.error('Error getting watchlist:', error);
@@ -49,16 +49,16 @@ export async function GET(request: NextRequest) {
 // POST /api/watchlist - Add stock to watchlist
 export async function POST(request: NextRequest) {
   try {
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     const authHeader = request.headers.get('authorization') || '';
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!idToken) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
-    
+
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
       }
@@ -79,14 +79,14 @@ export async function POST(request: NextRequest) {
     // Special cleanup endpoint to remove duplicates
     if (cleanup === true) {
       console.log('🧹 Running duplicate cleanup for user:', userId);
-      
+
       // Get all stocks for user grouped by ticker
       const allStocksSnap = await db.collection('stocks')
         .where('userId', '==', userId)
         .get();
-      
+
       const stocksByTicker = new Map();
-      allStocksSnap.docs.forEach(doc => {
+      allStocksSnap.docs.forEach((doc: any) => {
         const data = doc.data();
         const ticker = data.ticker;
         if (!stocksByTicker.has(ticker)) {
@@ -94,20 +94,20 @@ export async function POST(request: NextRequest) {
         }
         stocksByTicker.set(ticker, [...stocksByTicker.get(ticker), { id: doc.id, ...data }]);
       });
-      
+
       let duplicatesRemoved = 0;
-      
+
       // For each ticker with multiple entries, keep the newest and delete the rest
       const tickerEntries = Array.from(stocksByTicker.entries());
       for (let i = 0; i < tickerEntries.length; i++) {
         const [ticker, stocks] = tickerEntries[i];
         if (stocks.length > 1) {
           console.log(`🧹 Found ${stocks.length} duplicate entries for ${ticker}`);
-          
+
           // Sort by createdAt (newest first) and keep the first one
           stocks.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
           const stocksToDelete = stocks.slice(1); // All except the newest
-          
+
           for (const stock of stocksToDelete) {
             try {
               await db.collection('stocks').doc(stock.id).delete();
@@ -119,11 +119,11 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-      
-      return NextResponse.json({ 
-        success: true, 
+
+      return NextResponse.json({
+        success: true,
         message: `Cleanup completed. Removed ${duplicatesRemoved} duplicate entries.`,
-        duplicatesRemoved 
+        duplicatesRemoved
       });
     }
 
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       .where('userId', '==', userId)
       .where('ticker', '==', ticker.toUpperCase())
       .get();
-    
+
     if (!existingStockSnap.empty) {
       return NextResponse.json({ success: false, error: 'Stock already in watchlist' }, { status: 400 });
     }
@@ -149,11 +149,11 @@ export async function POST(request: NextRequest) {
     };
 
     const docRef = await db.collection('stocks').add(stockData);
-    
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       id: docRef.id,
-      message: `${ticker.toUpperCase()} added to watchlist` 
+      message: `${ticker.toUpperCase()} added to watchlist`
     });
   } catch (error) {
     console.error('Error adding stock to watchlist:', error);
@@ -164,16 +164,16 @@ export async function POST(request: NextRequest) {
 // DELETE /api/watchlist/{id} - Remove stock from watchlist
 export async function DELETE(request: NextRequest) {
   try {
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     const authHeader = request.headers.get('authorization') || '';
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!idToken) {
       return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
     }
-    
+
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
@@ -181,7 +181,7 @@ export async function DELETE(request: NextRequest) {
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ success: false, error: 'Invalid or expired token' }, { status: 401 });
       }
@@ -207,7 +207,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await db.collection('stocks').doc(stockId).delete();
-    
+
     return NextResponse.json({ success: true, message: 'Stock removed from watchlist' });
   } catch (error) {
     console.error('Error removing stock from watchlist:', error);

@@ -55,6 +55,26 @@ export interface SystemPayload {
         confidenceAdjustment: number
     };
 
+    [SystemEvent.PSYCHOLOGY_CHECK_FAILED]: {
+        signalId: string,
+        emotionalState: string,
+        confidenceAdjustment: number
+    };
+
+    [SystemEvent.ORDER_SUBMITTED]: {
+        ticker: string,
+        action: 'BUY' | 'SELL',
+        type: 'MARKET' | 'LIMIT',
+        confidence: number,
+        reasoning: string[]
+    };
+
+    [SystemEvent.ORDER_REJECTED]: {
+        ticker: string,
+        reason: string,
+        timestamp: string
+    };
+
     [SystemEvent.ORDER_FILLED]: {
         orderId: string,
         ticker: string,

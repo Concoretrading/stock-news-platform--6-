@@ -11,7 +11,7 @@ import { asymmetricStrategyEngine } from './asymmetric-strategy-engine';
 interface MasterAnalysis {
   symbol: string;
   timestamp: string;
-  
+
   // PAST: Historical Pattern Recognition
   historical_intelligence: {
     pattern_database: {
@@ -178,16 +178,16 @@ export class UnifiedEliteTradingBrain {
 
   async masterAnalysis(symbol: string): Promise<MasterAnalysis> {
     console.log(`🎯 MASTER ANALYSIS: ${symbol}`);
-    
+
     // STEP 1: PAST - Learn from historical patterns
     const historicalIntelligence = await this.analyzeHistoricalPatterns(symbol);
-    
+
     // STEP 2: PRESENT - Analyze current market conditions
     const realtimeIntelligence = await this.analyzeRealtimeConditions(symbol);
-    
+
     // STEP 3: FUTURE - Prepare for upcoming scenarios
     const futureIntelligence = await this.analyzeFutureScenarios(symbol);
-    
+
     // STEP 4: UNIFIED DECISION - Combine all intelligence
     const eliteDecision = await this.makeEliteDecision(
       symbol,
@@ -286,22 +286,26 @@ export class UnifiedEliteTradingBrain {
   private async analyzeFutureScenarios(symbol: string): Promise<MasterAnalysis['future_intelligence']> {
     // Prepare for all upcoming scenarios
     return {
-      event_preparation: [
-        {
-          event_type: 'FOMC_MEETING',
-          date: '2024-03-20',
-          expected_impact: 'MODERATE_VOLATILITY',
-          historical_reaction: 'Initial sell-off, then recovery',
-          positioning_strategy: 'Reduce size, add hedges'
-        },
-        {
-          event_type: 'EARNINGS_SEASON',
-          date: '2024-04-15',
-          expected_impact: 'HIGH_SECTOR_VOLATILITY',
-          historical_reaction: 'Sympathy moves common',
-          positioning_strategy: 'Focus on correlations'
-        }
-      ],
+      event_preparation: {
+        upcoming_events: [
+          {
+            event_type: 'FOMC_MEETING',
+            date: '2024-03-20',
+            expected_impact: 'MODERATE_VOLATILITY',
+            historical_reaction: 'Initial sell-off, then recovery',
+            positioning_strategy: 'Reduce size, add hedges'
+          },
+          {
+            event_type: 'EARNINGS_SEASON',
+            date: '2024-04-15',
+            expected_impact: 'HIGH_SECTOR_VOLATILITY',
+            historical_reaction: 'Sympathy moves common',
+            positioning_strategy: 'Focus on correlations'
+          }
+        ],
+        scenario_analysis: [],
+        risk_adjustments: []
+      },
       probability_matrix: [
         {
           scenario: 'CONTINUED_BREAKOUT',

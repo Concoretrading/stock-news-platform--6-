@@ -30,7 +30,7 @@ interface ScalingData {
 export default function ScalingStrategyDashboard() {
   const [data, setData] = useState<ScalingData | null>(null);
   const [loading, setLoading] = useState(false);
-  
+
   // Form inputs
   const [ticker, setTicker] = useState('AAPL');
   const [contracts, setContracts] = useState('10');
@@ -85,41 +85,41 @@ export default function ScalingStrategyDashboard() {
         <p className="text-gray-600 mb-6">
           Optimize profit taking with systematic contract scaling - lock in gains while leaving runners for maximum upside
         </p>
-        
+
         {/* Input Controls */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 p-4 border rounded-lg bg-gray-50">
           <div>
             <Label htmlFor="ticker">Symbol</Label>
-            <Input 
+            <Input
               id="ticker"
-              value={ticker} 
+              value={ticker}
               onChange={(e) => setTicker(e.target.value.toUpperCase())}
               placeholder="AAPL"
             />
           </div>
           <div>
             <Label htmlFor="contracts">Contracts</Label>
-            <Input 
+            <Input
               id="contracts"
-              value={contracts} 
+              value={contracts}
               onChange={(e) => setContracts(e.target.value)}
               placeholder="10"
             />
           </div>
           <div>
             <Label htmlFor="entry">Entry Price</Label>
-            <Input 
+            <Input
               id="entry"
-              value={entryPrice} 
+              value={entryPrice}
               onChange={(e) => setEntryPrice(e.target.value)}
               placeholder="2.50"
             />
           </div>
           <div>
             <Label htmlFor="current">Current Price</Label>
-            <Input 
+            <Input
               id="current"
-              value={currentPrice} 
+              value={currentPrice}
               onChange={(e) => setCurrentPrice(e.target.value)}
               placeholder="4.20"
             />
@@ -155,7 +155,7 @@ export default function ScalingStrategyDashboard() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">Current Gain</CardTitle>
@@ -181,7 +181,7 @@ export default function ScalingStrategyDashboard() {
                   <CardTitle className="text-sm">Trade Status</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Badge className={data.scalingPlan.executionStatus.isTradeFree ? 
+                  <Badge className={data.scalingPlan.executionStatus.isTradeFree ?
                     'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}>
                     {data.scalingPlan.executionStatus.isTradeFree ? 'FREE TRADE' : 'ACTIVE'}
                   </Badge>
@@ -211,7 +211,7 @@ export default function ScalingStrategyDashboard() {
                       Proceeds: ${data.scalingPlan.executionStatus.proceedsCollected}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">Contracts Remaining</h4>
                     <div className="text-2xl font-bold text-green-600">
@@ -219,14 +219,14 @@ export default function ScalingStrategyDashboard() {
                     </div>
                     <div className="text-sm text-gray-500">Active runners</div>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-semibold mb-2">Levels Triggered</h4>
                     <div className="text-2xl font-bold text-purple-600">
                       {data.scalingPlan.executionStatus.triggeredLevels} / 4
                     </div>
-                    <Progress 
-                      value={(data.scalingPlan.executionStatus.triggeredLevels / 4) * 100} 
+                    <Progress
+                      value={(data.scalingPlan.executionStatus.triggeredLevels / 4) * 100}
                       className="mt-2"
                     />
                   </div>
@@ -268,11 +268,10 @@ export default function ScalingStrategyDashboard() {
                   {data.scalingPlan.scalingLevels.map((level, index) => {
                     const isTriggered = parseFloat(data.scalingPlan.currentMetrics.currentGainPercent) >= level.triggerGain;
                     const targetPrice = data.position.entryPrice * (1 + level.triggerGain / 100);
-                    
+
                     return (
-                      <div key={index} className={`p-4 border rounded-lg ${
-                        isTriggered ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
-                      }`}>
+                      <div key={index} className={`p-4 border rounded-lg ${isTriggered ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
+                        }`}>
                         <div className="flex justify-between items-start mb-3">
                           <div>
                             <h4 className="font-bold text-lg">Level {level.level}</h4>
@@ -284,7 +283,7 @@ export default function ScalingStrategyDashboard() {
                             </Badge>
                           </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                           <div>
                             <strong>Trigger:</strong> {level.triggerGain}% gain
@@ -299,7 +298,7 @@ export default function ScalingStrategyDashboard() {
                             <strong>Action:</strong> {level.action.replace('_', ' ')}
                           </div>
                         </div>
-                        
+
                         {isTriggered && (
                           <div className="mt-3 p-2 bg-green-100 rounded text-sm text-green-800">
                             ✅ This level has been triggered - profits should be taken
@@ -335,7 +334,7 @@ export default function ScalingStrategyDashboard() {
                           {scenario.status?.replace('_', ' ') || 'PENDING'}
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         {scenario.contractsSold && (
                           <div>
@@ -354,13 +353,13 @@ export default function ScalingStrategyDashboard() {
                           <strong>Remaining Value:</strong> ${scenario.remainingValue || scenario.totalValue}
                         </div>
                       </div>
-                      
+
                       {scenario.isTradeFree && (
                         <div className="mt-3 p-2 bg-green-100 rounded text-sm text-green-800">
                           🎉 TRADE IS FREE - Playing with house money!
                         </div>
                       )}
-                      
+
                       {scenario.guaranteedProfit && parseFloat(scenario.guaranteedProfit.replace(/,/g, '')) > 0 && (
                         <div className="mt-2 text-sm text-green-600">
                           💰 Guaranteed Profit: ${scenario.guaranteedProfit}
@@ -385,7 +384,7 @@ export default function ScalingStrategyDashboard() {
                   <div>
                     <h4 className="font-semibold mb-3">Stop Loss Levels</h4>
                     <div className="space-y-3">
-                      {data.riskManagement.stopLossLevels.map((stop, index) => (
+                      {data.riskManagement.stopLossLevels.map((stop: any, index: number) => (
                         <div key={index} className="p-3 border rounded-lg">
                           <div className="font-medium">{stop.type.replace('_', ' ')}</div>
                           <div className="text-lg font-bold">${stop.level.toFixed(2)}</div>
@@ -397,11 +396,11 @@ export default function ScalingStrategyDashboard() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-semibold mb-3">Trailing Stops</h4>
                     <div className="space-y-3">
-                      {data.riskManagement.trailingStops.map((trail, index) => (
+                      {data.riskManagement.trailingStops.map((trail: any, index: number) => (
                         <div key={index} className="p-3 border rounded-lg">
                           <div className="font-medium">{trail.type.replace('_', ' ')}</div>
                           <div className="text-lg font-bold">{trail.percentage}% Trail</div>

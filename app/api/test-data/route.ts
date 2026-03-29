@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { polygonData } from '@/lib/services/polygon-data-provider';
+import { polygonDataProvider } from '@/lib/services/polygon-data-provider';
 
 export async function GET(request: NextRequest) {
   try {
     console.log('🧪 Testing data provider...');
     
     // Test historical data
-    const historicalData = await polygonData.getHistoricalData(
+    const historicalData = await polygonDataProvider.getHistoricalData(
       'META',
       'day',
       '2024-01-01',
@@ -14,13 +14,13 @@ export async function GET(request: NextRequest) {
     );
 
     // Test options data
-    const optionsData = await polygonData.getOptionsData('META');
+    const optionsData = await polygonDataProvider.getOptionsData('META');
 
     // Test market status
-    const marketStatus = await polygonData.getMarketStatus();
+    const marketStatus = await polygonDataProvider.getMarketStatus();
 
     // Test technical indicators
-    const smaData = await polygonData.getTechnicalIndicators('META', 'sma', {
+    const smaData = await polygonDataProvider.getTechnicalIndicators('META', 'sma', {
       timespan: 'day',
       window: 20
     });

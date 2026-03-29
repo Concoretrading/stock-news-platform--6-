@@ -179,7 +179,7 @@ export class IchimokuCloudInterpreter {
 
         // 3. Interaction Prediction utilizing Volume/Flow
         let sentiment = 'NEUTRAL';
-        if (status === 'APPROACHING' || (Math.abs(dist) < 0.01 && status !== 'INSIDE')) status = 'APPROACHING';
+        if (Math.abs(dist) < 0.01 && status !== 'INSIDE') status = 'APPROACHING';
 
         // Check recent volume trend (last 3 bars vs avg loop - simplified here)
         const lastVol = volume[volume.length - 1];

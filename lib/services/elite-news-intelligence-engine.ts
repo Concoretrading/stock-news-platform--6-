@@ -210,9 +210,9 @@ export class EliteNewsIntelligenceEngine {
         historical_reactions: [
           {
             date: '2024-01-31',
-            actual: 'No change, hawkish tone',
-            expected: 'No change, neutral tone',
-            previous: 'No change',
+            actual: 'No change, hawkish tone' as any,
+            expected: 'No change, neutral tone' as any,
+            previous: 'No change' as any,
             market_reaction: {
               immediate_move: -0.5,
               end_of_day_move: -1.5,
@@ -395,17 +395,17 @@ export class EliteNewsIntelligenceEngine {
     current_market: MarketContext
   ): number {
     let baseRatio = strategy.position_strategy.hedge_position.ratios[0];
-    
+
     // Adjust for market conditions
     if (current_market.risk_metrics.vix_term_structure === 'inverted') {
       baseRatio *= 1.2; // Increase hedge in high risk environment
     }
-    
+
     // Adjust for positioning
     if (Math.abs(current_market.positioning_data.institutional_exposure) > 80) {
       baseRatio *= 1.3; // Increase hedge when crowded
     }
-    
+
     return Math.min(baseRatio, 1.0); // Cap at 100%
   }
 

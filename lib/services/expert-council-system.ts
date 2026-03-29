@@ -10,6 +10,8 @@ export interface Expert {
   confidence_threshold: number;
   learning_history: LearningSession[];
   current_opinion: ExpertOpinion | null;
+  learnFromHistory(data: PolygonBar[], symbol: string): Promise<void>;
+  formOpinion(currentData: PolygonBar[], lookback?: number): Promise<ExpertOpinion>;
 }
 
 export interface LearningSession {
@@ -66,24 +68,24 @@ export class VolumeExpert implements Expert {
 
   async learnFromHistory(data: PolygonBar[], symbol: string): Promise<void> {
     console.log(`🎓 ${this.name} is studying volume patterns for ${symbol}...`);
-    
+
     const session_start = Date.now();
     const patterns_before = this.patterns_learned;
-    
+
     // Deep volume pattern analysis
     await this.analyzeVolumeSpikes(data);
     await this.analyzeVolumeAccumulation(data);
     await this.analyzeVolumeDistribution(data);
     await this.analyzeVolumeBreakouts(data);
     await this.analyzeVolumeDivergence(data);
-    
+
     const patterns_discovered = this.patterns_learned - patterns_before;
-    
+
     // Calculate learning metrics
     const accuracy = this.calculatePatternAccuracy();
     this.success_rate = accuracy;
     this.expertise_level = Math.min(100, this.expertise_level + patterns_discovered * 0.5);
-    
+
     // Store learning session
     this.learning_history.push({
       date: new Date().toISOString(),
@@ -146,7 +148,7 @@ export class VolumeExpert implements Expert {
 
     // Determine final signal
     let final_signal: 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL' = 'HOLD';
-    
+
     if (confidence > 80 && target_return > 5) final_signal = 'STRONG_BUY';
     else if (confidence > 60 && target_return > 3) final_signal = 'BUY';
     else if (confidence > 40 && target_return < -3) final_signal = 'SELL';
@@ -172,15 +174,15 @@ export class VolumeExpert implements Expert {
 
   private async analyzeVolumeSpikes(data: PolygonBar[]): Promise<void> {
     const spike_patterns = [];
-    
+
     for (let i = 20; i < data.length - 10; i++) {
       const current_volume = data[i].v;
-      const avg_volume = data.slice(i-20, i).reduce((sum, bar) => sum + bar.v, 0) / 20;
-      
+      const avg_volume = data.slice(i - 20, i).reduce((sum, bar) => sum + bar.v, 0) / 20;
+
       if (current_volume > avg_volume * 2.5) {
         const future_return = this.calculateFutureReturn(data, i, 5);
         const pattern_success = future_return > 2;
-        
+
         spike_patterns.push({
           type: 'volume_spike',
           multiplier: current_volume / avg_volume,
@@ -188,11 +190,11 @@ export class VolumeExpert implements Expert {
           return: future_return,
           context: this.getMarketContext(data, i)
         });
-        
+
         this.patterns_learned++;
       }
     }
-    
+
     this.knowledge_base.set('volume_spikes', spike_patterns);
   }
 
@@ -204,21 +206,21 @@ export class VolumeExpert implements Expert {
   private calculatePatternAccuracy(): number {
     const all_patterns = Array.from(this.knowledge_base.values()).flat();
     if (all_patterns.length === 0) return 0;
-    
+
     const successful = all_patterns.filter((p: any) => p.success).length;
     return (successful / all_patterns.length) * 100;
   }
 
   private generateKeyInsights(): string[] {
     const insights = [];
-    
+
     const spikes = this.knowledge_base.get('volume_spikes') || [];
     if (spikes.length > 10) {
       const avg_multiplier = spikes.reduce((sum: number, s: any) => sum + s.multiplier, 0) / spikes.length;
       const success_rate = spikes.filter((s: any) => s.success).length / spikes.length * 100;
       insights.push(`Volume spikes averaging ${avg_multiplier.toFixed(1)}x have ${success_rate.toFixed(1)}% success rate`);
     }
-    
+
     return insights;
   }
 
@@ -226,7 +228,7 @@ export class VolumeExpert implements Expert {
   private detectVolumeSpike(data: PolygonBar[]): any {
     const current = data[data.length - 1];
     const avg_volume = data.slice(-10).reduce((sum, bar) => sum + bar.v, 0) / 10;
-    
+
     if (current.v > avg_volume * 2) {
       return {
         detected: true,
@@ -236,7 +238,7 @@ export class VolumeExpert implements Expert {
         expected_return: 3
       };
     }
-    
+
     return { detected: false };
   }
 
@@ -266,16 +268,16 @@ export class PriceActionExpert implements Expert {
 
   async learnFromHistory(data: PolygonBar[], symbol: string): Promise<void> {
     console.log(`🕯️ ${this.name} is studying price action for ${symbol}...`);
-    
+
     // Learn candlestick patterns
     await this.learnCandlestickPatterns(data);
     await this.learnSupportResistanceLevels(data);
     await this.learnTrendPatterns(data);
     await this.learnConsolidationBreakouts(data);
-    
+
     this.expertise_level = Math.min(100, this.patterns_learned * 0.3);
     this.success_rate = this.calculatePatternAccuracy();
-    
+
     console.log(`🕯️ ${this.name} expertise: ${this.expertise_level.toFixed(1)}%`);
   }
 
@@ -321,11 +323,11 @@ export class ExpertCouncil {
 
   async trainAllExperts(data: PolygonBar[], symbol: string): Promise<void> {
     console.log(`🎓 Training Expert Council on ${symbol}...`);
-    
+
     for (const expert of this.experts) {
       await expert.learnFromHistory(data, symbol);
     }
-    
+
     console.log(`🧠 Council Training Complete:`);
     this.experts.forEach(expert => {
       console.log(`  ${expert.name}: ${expert.expertise_level.toFixed(1)}% expertise`);
@@ -334,7 +336,7 @@ export class ExpertCouncil {
 
   async makeCouncilDecision(currentData: PolygonBar[], symbol: string): Promise<CouncilDecision> {
     console.log(`🏛️ Expert Council convening for ${symbol}...`);
-    
+
     // Get opinions from all qualified experts
     const opinions: ExpertOpinion[] = [];
     for (const expert of this.experts) {
@@ -353,13 +355,13 @@ export class ExpertCouncil {
     const signal_counts = this.countSignals(opinions);
     const majority_signal = this.findMajoritySignal(signal_counts);
     const is_unanimous = this.checkUnanimity(opinions);
-    
+
     // Calculate weighted confidence
     const weighted_confidence = this.calculateWeightedConfidence(opinions);
-    
+
     // Generate final recommendation
     const recommendation = this.generateRecommendation(opinions, majority_signal);
-    
+
     const decision: CouncilDecision = {
       timestamp: new Date().toISOString(),
       symbol,
@@ -373,10 +375,10 @@ export class ExpertCouncil {
     };
 
     this.decision_history.push(decision);
-    
+
     console.log(`📋 Council Decision: ${majority_signal} with ${weighted_confidence.toFixed(1)}% confidence`);
     console.log(`🎯 Target Return: ${recommendation.target_return}%`);
-    
+
     return decision;
   }
 
@@ -390,7 +392,7 @@ export class ExpertCouncil {
 
   private findMajoritySignal(counts: Record<string, number>): string {
     return Object.entries(counts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'HOLD';
+      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'HOLD';
   }
 
   private checkUnanimity(opinions: ExpertOpinion[]): boolean {
@@ -401,31 +403,31 @@ export class ExpertCouncil {
 
   private calculateWeightedConfidence(opinions: ExpertOpinion[]): number {
     if (opinions.length === 0) return 0;
-    
+
     const total_weight = opinions.reduce((sum, opinion) => {
       const expert = this.experts.find(e => e.name === opinion.expert_name);
       return sum + (expert?.expertise_level || 50);
     }, 0);
-    
+
     const weighted_confidence = opinions.reduce((sum, opinion) => {
       const expert = this.experts.find(e => e.name === opinion.expert_name);
       const weight = (expert?.expertise_level || 50) / total_weight;
       return sum + (opinion.confidence * weight);
     }, 0);
-    
+
     return weighted_confidence;
   }
 
   private generateRecommendation(opinions: ExpertOpinion[], majority_signal: string): any {
     const avg_target = opinions.reduce((sum, o) => sum + o.target_return, 0) / opinions.length;
     const max_risk = Math.max(...opinions.map(o => o.risk_assessment));
-    
+
     return {
       action: majority_signal,
       confidence: this.calculateWeightedConfidence(opinions),
       target_return: avg_target,
       max_risk,
-      entry_conditions: [...new Set(opinions.flatMap(o => o.conditions))],
+      entry_conditions: Array.from(new Set(opinions.flatMap(o => o.conditions))),
       exit_conditions: ['Target reached', 'Stop loss hit', 'Expert consensus changes']
     };
   }
@@ -437,9 +439,9 @@ export class ExpertCouncil {
   private generateCouncilReasoning(opinions: ExpertOpinion[], majority: string): string {
     const expert_count = opinions.length;
     const consensus_strength = opinions.filter(o => o.signal === majority).length / expert_count;
-    
+
     return `${expert_count} experts participated with ${(consensus_strength * 100).toFixed(0)}% agreement on ${majority}. ` +
-           `Key factors: ${opinions.flatMap(o => o.reasoning).slice(0, 3).join(', ')}`;
+      `Key factors: ${opinions.flatMap(o => o.reasoning).slice(0, 3).join(', ')}`;
   }
 
   private createNoConsensusDecision(symbol: string): CouncilDecision {

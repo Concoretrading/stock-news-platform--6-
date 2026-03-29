@@ -171,7 +171,7 @@ export class EdgeDecayTracker {
 
         const analyses: EdgeDecayAnalysis[] = [];
 
-        for (const [patternId, _] of this.patternPerformance) {
+        for (const patternId of Array.from(this.patternPerformance.keys())) {
             const analysis = this.checkEdge(patternId);
             if (analysis) {
                 analyses.push(analysis);

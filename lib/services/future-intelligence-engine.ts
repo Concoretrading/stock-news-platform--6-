@@ -105,19 +105,19 @@ export class FutureIntelligenceEngine {
 
     // Get upcoming events
     const upcomingEvents = await this.getUpcomingEvents(ticker);
-    
+
     // Analyze recent news impact
     const newsAnalysis = await this.analyzeRecentNews(ticker);
-    
+
     // Generate preparation strategies
     const preparationStrategies = await this.generatePreparationStrategies(
-      upcomingEvents, 
+      upcomingEvents,
       currentPositions
     );
-    
+
     // Get seasonal intelligence
     const seasonalIntelligence = await this.getSeasonalIntelligence();
-    
+
     // Generate elite recommendations
     const eliteRecommendations = this.generateEliteRecommendations(
       upcomingEvents,
@@ -138,7 +138,7 @@ export class FutureIntelligenceEngine {
   private async getUpcomingEvents(ticker: string): Promise<UpcomingEvent[]> {
     // This would integrate with real economic calendars, earnings calendars, etc.
     // For now, providing sophisticated mock data
-    
+
     const events: UpcomingEvent[] = [
       {
         date: '2024-01-25',
@@ -217,7 +217,7 @@ export class FutureIntelligenceEngine {
 
   private async analyzeRecentNews(ticker: string): Promise<NewsImpactAnalysis[]> {
     // This would integrate with real-time news feeds, AI sentiment analysis, etc.
-    
+
     const newsAnalysis: NewsImpactAnalysis[] = [
       {
         headline: `${ticker} beats earnings expectations, raises guidance`,
@@ -259,15 +259,15 @@ export class FutureIntelligenceEngine {
   }
 
   private async generatePreparationStrategies(
-    events: UpcomingEvent[], 
+    events: UpcomingEvent[],
     currentPositions: any[]
   ): Promise<EventPreparationStrategy[]> {
-    
+
     const strategies: EventPreparationStrategy[] = [];
-    
+
     for (const event of events) {
       if (event.importance === 'HIGH' || event.importance === 'CRITICAL') {
-        
+
         const strategy: EventPreparationStrategy = {
           event: event,
           current_positions: currentPositions,
@@ -335,18 +335,18 @@ export class FutureIntelligenceEngine {
             ]
           }
         };
-        
+
         strategies.push(strategy);
       }
     }
-    
+
     return strategies;
   }
 
   private async getSeasonalIntelligence(): Promise<SeasonalIntelligence> {
     const currentDate = new Date();
     const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
-    
+
     return {
       current_period: `${currentMonth} - Earnings Season`,
       seasonal_biases: {
@@ -357,7 +357,7 @@ export class FutureIntelligenceEngine {
             key_factors: ['New year optimism', 'Fresh capital inflows', 'Small cap strength']
           },
           {
-            month: 'February', 
+            month: 'February',
             typical_performance: 0.008,
             key_factors: ['Earnings season peak', 'Valentine day weakness', 'Options expiration']
           }
@@ -410,48 +410,48 @@ export class FutureIntelligenceEngine {
     strategies: EventPreparationStrategy[],
     seasonal: SeasonalIntelligence
   ): string[] {
-    
+
     const recommendations: string[] = [];
-    
+
     // Event-based recommendations
     const criticalEvents = events.filter(e => e.importance === 'CRITICAL');
     if (criticalEvents.length > 0) {
       recommendations.push('🚨 CRITICAL EVENTS APPROACHING - Reduce portfolio risk by 40% within 3 days');
       recommendations.push('💰 Build cash reserves for post-event opportunities');
     }
-    
+
     // News-based recommendations
     const bullishNews = news.filter(n => n.sentiment === 'very_bullish' || n.sentiment === 'bullish');
     if (bullishNews.length > 0) {
       recommendations.push('📈 BULLISH NEWS FLOW - Consider adding to momentum positions with tight stops');
     }
-    
+
     // Seasonal recommendations
     if (seasonal.current_period.includes('Earnings')) {
       recommendations.push('📊 EARNINGS SEASON ACTIVE - Prepare for elevated volatility, focus on post-earnings momentum');
     }
-    
+
     // Elite-level insights
     recommendations.push('🧠 ELITE INSIGHT: Position for the reaction to the reaction, not just the initial move');
     recommendations.push('⏰ TIMING EDGE: Major events create 2-3 day opportunity windows - be patient for best entries');
     recommendations.push('🎯 RISK EDGE: Use events to reshape portfolio for next market phase, not just survive current one');
-    
+
     return recommendations;
   }
 
   // Real-time news interpretation system
   async interpretBreakingNews(newsItem: any): Promise<NewsImpactAnalysis> {
     console.log('📰 INTERPRETING BREAKING NEWS...');
-    
+
     // This would use AI/NLP to analyze news in real-time
     const interpretation = await this.analyzeNewsWithAI(newsItem);
-    
+
     // Cross-reference with historical similar events
     const historicalContext = await this.findSimilarHistoricalEvents(interpretation);
-    
+
     // Generate immediate action recommendations
     const immediateActions = this.generateImmediateActions(interpretation, historicalContext);
-    
+
     return {
       headline: newsItem.headline,
       timestamp: new Date().toISOString(),
@@ -485,7 +485,7 @@ export class FutureIntelligenceEngine {
     };
   }
 
-  private generateImmediateActions(interpretation: any, historical: any): Promise<any> {
+  private generateImmediateActions(interpretation: any, historical: any): any {
     // Generate immediate action recommendations based on news interpretation
     return {
       position_adjustments: ['Consider adding to positions on any dip'],

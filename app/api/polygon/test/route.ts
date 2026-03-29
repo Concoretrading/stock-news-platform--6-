@@ -21,7 +21,7 @@ export async function GET() {
     const targetDate = new Date(today);
     targetDate.setDate(targetDate.getDate() - 2);
     const date = targetDate.toISOString().split('T')[0];
-    
+
     const quote = await client.stocks.dailyOpenClose('AAPL', date);
     console.log('AAPL quote:', quote);
 
@@ -35,7 +35,7 @@ export async function GET() {
     const start = startDate.toISOString().split('T')[0];
 
     const aggregates = await client.stocks.aggregates('AAPL', 1, 'day', start, end, {
-      adjusted: true,
+      adjusted: "true",
       sort: 'asc',
       limit: 50
     });

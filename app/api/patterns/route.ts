@@ -6,19 +6,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const ticker = searchParams.get('ticker');
     const lookbackYears = parseInt(searchParams.get('years') || '3');
-    
+
     if (!ticker) {
-      return NextResponse.json({ 
-        success: false, 
-        error: 'Ticker parameter is required' 
+      return NextResponse.json({
+        success: false,
+        error: 'Ticker parameter is required'
       }, { status: 400 });
     }
-    
+
     console.log(`🔍 Analyzing ${lookbackYears}-year recurring patterns for ${ticker}...`);
-    
+
     // Comprehensive recurring pattern analysis
     const recurringPatterns = await polygonClient.analyzeRecurringPatterns(ticker, lookbackYears);
-    
+
     return NextResponse.json({
       success: true,
       ticker,
@@ -52,10 +52,10 @@ export async function GET(request: NextRequest) {
           premiumPatterns: Object.keys(recurringPatterns.premiumPatterns).length,
           combinedPatterns: Object.keys(recurringPatterns.combinedPatterns).length
         },
-        topCombinedPatterns: Object.entries(recurringPatterns.combinedPatterns)
-          .sort(([,a], [,b]: [string, any]) => b.successRate - a.successRate)
+        topCombinedPatterns: Object.entries(recurringPatterns.combinedPatterns as Record<string, any>)
+          .sort(([, a], [, b]) => b.successRate - a.successRate)
           .slice(0, 3)
-          .map(([pattern, data]: [string, any]) => ({
+          .map(([pattern, data]) => ({
             pattern,
             successRate: data.successRate,
             frequency: data.frequency,
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const { searchParams } = new URL(request.url);
     const ticker = searchParams.get('ticker') || 'unknown';
-    
+
     console.error('Recurring pattern analysis error for', ticker, ':', error);
     return NextResponse.json({
       success: false,

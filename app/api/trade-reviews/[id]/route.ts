@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAuth } from '@/lib/firebase-admin';
-import { getFirestore } from '@/lib/firebase-admin';
+import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
 export async function GET(
   request: NextRequest,
@@ -9,37 +8,37 @@ export async function GET(
   try {
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    
+
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
       }
       userId = decodedToken.uid;
     }
 
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     // Get the trade review
     const reviewDoc = await db.collection('trade_reviews').doc(params.id).get();
-    
+
     if (!reviewDoc.exists) {
       return NextResponse.json({ error: "Trade review not found" }, { status: 404 });
     }
 
     const reviewData = reviewDoc.data();
-    
+
     // Check if user owns this review
     if (reviewData?.userId !== userId) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
@@ -55,14 +54,14 @@ export async function GET(
 
     for (const sectionDoc of sectionsSnapshot.docs) {
       const sectionData = sectionDoc.data();
-      
+
       // Get images for this section
       const imagesSnapshot = await db.collection('trade_review_images')
         .where('sectionId', '==', sectionDoc.id)
         .orderBy('imageOrder')
         .get();
 
-      const images = imagesSnapshot.docs.map(imgDoc => ({
+      const images = imagesSnapshot.docs.map((imgDoc: any) => ({
         id: imgDoc.id,
         ...imgDoc.data()
       }));
@@ -101,31 +100,31 @@ export async function PUT(
   try {
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    
+
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
       }
       userId = decodedToken.uid;
     }
 
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     // Check if review exists and user owns it
     const reviewDoc = await db.collection('trade_reviews').doc(params.id).get();
-    
+
     if (!reviewDoc.exists) {
       return NextResponse.json({ error: "Trade review not found" }, { status: 404 });
     }
@@ -163,11 +162,11 @@ export async function PUT(
       const images = await db.collection('trade_review_images')
         .where('sectionId', '==', sectionDoc.id)
         .get();
-      
+
       for (const imageDoc of images.docs) {
         await imageDoc.ref.delete();
       }
-      
+
       // Delete the section
       await sectionDoc.ref.delete();
     }
@@ -223,31 +222,31 @@ export async function DELETE(
   try {
     const authHeader = request.headers.get("authorization") || "";
     const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    
+
     if (!idToken) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
     let userId: string;
-    
+
     // Development bypass for localhost
     if (idToken === 'dev-token-localhost') {
       userId = 'test-user-localhost';
     } else {
       let decodedToken;
       try {
-        decodedToken = await (await getAuth()).verifyIdToken(idToken);
+        decodedToken = await adminAuth.verifyIdToken(idToken);
       } catch (err) {
         return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
       }
       userId = decodedToken.uid;
     }
 
-    const db = await getFirestore();
-    
+    const db = adminDb;
+
     // Check if review exists and user owns it
     const reviewDoc = await db.collection('trade_reviews').doc(params.id).get();
-    
+
     if (!reviewDoc.exists) {
       return NextResponse.json({ error: "Trade review not found" }, { status: 404 });
     }
@@ -267,11 +266,11 @@ export async function DELETE(
       const images = await db.collection('trade_review_images')
         .where('sectionId', '==', sectionDoc.id)
         .get();
-      
+
       for (const imageDoc of images.docs) {
         await imageDoc.ref.delete();
       }
-      
+
       // Delete the section
       await sectionDoc.ref.delete();
     }

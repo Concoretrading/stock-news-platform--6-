@@ -2,21 +2,21 @@
 // ALWAYS start with: Key Levels + Momentum + Premium + Volume + Price Action
 // Past data + Present reality = Truth. Future awareness but never rely on bets.
 
-import { priceActionFoundation, type PriceActionFoundation } from './price-action-foundation';
+import { priceActionFoundation, type PriceActionFoundationAnalysis } from './price-action-foundation';
 
 export interface FoundationFirstAnalysis {
   symbol: string;
   timestamp: string;
-  
+
   // THE UNSHAKEABLE FOUNDATION - OUR 5 CORE PILLARS
   foundation_pillars: {
     key_levels: KeyLevelFoundation;
     momentum: MomentumFoundation;
     premium: PremiumFoundation;
     volume: VolumeFoundation;
-    price_action: PriceActionFoundation; // THE 5TH PILLAR
+    price_action: PriceActionFoundationAnalysis; // THE 5TH PILLAR
   };
-  
+
   // PAST DATA INTELLIGENCE (What Actually Happened)
   past_intelligence: {
     historical_patterns: HistoricalPattern[];
@@ -24,7 +24,7 @@ export interface FoundationFirstAnalysis {
     data_driven_lessons: DataLesson[];
     statistical_edges: StatisticalEdge[];
   };
-  
+
   // PRESENT REALITY (What Is Happening Now)
   present_reality: {
     real_time_confluence: RealTimeConfluence;
@@ -32,7 +32,7 @@ export interface FoundationFirstAnalysis {
     foundation_alignment: FoundationAlignment;
     data_quality_score: number; // 0-100 how clean the data is
   };
-  
+
   // FUTURE AWARENESS (Not Bets, Just Preparation)
   future_awareness: {
     upcoming_events: UpcomingEvent[];
@@ -40,7 +40,7 @@ export interface FoundationFirstAnalysis {
     risk_adjustments: RiskAdjustment[];
     data_monitoring_plan: DataMonitoringPlan;
   };
-  
+
   // BIG MONEY AWARENESS (Watch But Don't Follow Blindly)
   big_money_context: {
     institutional_activity: InstitutionalActivity;
@@ -48,7 +48,7 @@ export interface FoundationFirstAnalysis {
     data_vs_narrative: DataVsNarrative;
     foundation_truth_check: FoundationTruthCheck;
   };
-  
+
   // FOUNDATION-BASED DECISION
   foundation_decision: {
     primary_signal: 'BULLISH' | 'BEARISH' | 'NEUTRAL' | 'WAIT_FOR_DATA';
@@ -490,22 +490,22 @@ export class FoundationFirstIntelligence {
   async analyzeFoundationFirst(symbol: string): Promise<FoundationFirstAnalysis> {
     console.log(`🏗️ FOUNDATION FIRST ANALYSIS: ${symbol}`);
     console.log('Starting with the 5 unshakeable pillars...');
-    
+
     // STEP 1: FOUNDATION PILLARS (Our Core Truth)
     const foundationPillars = await this.analyzeFoundationPillars(symbol);
-    
+
     // STEP 2: PAST INTELLIGENCE (What Actually Happened)
     const pastIntelligence = await this.analyzePastIntelligence(symbol, foundationPillars);
-    
+
     // STEP 3: PRESENT REALITY (What Is Happening Now)
     const presentReality = await this.analyzePresentReality(symbol, foundationPillars);
-    
+
     // STEP 4: FUTURE AWARENESS (Preparation, Not Speculation)
     const futureAwareness = await this.analyzeFutureAwareness(symbol);
-    
+
     // STEP 5: BIG MONEY CONTEXT (Watch But Don't Follow Blindly)
     const bigMoneyContext = await this.analyzeBigMoneyContext(symbol, foundationPillars);
-    
+
     // STEP 6: FOUNDATION-BASED DECISION (Our Truth)
     const foundationDecision = await this.makeFoundationDecision(
       foundationPillars, pastIntelligence, presentReality, futureAwareness, bigMoneyContext
@@ -525,19 +525,19 @@ export class FoundationFirstIntelligence {
 
   private async analyzeFoundationPillars(symbol: string): Promise<FoundationFirstAnalysis['foundation_pillars']> {
     console.log('🏗️ Analyzing the 5 Foundation Pillars...');
-    
+
     // KEY LEVELS - Our first pillar
     const keyLevels = await this.analyzeKeyLevelFoundation(symbol);
-    
+
     // MOMENTUM - Our second pillar  
     const momentum = await this.analyzeMomentumFoundation(symbol);
-    
+
     // PREMIUM - Our third pillar
     const premium = await this.analyzePremiumFoundation(symbol);
-    
+
     // VOLUME - Our fourth pillar
     const volume = await this.analyzeVolumeFoundation(symbol);
-    
+
     // PRICE ACTION - Our fifth pillar
     const priceAction = await priceActionFoundation.analyzePriceAction(symbol);
 
@@ -813,7 +813,7 @@ export class FoundationFirstIntelligence {
   }
 
   private async analyzePastIntelligence(
-    symbol: string, 
+    symbol: string,
     foundationPillars: FoundationFirstAnalysis['foundation_pillars']
   ): Promise<FoundationFirstAnalysis['past_intelligence']> {
     // Learn from what actually happened in the past
@@ -878,7 +878,7 @@ export class FoundationFirstIntelligence {
   ): Promise<FoundationFirstAnalysis['present_reality']> {
     // What is actually happening right now
     const realTimeConfluence = this.calculateRealTimeConfluence(foundationPillars);
-    
+
     return {
       real_time_confluence: realTimeConfluence,
       current_market_state: {
@@ -901,32 +901,32 @@ export class FoundationFirstIntelligence {
   private calculateRealTimeConfluence(foundationPillars: FoundationFirstAnalysis['foundation_pillars']): RealTimeConfluence {
     const confluenceFactors: string[] = [];
     const conflictingSignals: string[] = [];
-    
+
     // Check each pillar alignment
     if (foundationPillars.key_levels.level_quality.respect_rate > 80) {
       confluenceFactors.push('STRONG_KEY_LEVELS');
     }
-    
+
     if (foundationPillars.momentum.momentum_quality.alignment_score > 80) {
       confluenceFactors.push('MOMENTUM_ALIGNMENT');
     }
-    
+
     if (foundationPillars.premium.options_reality.premium_efficiency > 80) {
       confluenceFactors.push('PREMIUM_EFFICIENCY');
     }
-    
+
     if (foundationPillars.volume.volume_truth.overall_truth_score > 80) {
       confluenceFactors.push('VOLUME_CONFIRMATION');
     }
-    
+
     // Check price action pillar
     if (foundationPillars.price_action.pa_confluence.strength_score > 80) {
       confluenceFactors.push('PRICE_ACTION_STRENGTH');
     }
-    
+
     const pillarAlignment = (confluenceFactors.length / 5) * 100; // Now 5 pillars
     const netConfluenceScore = Math.max(0, pillarAlignment - (conflictingSignals.length * 10));
-    
+
     return {
       pillar_alignment: Math.round(pillarAlignment),
       confluence_factors: confluenceFactors,
@@ -1016,15 +1016,15 @@ export class FoundationFirstIntelligence {
     const foundationScore = this.calculateFoundationScore(foundationPillars);
     const confidenceLevel = this.calculateConfidenceLevel(pastIntelligence, presentReality);
     const dataReliability = presentReality.data_quality_score;
-    
+
     let primarySignal: 'BULLISH' | 'BEARISH' | 'NEUTRAL' | 'WAIT_FOR_DATA' = 'BULLISH';
-    
+
     if (foundationScore > 80 && confidenceLevel > 80) {
       primarySignal = 'BULLISH';
     } else if (foundationScore < 40 || confidenceLevel < 40) {
       primarySignal = 'WAIT_FOR_DATA';
     }
-    
+
     return {
       primary_signal: primarySignal,
       confidence_level: confidenceLevel,
@@ -1051,7 +1051,7 @@ export class FoundationFirstIntelligence {
     const premiumScore = foundationPillars.premium.options_reality.premium_efficiency;
     const volumeScore = foundationPillars.volume.volume_truth.overall_truth_score;
     const priceActionScore = foundationPillars.price_action.pa_confluence.strength_score;
-    
+
     return Math.round((levelScore + momentumScore + premiumScore + volumeScore + priceActionScore) / 5);
   }
 
@@ -1062,7 +1062,7 @@ export class FoundationFirstIntelligence {
     const historicalSuccess = pastIntelligence.statistical_edges[0]?.win_rate || 0;
     const presentAlignment = presentReality.foundation_alignment.overall_alignment;
     const dataQuality = presentReality.data_quality_score;
-    
+
     return Math.round((historicalSuccess + presentAlignment + dataQuality) / 3);
   }
 }

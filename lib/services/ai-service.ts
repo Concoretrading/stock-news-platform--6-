@@ -54,7 +54,7 @@ export async function getAIMonitoringSubscriptions(userId: string): Promise<AIMo
       .where('isActive', '==', true)
       .get();
 
-    return subscriptionsSnap.docs.map(doc => ({
+    return subscriptionsSnap.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     } as AIMonitoringSubscription));
@@ -100,7 +100,7 @@ export async function addAIMonitoringSubscription(userId: string, stockTicker: s
         isActive: true,
         updatedAt: new Date().toISOString()
       });
-      
+
       const updatedDoc = await docRef.get();
       return {
         subscription: { id: updatedDoc.id, ...updatedDoc.data() } as AIMonitoringSubscription,
@@ -167,7 +167,7 @@ export async function processContent(userId: string, data: ProcessContentRequest
       .where('isActive', '==', true)
       .get();
 
-    const monitoredStocks = subscriptionsSnap.docs.map(doc => doc.data().stockTicker);
+    const monitoredStocks = subscriptionsSnap.docs.map((doc: any) => doc.data().stockTicker);
 
     if (monitoredStocks.length === 0) {
       return { processedContent: data, monitoredStocks: [] };
@@ -193,7 +193,7 @@ export async function getAIDataSources(userId: string, stockTicker?: string, sou
       .where('isActive', '==', true)
       .get();
 
-    const monitoredStocks = subscriptionsSnap.docs.map(doc => doc.data().stockTicker);
+    const monitoredStocks = subscriptionsSnap.docs.map((doc: any) => doc.data().stockTicker);
 
     if (monitoredStocks.length === 0) {
       return [];
@@ -213,7 +213,7 @@ export async function getAIDataSources(userId: string, stockTicker?: string, sou
     }
 
     const sourcesSnap = await sourcesQuery.get();
-    return sourcesSnap.docs.map(doc => ({
+    return sourcesSnap.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     }));
@@ -232,7 +232,7 @@ async function simulateAIProcessing(content: string, stockTicker: string, conten
 
   // Enhanced keyword detection for UPCOMING events
   const lowerContent = content.toLowerCase();
-  
+
   // FUTURE EARNINGS DATES - Look for specific dates mentioned
   if (lowerContent.includes('earnings') || lowerContent.includes('quarterly results')) {
     const dateMatch = content.match(/([a-zA-Z]+\s+\d{1,2},?\s+\d{4})/);
@@ -267,4 +267,4 @@ function parseDate(dateStr: string): Date | null {
 function getCurrentQuarter(): number {
   const month = new Date().getMonth();
   return Math.floor(month / 3) + 1;
-} 
+}

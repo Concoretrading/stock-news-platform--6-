@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { Save, Eye, X, Upload, FileText, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/components/auth-provider';
@@ -24,7 +26,7 @@ export default function NewTradeReviewPage() {
   const [positionType, setPositionType] = useState<'LONG' | 'SHORT'>('LONG');
   const [sections, setSections] = useState<Section[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [enlargedImage, setEnlargedImage] = useState<{url: string; altText: string} | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<{ url: string; altText: string } | null>(null);
   const [activeSectionForPaste, setActiveSectionForPaste] = useState<number | null>(null);
 
   const addSection = (sectionName: string) => {
@@ -64,11 +66,11 @@ export default function NewTradeReviewPage() {
           url: data.url,
           altText: file.name
         };
-        
+
         const newSections = [...sections];
         newSections[sectionIndex].images.push(newImage);
         setSections(newSections);
-        
+
         toast({
           title: "Image uploaded successfully",
           description: "Your image has been added to the section.",
@@ -97,12 +99,12 @@ export default function NewTradeReviewPage() {
 
     const items = Array.from(clipboardData.items);
     const imageItem = items.find(item => item.type.startsWith('image/'));
-    
+
     if (imageItem && activeSectionForPaste !== null) {
       const file = imageItem.getAsFile();
       if (file) {
         e.preventDefault();
-        
+
         // Check if section has space for more images
         if (sections[activeSectionForPaste].images.length >= 4) {
           toast({
@@ -126,7 +128,7 @@ export default function NewTradeReviewPage() {
   // Set up paste event listener
   useEffect(() => {
     document.addEventListener('paste', handlePasteImage);
-    
+
     return () => {
       document.removeEventListener('paste', handlePasteImage);
     };
@@ -216,10 +218,10 @@ export default function NewTradeReviewPage() {
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
+
           {/* Left Panel - Trade Info & Sections */}
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* Trade Information */}
             <div className="bg-card border rounded-lg p-6">
               <h2 className="text-lg font-semibold mb-4">Trade Information</h2>
@@ -287,13 +289,12 @@ export default function NewTradeReviewPage() {
               ) : (
                 <div className="space-y-4">
                   {sections.map((section, index) => (
-                    <div 
-                      key={index} 
-                      className={`border rounded-lg p-4 transition-all duration-200 ${
-                        activeSectionForPaste === index 
-                          ? 'border-blue-500 bg-blue-50/50 shadow-md' 
+                    <div
+                      key={index}
+                      className={`border rounded-lg p-4 transition-all duration-200 ${activeSectionForPaste === index
+                          ? 'border-blue-500 bg-blue-50/50 shadow-md'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                       tabIndex={0}
                       onFocus={() => setActiveSectionForPaste(index)}
                       onBlur={() => setActiveSectionForPaste(null)}
@@ -346,7 +347,7 @@ export default function NewTradeReviewPage() {
                                   </div>
                                 </div>
                                 <button
-                                  onClick={() => updateSection(index, 'images', 
+                                  onClick={() => updateSection(index, 'images',
                                     section.images.filter((_, i) => i !== imgIndex)
                                   )}
                                   className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"

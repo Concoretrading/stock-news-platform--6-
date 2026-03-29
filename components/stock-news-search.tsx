@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { NewsImage } from "./stock-news-history"
+
 import { fetchWithAuth } from "@/lib/fetchWithAuth"
 
 interface Catalyst {
@@ -66,7 +66,7 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
         if (ticker) {
           url += `?ticker=${ticker.toUpperCase()}`
         }
-        
+
         const response = await fetchWithAuth(url)
         let result: any = null;
         try {
@@ -106,9 +106,9 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
     // Only include user manual entries with a non-empty title or description
     const userEntries = Array.isArray(allEntries)
       ? allEntries.filter(entry => entry.isManual && (
-          (typeof entry.title === 'string' && entry.title.trim().length > 0) ||
-          (typeof entry.description === 'string' && entry.description.trim().length > 0)
-        ))
+        (typeof entry.title === 'string' && entry.title.trim().length > 0) ||
+        (typeof entry.description === 'string' && entry.description.trim().length > 0)
+      ))
       : [];
     if (!searchQuery.trim()) {
       setFilteredEntries(userEntries)
@@ -274,7 +274,9 @@ export function StockNewsSearch({ ticker }: { ticker?: string }) {
                     )}
                     {/* NewsImage fallback */}
                     {entry.imageUrl ? (
-                      <NewsImage imagePath={typeof entry.imageUrl === 'object' ? JSON.stringify(entry.imageUrl) : entry.imageUrl} source={entry.source} />
+                      <div className="mt-3 text-xs text-muted-foreground italic">
+                        [Catalyst Image Background Processed]
+                      </div>
                     ) : null}
                   </CardContent>
                 </Card>

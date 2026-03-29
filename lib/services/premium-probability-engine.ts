@@ -1,4 +1,4 @@
-import { OptionStrike, PremiumAnalysis, ConsolidationPremiumPattern } from './options-premium-mastery';
+import { OptionStrike, ConsolidationPremiumPattern } from './options-premium-mastery';
 
 interface HistoricalBreakoutLearning {
   direction: 'bullish' | 'bearish';
@@ -75,7 +75,7 @@ interface RealTimeProbabilitySignal {
   ticker: string;
   currentPrice: number;
   atr: number;
-  
+
   consolidation: {
     isConsolidating: boolean;
     duration: number;
@@ -126,7 +126,7 @@ interface RealTimeProbabilitySignal {
 export class PremiumProbabilityEngine {
   private historicalPatterns: HistoricalBreakoutLearning[] = [];
   private activeScalingStrategies: Map<string, ScalingStrategy> = new Map();
-  
+
   constructor() {
     this.initializeEngine();
   }
@@ -155,7 +155,7 @@ export class PremiumProbabilityEngine {
     const consolidationAnalysis = this.analyzeCurrentConsolidation(currentPrice, atr, historicalLearnings);
 
     // Analyze premium setup
-    const premiumSetup = this.analyzePremiumSetup(optionChain, atr, historicalLearnings);
+    const premiumSetup = this.analyzePremiumSetup(currentPrice, optionChain, atr, historicalLearnings);
 
     // Volume analysis
     const volumeProfile = this.analyzeVolumeProfile(optionChain, historicalLearnings);
@@ -204,7 +204,7 @@ export class PremiumProbabilityEngine {
 
   private extractPatternLearnings(patterns: ConsolidationPremiumPattern[]): HistoricalBreakoutLearning[] {
     return patterns.map(pattern => ({
-      direction: pattern.breakoutPremiumExpansion.call_1atr > pattern.breakoutPremiumExpansion.put_1atr ? 'bullish' : 'bearish',
+      direction: pattern.breakoutPremiumExpansion.maxExpansion.call_1atr > pattern.breakoutPremiumExpansion.maxExpansion.put_1atr ? 'bullish' : 'bearish',
       priceRange: {
         start: pattern.consolidationPeriod.priceRange.low,
         end: pattern.consolidationPeriod.priceRange.high,
@@ -219,16 +219,16 @@ export class PremiumProbabilityEngine {
           },
           atr1Premium: pattern.breakoutPremiumExpansion.preBreakoutPremium.call_1atr,
           atr2Premium: pattern.breakoutPremiumExpansion.preBreakoutPremium.call_2atr,
-          volumeProfile: pattern.premiumPatterns.volumePatterns.averageVolumeRatio > 1 ? 'accumulation' : 
-                        pattern.premiumPatterns.volumePatterns.averageVolumeRatio < 0.7 ? 'distribution' : 'neutral'
+          volumeProfile: pattern.premiumPatterns.volumePatterns.averageVolumeRatio > 1 ? 'accumulation' :
+            pattern.premiumPatterns.volumePatterns.averageVolumeRatio < 0.7 ? 'distribution' : 'neutral'
         },
         duringBreakout: {
           premiumExpansion: {
             atr1: (pattern.breakoutPremiumExpansion.maxExpansion.call_1atr / pattern.breakoutPremiumExpansion.preBreakoutPremium.call_1atr - 1) * 100,
             atr2: (pattern.breakoutPremiumExpansion.maxExpansion.call_2atr / pattern.breakoutPremiumExpansion.preBreakoutPremium.call_2atr - 1) * 100
           },
-          volumeSpike: Math.max(...pattern.premiumPatterns.volumePatterns.call_1atr_volume) / 
-                      Math.min(...pattern.premiumPatterns.volumePatterns.call_1atr_volume),
+          volumeSpike: Math.max(...pattern.premiumPatterns.volumePatterns.call_1atr_volume) /
+            Math.min(...pattern.premiumPatterns.volumePatterns.call_1atr_volume),
           timeToMaxProfit: pattern.breakoutPremiumExpansion.maxExpansion.daysToMax
         }
       },
@@ -248,7 +248,7 @@ export class PremiumProbabilityEngine {
   ): RealTimeProbabilitySignal['consolidation'] {
     const avgDuration = Math.avg(historicalLearnings.map(p => p.consolidationDuration));
     const avgRange = Math.avg(historicalLearnings.map(p => p.priceRange.percentage));
-    
+
     // Calculate compression score based on historical patterns
     const compressionScore = historicalLearnings.reduce((score, pattern) => {
       const durationSimilarity = 1 - Math.abs(pattern.consolidationDuration - avgDuration) / avgDuration;
@@ -259,8 +259,8 @@ export class PremiumProbabilityEngine {
     // Determine expected direction
     const bullishPatterns = historicalLearnings.filter(p => p.direction === 'bullish').length;
     const bearishPatterns = historicalLearnings.filter(p => p.direction === 'bearish').length;
-    const expectedDirection = bullishPatterns > bearishPatterns ? 'bullish' : 
-                            bearishPatterns > bullishPatterns ? 'bearish' : 'neutral';
+    const expectedDirection = bullishPatterns > bearishPatterns ? 'bullish' :
+      bearishPatterns > bullishPatterns ? 'bearish' : 'neutral';
 
     return {
       isConsolidating: true,
@@ -272,6 +272,7 @@ export class PremiumProbabilityEngine {
   }
 
   private analyzePremiumSetup(
+    currentPrice: number,
     optionChain: OptionStrike[],
     atr: number,
     historicalLearnings: HistoricalBreakoutLearning[]
@@ -279,11 +280,11 @@ export class PremiumProbabilityEngine {
     // Calculate current IV percentile and compression
     const currentIV = Math.avg(optionChain.map(opt => opt.implied_volatility));
     const ivPercentile = Math.percentileRank(currentIV, historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.high));
-    
+
     // Calculate compression score
-    const ivCompressionScore = (1 - (currentIV - Math.min(...historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.low))) / 
-                              (Math.max(...historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.high)) - 
-                               Math.min(...historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.low)))) * 100;
+    const ivCompressionScore = (1 - (currentIV - Math.min(...historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.low))) /
+      (Math.max(...historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.high)) -
+        Math.min(...historicalLearnings.map(p => p.premiumBehavior.preBreakout.ivRange.low)))) * 100;
 
     // Find optimal strikes based on ATR
     const atr1Strike = optionChain.find(opt => Math.abs(opt.strike - (currentPrice + atr)) < 0.5);
@@ -319,10 +320,10 @@ export class PremiumProbabilityEngine {
   ): RealTimeProbabilitySignal['volumeProfile'] {
     const callVolume = optionChain.filter(opt => opt.type === 'CALL').reduce((sum, opt) => sum + opt.volume, 0);
     const putVolume = optionChain.filter(opt => opt.type === 'PUT').reduce((sum, opt) => sum + opt.volume, 0);
-    
+
     // Compare to historical volume patterns
     const avgHistoricalVolume = Math.avg(historicalLearnings.map(p => p.premiumBehavior.duringBreakout.volumeSpike));
-    
+
     return {
       accumulation: callVolume / putVolume > 1.5,
       distribution: putVolume / callVolume > 1.5,
@@ -395,8 +396,8 @@ export class PremiumProbabilityEngine {
     }, [] as number[]).map(total => total / historicalLearnings.length);
 
     // Generate entry stages based on probability
-    const initialSize = probability.confidenceScore > 80 ? 0.4 : 
-                       probability.confidenceScore > 60 ? 0.3 : 0.2;
+    const initialSize = probability.confidenceScore > 80 ? 0.4 :
+      probability.confidenceScore > 60 ? 0.3 : 0.2;
 
     return {
       entryStages: {
@@ -471,11 +472,11 @@ declare global {
   }
 }
 
-Math.avg = function(arr: number[]): number {
+Math.avg = function (arr: number[]): number {
   return arr.reduce((a, b) => a + b, 0) / arr.length;
 };
 
-Math.percentileRank = function(value: number, array: number[]): number {
+Math.percentileRank = function (value: number, array: number[]): number {
   const sorted = array.slice().sort((a, b) => a - b);
   const index = sorted.findIndex(x => x >= value);
   return (index / sorted.length) * 100;

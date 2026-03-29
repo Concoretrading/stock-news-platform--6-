@@ -1,9 +1,8 @@
-import { getFirestore } from '@/lib/firebase-admin';
-import { getStorage } from 'firebase-admin/storage';
+import { adminDb } from '@/lib/firebase-admin';
 
 // Helper function to get database safely
 async function getDatabase() {
-  return await getFirestore();
+  return adminDb;
 }
 
 interface Catalyst {
@@ -25,13 +24,13 @@ export async function getCatalystsForUser(userId: string, ticker?: string): Prom
   try {
     const db = await getDatabase();
     let query = db.collection('catalysts').where('userId', '==', userId);
-    
+
     if (ticker) {
       query = query.where('stockTickers', 'array-contains', ticker.toUpperCase());
     }
-    
+
     const snapshot = await query.orderBy('date', 'desc').get();
-    return snapshot.docs.map(doc => ({
+    return snapshot.docs.map((doc: any) => ({
       id: doc.id,
       ...doc.data()
     } as Catalyst));
@@ -61,16 +60,16 @@ export async function deleteCatalyst(userId: string, catalystId: string): Promis
     const db = await getDatabase();
     const docRef = db.collection('catalysts').doc(catalystId);
     const doc = await docRef.get();
-    
+
     if (!doc.exists) {
       throw new Error('Catalyst not found');
     }
-    
+
     const catalyst = doc.data();
     if (catalyst?.userId !== userId) {
       throw new Error('Unauthorized');
     }
-    
+
     await docRef.delete();
   } catch (error) {
     console.error('Error deleting catalyst:', error);

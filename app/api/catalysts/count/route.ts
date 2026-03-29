@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth, getFirestore } from '@/lib/firebase-admin'
+import { adminAuth, adminDb } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
-    const db = await getFirestore()
+    const db = adminDb
     
     // Authenticate user
     const authHeader = request.headers.get('authorization') || ''
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
+      decodedToken = await adminAuth.verifyIdToken(idToken)
     } catch (err) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 })
     }

@@ -38,26 +38,20 @@ export function AppHeader() {
               </Button>
             </div>
           </div>
-          
+
           {/* Centered Welcome Message - Moved Up */}
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
+            <h1 className="text-3xl font-bold">Welcome to The Predator</h1>
             <div className="flex items-center justify-center space-x-2 mt-1">
               <TrendingUp className="h-6 w-6 text-blue-400" />
-              <span className="text-lg text-slate-400">Track . Analyze . Succeed</span>
+              <span className="text-lg text-slate-400">Hunt • Analyze • Compound</span>
             </div>
           </div>
-          
+
           {/* Mobile Navigation Icons - Smaller and Moved Down */}
           <div className="flex items-center justify-center space-x-8 mt-4">
-            {/* Calendar */}
-            <Link href="/calendar" className="flex flex-col items-center group">
-              <div className="h-10 w-10 flex items-center justify-center bg-blue-500/20 rounded-full group-hover:bg-blue-500/30 transition-colors">
-                <CalendarIcon className="h-6 w-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
-              </div>
-              <span className="mt-1.5 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Calendar</span>
-            </Link>
-            
+
+
             {/* Split + ConcoreNews */}
             <Link href="/split-screen" className="flex flex-col items-center group">
               <div className="h-10 w-10 flex items-center justify-center bg-gray-500/20 rounded-full group-hover:bg-gray-500/30 transition-colors">
@@ -75,7 +69,7 @@ export function AppHeader() {
               </div>
               <span className="mt-1.5 text-xs font-medium text-slate-300 group-hover:text-white transition-colors">Split Mode</span>
             </Link>
-            
+
             {/* Journal */}
             <Link href="/trade-reviews" className="flex flex-col items-center group">
               <div className="h-10 w-10 flex items-center justify-center bg-amber-500/20 rounded-full group-hover:bg-amber-500/30 transition-colors">
@@ -105,14 +99,14 @@ export function AppHeader() {
               />
             </Link>
             <div>
-              <h1 className="text-3xl font-bold">Welcome to ConcoreNews</h1>
+              <h1 className="text-3xl font-bold">Welcome to The Predator</h1>
               <div className="flex items-center space-x-2 mt-2">
                 <TrendingUp className="h-4 w-4 text-blue-400" />
-                <span className="text-sm text-slate-400">Track • Analyze • Succeed</span>
+                <span className="text-sm text-slate-400">Hunt • Analyze • Compound</span>
               </div>
             </div>
           </div>
-          
+
           <div className="flex flex-col items-end space-y-3">
             <div className="flex items-center space-x-4">
               <ThemeToggle />
@@ -123,17 +117,11 @@ export function AppHeader() {
                 </div>
               </Button>
             </div>
-            
+
             {/* Navigation icons under the logout button */}
             <div className="flex items-center space-x-4">
-              {/* Calendar */}
-              <Link href="/calendar" className="flex flex-col items-center group">
-                <div className="h-5 flex items-center justify-center">
-                  <CalendarIcon className="h-5 w-5 text-blue-500 group-hover:text-blue-700 transition-colors" />
-                </div>
-                <span className="mt-1 text-xs font-medium group-hover:text-blue-700 transition-colors text-center">Calendar</span>
-              </Link>
-              
+
+
               {/* Split Mode with X + Plus + ConcoreNews logo */}
               <Link href="/split-screen" className="flex flex-col items-center group">
                 <div className="h-5 flex items-center justify-center space-x-1">
@@ -149,10 +137,10 @@ export function AppHeader() {
                 </div>
                 <span className="mt-1 text-xs font-medium group-hover:text-gray-200 transition-colors text-center">Split Mode</span>
               </Link>
-              
+
               {/* Journal with BookOpen icon in tan color */}
-              <Link 
-                href="/trade-reviews" 
+              <Link
+                href="/trade-reviews"
                 className="flex flex-col items-center group"
                 onClick={() => console.log('🔧 Journal/Trade Reviews button clicked')}
               >

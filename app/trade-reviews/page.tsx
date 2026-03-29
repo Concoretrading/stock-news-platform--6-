@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Plus, FileText, Calendar, TrendingUp, TrendingDown, Search, Edit, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
@@ -57,9 +59,9 @@ export default function TradeReviewsPage() {
       setFilteredReviews(tradeReviews);
     } else {
       const query = searchQuery.toLowerCase();
-      const filtered = tradeReviews.filter(review => 
+      const filtered = tradeReviews.filter(review =>
         review.ticker.toLowerCase().includes(query) ||
-        review.sections?.some(section => 
+        review.sections?.some(section =>
           section.sectionName.toLowerCase().includes(query) ||
           section.content.toLowerCase().includes(query)
         )
@@ -70,12 +72,12 @@ export default function TradeReviewsPage() {
 
   const loadTradeReviews = async () => {
     if (!user) return;
-    
+
     try {
       setIsLoading(true);
       const response = await fetchWithAuth('/api/trade-reviews');
       const result = await response.json();
-      
+
       if (result.success) {
         setTradeReviews(result.data);
       } else {
@@ -135,10 +137,10 @@ export default function TradeReviewsPage() {
 
   const highlightMatch = (text: string, query: string) => {
     if (!query.trim()) return text;
-    
+
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
-    
+
     return parts.map((part, i) => {
       if (regex.test(part)) {
         return <mark key={i} className="bg-yellow-200 px-1 rounded font-medium">{part}</mark>;
@@ -203,7 +205,7 @@ export default function TradeReviewsPage() {
   const getReviewsForMonth = (monthDate: Date) => {
     const monthStart = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
     const monthEnd = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0);
-    
+
     return filteredReviews.filter((review) => {
       const reviewDate = new Date(review.tradeDate);
       return isWithinInterval(reviewDate, { start: monthStart, end: monthEnd });
@@ -274,7 +276,7 @@ export default function TradeReviewsPage() {
               {searchQuery ? 'No reviews found' : 'No trade reviews yet'}
             </h2>
             <p className="text-muted-foreground mb-6">
-              {searchQuery 
+              {searchQuery
                 ? 'Try adjusting your search terms'
                 : 'Create your first trade review to start tracking your trading performance'
               }
@@ -293,7 +295,7 @@ export default function TradeReviewsPage() {
             {getAllVisibleMonths().map((monthDate) => {
               const monthKey = format(monthDate, 'yyyy-MM');
               const monthReviews = getReviewsForMonth(monthDate);
-              
+
               if (monthReviews.length === 0) return null;
 
               const isMonthOpen = openMonths.has(monthKey);
@@ -308,7 +310,7 @@ export default function TradeReviewsPage() {
               return (
                 <Card key={monthKey} className="border-l-4 border-l-blue-500">
                   <CardHeader>
-                    <div 
+                    <div
                       className="flex items-center justify-between cursor-pointer"
                       onClick={() => toggleMonth(monthKey)}
                     >
@@ -327,7 +329,7 @@ export default function TradeReviewsPage() {
                       </div>
                     </div>
                   </CardHeader>
-                  
+
                   {isMonthOpen && (
                     <CardContent>
                       <div className="space-y-4">
@@ -335,14 +337,14 @@ export default function TradeReviewsPage() {
                           const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
                           const weekKey = `${monthKey}-${format(weekStart, 'yyyy-MM-dd')}`;
                           const weekReviews = getReviewsForWeek(weekStart, weekEnd);
-                          
+
                           if (weekReviews.length === 0) return null;
 
                           const isWeekOpen = openWeeks.has(weekKey);
 
                           return (
                             <div key={weekKey} className="border rounded-lg">
-                              <div 
+                              <div
                                 className="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
                                 onClick={() => toggleWeek(weekKey)}
                               >
@@ -360,7 +362,7 @@ export default function TradeReviewsPage() {
                                   </Badge>
                                 </div>
                               </div>
-                              
+
                               {isWeekOpen && (
                                 <div className="p-3 pt-0 space-y-3">
                                   {weekReviews.map((review) => (
@@ -388,8 +390,8 @@ export default function TradeReviewsPage() {
                                                 <Edit className="h-4 w-4" />
                                               </Button>
                                             </Link>
-                                            <Button 
-                                              variant="ghost" 
+                                            <Button
+                                              variant="ghost"
                                               size="sm"
                                               onClick={() => handleDelete(review.id)}
                                               className="text-red-600 hover:text-red-700"
@@ -415,7 +417,7 @@ export default function TradeReviewsPage() {
                                             <div className="text-sm">
                                               <p className="text-muted-foreground">
                                                 {highlightMatch(
-                                                  review.sections[0].content.length > 100 
+                                                  review.sections[0].content.length > 100
                                                     ? review.sections[0].content.substring(0, 100) + '...'
                                                     : review.sections[0].content,
                                                   searchQuery

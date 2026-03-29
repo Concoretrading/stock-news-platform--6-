@@ -1,14 +1,14 @@
-import { getFirestore } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 
 // Helper function to get database safely
 async function getDatabase() {
-  return await getFirestore();
+  return adminDb;
 }
 
 export async function getEarningsCalendar() {
   try {
     const db = await getDatabase();
-    
+
     // Simple mock earnings data
     const earnings = [
       {
@@ -20,13 +20,13 @@ export async function getEarningsCalendar() {
       },
       {
         id: '2',
-        stockTicker: 'MSFT', 
+        stockTicker: 'MSFT',
         companyName: 'Microsoft Corporation',
         earningsDate: '2024-01-24',
         isConfirmed: true
       }
     ];
-    
+
     return earnings;
   } catch (error) {
     console.error('Error fetching earnings calendar:', error);
@@ -37,12 +37,12 @@ export async function getEarningsCalendar() {
 export async function addEarningsEvent(eventData: any) {
   try {
     const db = await getDatabase();
-    
+
     const docRef = await db.collection('earnings_calendar').add({
       ...eventData,
       createdAt: new Date().toISOString()
     });
-    
+
     return docRef.id;
   } catch (error) {
     console.error('Error adding earnings event:', error);

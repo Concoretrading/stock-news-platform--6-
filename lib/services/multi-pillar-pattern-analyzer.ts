@@ -237,7 +237,7 @@ export class MultiPillarPatternAnalyzer {
 
     // Get all patterns with timestamps
     const allPatterns = Array.from(this.patterns.entries())
-      .flatMap(([pillar, patterns]) => 
+      .flatMap(([pillar, patterns]) =>
         patterns.map(p => ({ ...p, pillar }))
       );
 
@@ -246,11 +246,11 @@ export class MultiPillarPatternAnalyzer {
 
     // Find patterns that occur within time windows
     const timeWindow = 3; // bars
-    
+
     for (let i = 0; i < allPatterns.length; i++) {
       const basePattern = allPatterns[i];
       const baseTime = new Date(basePattern.timestamp).getTime();
-      
+
       // Find patterns within time window
       const nearbyPatterns = allPatterns.filter((p, index) => {
         if (index === i) return false;
@@ -276,12 +276,12 @@ export class MultiPillarPatternAnalyzer {
   }
 
   private createCombination(
-    basePattern: any, 
-    nearbyPatterns: any[], 
+    basePattern: any,
+    nearbyPatterns: any[],
     data: PolygonBar[]
   ): CombinedPattern | null {
     const allPillars = [basePattern.pillar, ...nearbyPatterns.map(p => p.pillar)];
-    const uniquePillars = [...new Set(allPillars)];
+    const uniquePillars = Array.from(new Set(allPillars));
 
     // Calculate combined metrics
     const avgSuccessRate = [basePattern, ...nearbyPatterns]
@@ -315,17 +315,17 @@ export class MultiPillarPatternAnalyzer {
   private findVolumeSpikes(data: PolygonBar[], timeframe: string): PillarPattern[] {
     const patterns: PillarPattern[] = [];
     const lookback = 20;
-    
+
     for (let i = lookback; i < data.length - 10; i++) {
       const currentVolume = data[i].v;
       const avgVolume = data.slice(i - lookback, i)
         .reduce((sum, bar) => sum + bar.v, 0) / lookback;
-      
+
       // Volume spike threshold (2x average)
       if (currentVolume > avgVolume * 2) {
         const futureReturn = this.calculateFutureReturn(data, i, 5);
         const maxReturn = this.calculateMaxReturn(data, i, 10);
-        
+
         if (futureReturn > 1) { // Minimum 1% return
           patterns.push({
             id: `volume_spike_${i}`,
@@ -344,25 +344,25 @@ export class MultiPillarPatternAnalyzer {
         }
       }
     }
-    
+
     return patterns;
   }
 
   private findVolumeAccumulation(data: PolygonBar[], timeframe: string): PillarPattern[] {
     const patterns: PillarPattern[] = [];
     const period = 10;
-    
+
     for (let i = period; i < data.length - 5; i++) {
       const recentBars = data.slice(i - period, i);
       const avgVolume = recentBars.reduce((sum, bar) => sum + bar.v, 0) / period;
       const priceChange = (data[i].c - data[i - period].c) / data[i - period].c * 100;
-      
+
       // Look for accumulation (rising volume, stable/rising price)
       const volumeTrend = this.calculateVolumeTrend(recentBars);
-      
+
       if (volumeTrend > 0.1 && priceChange > -2 && priceChange < 8) {
         const futureReturn = this.calculateFutureReturn(data, i, 10);
-        
+
         if (futureReturn > 2) {
           patterns.push({
             id: `volume_accumulation_${i}`,
@@ -381,7 +381,7 @@ export class MultiPillarPatternAnalyzer {
         }
       }
     }
-    
+
     return patterns;
   }
 
@@ -394,11 +394,11 @@ export class MultiPillarPatternAnalyzer {
   private calculateMaxReturn(data: PolygonBar[], startIndex: number, lookAheadBars: number): number {
     const endIndex = Math.min(startIndex + lookAheadBars, data.length - 1);
     let maxPrice = data[startIndex].c;
-    
+
     for (let i = startIndex; i <= endIndex; i++) {
       maxPrice = Math.max(maxPrice, data[i].h);
     }
-    
+
     return ((maxPrice - data[startIndex].c) / data[startIndex].c) * 100;
   }
 
@@ -406,24 +406,24 @@ export class MultiPillarPatternAnalyzer {
     if (bars.length < 2) return 0;
     const firstHalf = bars.slice(0, Math.floor(bars.length / 2));
     const secondHalf = bars.slice(Math.floor(bars.length / 2));
-    
+
     const firstAvg = firstHalf.reduce((sum, bar) => sum + bar.v, 0) / firstHalf.length;
     const secondAvg = secondHalf.reduce((sum, bar) => sum + bar.v, 0) / secondHalf.length;
-    
+
     return (secondAvg - firstAvg) / firstAvg;
   }
 
   private calculateStatistics() {
     const allPatterns = Array.from(this.patterns.values()).flat();
     const pillarStats: Record<string, number> = {};
-    
-    for (const [pillar, patterns] of this.patterns.entries()) {
-      pillarStats[pillar] = patterns.length > 0 ? 
-        patterns.reduce((sum, p) => sum + p.success_rate, 0) / patterns.length : 0;
+
+    for (const [pillar, patterns] of Array.from(this.patterns.entries())) {
+      pillarStats[pillar] = patterns.length > 0 ?
+        patterns.reduce((sum: number, p: PillarPattern) => sum + p.success_rate, 0) / patterns.length : 0;
     }
 
     const bestPillar = Object.entries(pillarStats)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] || 'none';
+      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'none';
 
     const highestSuccessCombo = this.combinedPatterns
       .sort((a, b) => b.overall_success_rate - a.overall_success_rate)[0] || null;
@@ -455,16 +455,16 @@ export class MultiPillarPatternAnalyzer {
   private findPremiumCompression(data: PolygonBar[], timeframe: string): PillarPattern[] { return []; }
   private findPremiumSkew(data: PolygonBar[], timeframe: string): PillarPattern[] { return []; }
   private findIVCrushPatterns(data: PolygonBar[], timeframe: string): PillarPattern[] { return []; }
-  
+
   // Technical indicator calculations
   private calculateRSI(data: PolygonBar[], period: number): number[] {
     return data.map(() => 50); // Placeholder
   }
-  
+
   private calculateMACD(data: PolygonBar[]): any[] {
     return data.map(() => ({ macd: 0, signal: 0, histogram: 0 })); // Placeholder
   }
-  
+
   private calculateStochastic(data: PolygonBar[], kPeriod: number, dPeriod: number): any[] {
     return data.map(() => ({ k: 50, d: 50 })); // Placeholder
   }

@@ -1,22 +1,22 @@
 import { initializeApp, getApps, getApp } from 'firebase/app'
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth'
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  collection, 
-  addDoc, 
-  query, 
-  where, 
-  getDocs, 
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
   deleteDoc,
   updateDoc,
   orderBy,
@@ -102,10 +102,10 @@ export const signUp = async (email: string, password: string): Promise<AuthResul
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-    
+
     // No automatic stock addition - users choose their own stocks
     console.log('🔧 New user created - no automatic stocks added');
-    
+
     return { user, error: null };
   } catch (error) {
     return { user: null, error: error instanceof Error ? error.message : 'Unknown error' };
@@ -142,7 +142,7 @@ export const onAuthChange = (callback: (user: User | null) => void): Unsubscribe
 export const addStockToWatchlist = async (ticker: string, companyName: string): Promise<StockResult> => {
   try {
     let userId: string;
-    
+
     // Development bypass for localhost
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       userId = 'test-user-localhost';
@@ -155,18 +155,18 @@ export const addStockToWatchlist = async (ticker: string, companyName: string): 
     }
 
     console.log(`🔧 Adding stock to watchlist: ${ticker} (${companyName}) for user: ${userId}`);
-    
+
     const stockData = {
       userId: userId,
       ticker: ticker.toUpperCase(),
       companyName,
       createdAt: new Date()
     };
-    
+
     console.log('🔧 Stock data to be added:', stockData);
-    
+
     const docRef = await addDoc(collection(getDatabase(), 'stocks'), stockData);
-    
+
     console.log('🔧 Stock added successfully with ID:', docRef.id);
     return { success: true, id: docRef.id };
   } catch (error) {
@@ -178,7 +178,7 @@ export const addStockToWatchlist = async (ticker: string, companyName: string): 
 export const getUserStocks = async (): Promise<Stock[]> => {
   try {
     let userId: string;
-    
+
     // Development bypass for localhost
     if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
       userId = 'test-user-localhost';
@@ -198,7 +198,7 @@ export const getUserStocks = async (): Promise<Stock[]> => {
     );
 
     const snapshot = await getDocs(q);
-    const stocks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Stock));
+    const stocks = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Stock));
     console.log('🔧 Retrieved stocks from Firebase:', stocks);
     return stocks;
   } catch (error) {
@@ -284,7 +284,7 @@ export const getUserCatalysts = async (): Promise<Catalyst[]> => {
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Catalyst));
+    return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Catalyst));
   } catch (error) {
     console.error('Error getting catalysts:', error);
     return [];
@@ -314,7 +314,7 @@ export const subscribeToCatalysts = (callback: (catalysts: Catalyst[]) => void):
   );
 
   return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
-    const catalysts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Catalyst));
+    const catalysts = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Catalyst));
     callback(catalysts);
   });
 };
@@ -330,7 +330,7 @@ export const subscribeToStocks = (callback: (stocks: Stock[]) => void): Unsubscr
   );
 
   return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
-    const stocks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Stock));
+    const stocks = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Stock));
     callback(stocks);
   });
 };
@@ -412,7 +412,7 @@ export function listenForStockCatalysts(
   );
 
   return onSnapshot(q, (snapshot: QuerySnapshot<DocumentData>) => {
-    const catalysts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Catalyst));
+    const catalysts = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as Catalyst));
     onCatalystsReceived(catalysts);
   });
 }
@@ -439,4 +439,4 @@ export const saveStockAlertSettings = async (
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
-}; 
+};

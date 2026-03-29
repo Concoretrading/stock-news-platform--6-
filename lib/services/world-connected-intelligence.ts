@@ -4,7 +4,7 @@
 export interface WorldConnectedAnalysis {
   symbol: string;
   timestamp: string;
-  
+
   // UPCOMING EVENTS CONNECTION
   upcoming_events: {
     immediate: UpcomingEvent[]; // Next 24-48 hours
@@ -12,7 +12,7 @@ export interface WorldConnectedAnalysis {
     medium_term: UpcomingEvent[]; // Next 1-3 months
     preparation_status: PreparationStatus;
   };
-  
+
   // HISTORICAL EVENT LEARNING
   historical_intelligence: {
     similar_events: HistoricalEvent[];
@@ -20,7 +20,7 @@ export interface WorldConnectedAnalysis {
     market_lessons: MarketLesson[];
     predictive_insights: PredictiveInsight[];
   };
-  
+
   // WORLD CONTEXT UNDERSTANDING
   world_context: {
     economic_environment: EconomicEnvironment;
@@ -28,7 +28,7 @@ export interface WorldConnectedAnalysis {
     market_relationships: MarketRelationship[];
     global_themes: GlobalTheme[];
   };
-  
+
   // REAL-TIME NEWS MONITORING
   live_intelligence: {
     breaking_news: BreakingNews[];
@@ -36,7 +36,7 @@ export interface WorldConnectedAnalysis {
     sentiment_shifts: SentimentShift[];
     flow_changes: FlowChange[];
   };
-  
+
   // STRATEGIC POSITIONING
   event_positioning: {
     pre_event_strategy: PreEventStrategy;
@@ -62,7 +62,7 @@ interface UpcomingEvent {
   historical_context: {
     similar_events_count: number;
     avg_move_magnitude: number;
-    direction_bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL';
+    direction_bias: 'BULLISH' | 'BEARISH' | 'NEUTRAL' | 'DEPENDS_ON_EXPECTATIONS' | 'DEPENDS_ON_GUIDANCE';
     success_patterns: string[];
   };
   preparation_requirements: {
@@ -288,19 +288,19 @@ export class WorldConnectedIntelligence {
 
   async analyzeWorldConnection(symbol: string): Promise<WorldConnectedAnalysis> {
     console.log(`🌍 WORLD ANALYSIS: ${symbol}`);
-    
+
     // Get upcoming events
     const upcomingEvents = await this.getUpcomingEvents(symbol);
-    
+
     // Learn from historical events
     const historicalIntelligence = await this.analyzeHistoricalIntelligence(symbol);
-    
+
     // Understand current world context
     const worldContext = await this.analyzeWorldContext();
-    
+
     // Monitor live intelligence
     const liveIntelligence = await this.monitorLiveIntelligence(symbol);
-    
+
     // Generate strategic positioning
     const eventPositioning = await this.generateEventPositioning(
       symbol, upcomingEvents, historicalIntelligence, worldContext
@@ -322,7 +322,7 @@ export class WorldConnectedIntelligence {
     const immediate = await this.getImmediateEvents(symbol);
     const shortTerm = await this.getShortTermEvents(symbol);
     const mediumTerm = await this.getMediumTermEvents(symbol);
-    
+
     const preparationStatus = this.assessPreparationStatus(immediate, shortTerm, mediumTerm);
 
     return {

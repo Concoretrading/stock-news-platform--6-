@@ -1,4 +1,4 @@
-import { polygonData } from './polygon-data-provider';
+import { polygonDataProvider } from './polygon-data-provider';
 import { patternStorage } from './pattern-storage';
 
 interface PatternConfig {
@@ -43,6 +43,10 @@ interface PatternResult {
     momentum: any;
     key_levels: number[];
   };
+  start_date: string;
+  end_date: string;
+  success_rate: number;
+  avg_profit: number;
   timestamp: string;
 }
 
@@ -70,19 +74,19 @@ export class PatternRecognitionEngine {
   async initializeSymbol(symbol: string, config?: Partial<PatternConfig>): Promise<void> {
     try {
       console.log(`🎯 Initializing pattern recognition for ${symbol}`);
-      
+
       // Set up configuration
       const defaultConfig = this.getDefaultConfig(symbol);
       const finalConfig = { ...defaultConfig, ...config };
       this.patternConfigs.set(symbol, finalConfig);
-      
+
       // Load historical patterns
       const patterns = await patternStorage.getPatternsForSymbol(symbol);
       this.historicalPatterns.set(symbol, patterns);
-      
+
       // Subscribe to real-time data
       await this.subscribeToRealTimeData(symbol);
-      
+
       this.activeSymbols.add(symbol);
       console.log(`✅ Pattern recognition initialized for ${symbol}`);
 
@@ -101,11 +105,11 @@ export class PatternRecognitionEngine {
       if (!config) throw new Error(`No config found for ${symbol}`);
 
       const patterns: PatternResult[] = [];
-      
+
       // Process each timeframe
       for (const timeframe of config.timeframes) {
         // Get historical data for context
-        const historicalData = await polygonData.getHistoricalData(
+        const historicalData = await polygonDataProvider.getHistoricalData(
           symbol,
           timeframe,
           this.getStartDate(timeframe),
@@ -210,6 +214,10 @@ export class PatternRecognitionEngine {
             momentum: this.analyzeMomentum(data),
             key_levels: this.findKeyLevels(data)
           },
+          start_date: data[0].t ? new Date(data[0].t).toISOString() : new Date().toISOString(),
+          end_date: new Date().toISOString(),
+          success_rate: confidence,
+          avg_profit: 0.1,
           timestamp: new Date().toISOString()
         };
       }
@@ -269,6 +277,10 @@ export class PatternRecognitionEngine {
             momentum: this.analyzeMomentum(data),
             key_levels: this.findKeyLevels(data)
           },
+          start_date: data[0].t ? new Date(data[0].t).toISOString() : new Date().toISOString(),
+          end_date: new Date().toISOString(),
+          success_rate: confidence,
+          avg_profit: 0.1,
           timestamp: new Date().toISOString()
         };
       }
@@ -324,6 +336,10 @@ export class PatternRecognitionEngine {
             momentum: this.analyzeMomentum(data),
             key_levels: this.findKeyLevels(data)
           },
+          start_date: data[0].t ? new Date(data[0].t).toISOString() : new Date().toISOString(),
+          end_date: new Date().toISOString(),
+          success_rate: confidence,
+          avg_profit: 0.1,
           timestamp: new Date().toISOString()
         };
       }
@@ -347,9 +363,9 @@ export class PatternRecognitionEngine {
   ): Promise<number> {
     try {
       const historicalPatterns = this.historicalPatterns.get(symbol) || [];
-      
+
       // Filter relevant patterns
-      const relevantPatterns = historicalPatterns.filter(p => 
+      const relevantPatterns = historicalPatterns.filter(p =>
         p.pattern_type === pattern_type &&
         p.timeframe === timeframe
       );
@@ -357,7 +373,7 @@ export class PatternRecognitionEngine {
       if (relevantPatterns.length === 0) return 0.5; // Neutral confidence
 
       // Calculate average success rate
-      const avgSuccess = relevantPatterns.reduce((sum, p) => sum + p.success_rate, 0) / 
+      const avgSuccess = relevantPatterns.reduce((sum, p) => sum + p.success_rate, 0) /
         relevantPatterns.length;
 
       // Calculate current pattern strength
@@ -452,8 +468,8 @@ export class PatternRecognitionEngine {
   private calculateATR(data: any[]): number {
     const tr = data.map((d, i) => {
       if (i === 0) return d.h - d.l;
-      const ych = Math.abs(d.h - data[i-1].c);
-      const ycl = Math.abs(d.l - data[i-1].c);
+      const ych = Math.abs(d.h - data[i - 1].c);
+      const ycl = Math.abs(d.l - data[i - 1].c);
       const hl = d.h - d.l;
       return Math.max(hl, ych, ycl);
     });
@@ -463,7 +479,7 @@ export class PatternRecognitionEngine {
   private analyzeVolume(data: any[]): any {
     const volumes = data.map(d => d.v);
     const avgVolume = volumes.reduce((a, b) => a + b) / volumes.length;
-    
+
     return {
       average: avgVolume,
       current: volumes[volumes.length - 1],
@@ -475,7 +491,7 @@ export class PatternRecognitionEngine {
     const closes = data.map(d => d.c);
     const sma20 = this.calculateSMA(closes, 20);
     const lastClose = closes[closes.length - 1];
-    
+
     return {
       trend: lastClose > sma20 ? 'bullish' : 'bearish',
       strength: Math.abs((lastClose - sma20) / sma20) * 100
@@ -488,19 +504,19 @@ export class PatternRecognitionEngine {
 
   private findKeyLevels(data: any[]): number[] {
     const levels = new Set<number>();
-    
+
     data.forEach(bar => {
       const price = bar.c;
-      const touches = data.filter(d => 
+      const touches = data.filter(d =>
         Math.abs(d.h - price) / price < 0.001 ||
         Math.abs(d.l - price) / price < 0.001
       ).length;
-      
+
       if (touches >= 3) {
         levels.add(Number(price.toFixed(2)));
       }
     });
-    
+
     return Array.from(levels).sort((a, b) => a - b);
   }
 
@@ -512,11 +528,11 @@ export class PatternRecognitionEngine {
     const riskAmount = 100; // Risk $100 per trade
     const riskPerShare = Math.abs(entry - stop);
     let shares = Math.floor(riskAmount / riskPerShare);
-    
+
     // Adjust size based on confidence
     if (confidence > 0.8) shares = Math.floor(shares * 1.5);
     if (confidence < 0.6) shares = Math.floor(shares * 0.5);
-    
+
     return shares;
   }
 
@@ -537,9 +553,12 @@ export class PatternRecognitionEngine {
 
   private async storePatterns(patterns: PatternResult[]): Promise<void> {
     try {
-      await Promise.all(patterns.map(pattern => 
+      await Promise.all(patterns.map(pattern =>
         patternStorage.storePattern({
           ...pattern,
+          volume_profile: pattern.supporting_data.volume_profile,
+          key_levels: pattern.supporting_data.key_levels,
+          momentum: pattern.supporting_data.momentum,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -551,7 +570,7 @@ export class PatternRecognitionEngine {
 
   private async subscribeToRealTimeData(symbol: string): Promise<void> {
     try {
-      await polygonData.subscribeToRealTime([symbol], async (data) => {
+      await polygonDataProvider.subscribeToRealTime([symbol], async (data) => {
         const patterns = await this.processRealTimeData(symbol, data);
         if (patterns.length > 0) {
           console.log(`🎯 Patterns detected for ${symbol}:`, patterns);

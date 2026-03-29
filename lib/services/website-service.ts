@@ -1,21 +1,21 @@
-import { getFirestore } from '@/lib/firebase-admin';
+import { adminDb } from '@/lib/firebase-admin';
 
 // Helper function to get database safely
 async function getDatabase() {
-  return await getFirestore();
+  return adminDb;
 }
 
 export async function scanWebsite(userId: string, stockTicker: string, websiteUrl: string) {
   try {
     const db = await getDatabase();
-    
+
     // Simple mock website scanning
     const result = {
       success: true,
       contentFound: 0,
       message: 'Website scanning not implemented yet'
     };
-    
+
     return result;
   } catch (error) {
     console.error('Error scanning website:', error);
@@ -26,12 +26,12 @@ export async function scanWebsite(userId: string, stockTicker: string, websiteUr
 export async function getWebsiteMonitoring(userId: string) {
   try {
     const db = await getDatabase();
-    
+
     const monitoringSnap = await db.collection('website_monitoring')
       .where('userId', '==', userId)
       .get();
-    
-    return monitoringSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    return monitoringSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
     console.error('Error fetching website monitoring:', error);
     throw error;

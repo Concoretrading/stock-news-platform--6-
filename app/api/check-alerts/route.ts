@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuth } from '@/lib/firebase-admin'
-import { getFirestore } from 'firebase-admin/firestore'
+import { adminAuth, adminDb } from '@/lib/firebase-admin'
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,13 +13,13 @@ async function getCurrentPrice(ticker: string): Promise<number | null> {
 
 export async function GET(request: NextRequest) {
   try {
-    const db = getFirestore()
-    
+    const db = adminDb
+
     // Get query parameters
     const { searchParams } = new URL(request.url)
     const specificTicker = searchParams.get('ticker')
     const currentPriceParam = searchParams.get('currentPrice')
-    
+
     // Authenticate user
     const authHeader = request.headers.get('authorization') || ''
     const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
@@ -29,7 +28,7 @@ export async function GET(request: NextRequest) {
     }
     let decodedToken
     try {
-      decodedToken = await (await getAuth()).verifyIdToken(idToken)
+      decodedToken = await adminAuth.verifyIdToken(idToken)
     } catch (err) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 })
     }
@@ -37,17 +36,17 @@ export async function GET(request: NextRequest) {
 
     // Get user's watchlist
     const stocksSnap = await db.collection('stocks').where('userId', '==', userId).get()
-    const stocks = stocksSnap.docs.map(doc => ({ id: doc.id, ...(doc.data() as any) }))
+    const stocks = stocksSnap.docs.map((doc: any) => ({ id: doc.id, ...(doc.data() as any) }))
 
     // Filter stocks if specific ticker is provided
-    const stocksToCheck = specificTicker 
-      ? stocks.filter(stock => stock.ticker === specificTicker.toUpperCase())
+    const stocksToCheck = specificTicker
+      ? stocks.filter((stock: any) => stock.ticker === specificTicker.toUpperCase())
       : stocks
 
     // Get alert settings for all stocks
     const alertSettingsSnap = await db.collection('stock_alert_settings').where('userId', '==', userId).get()
     const alertSettings: Record<string, any> = {}
-    alertSettingsSnap.docs.forEach(doc => {
+    alertSettingsSnap.docs.forEach((doc: any) => {
       const data = doc.data()
       alertSettings[data.ticker] = data
     })
@@ -59,7 +58,7 @@ export async function GET(request: NextRequest) {
       const settings = alertSettings[ticker]
       if (!settings) continue
       const { tolerancePoints, minimumMove } = settings
-      
+
       // Get current price - use provided price or fetch from API
       let currentPrice: number | null
       if (specificTicker && currentPriceParam) {
@@ -68,18 +67,18 @@ export async function GET(request: NextRequest) {
         currentPrice = await getCurrentPrice(ticker)
       }
       if (currentPrice === null) continue
-      
+
       // Get all catalysts for this stock with valid priceBefore and priceAfter
       const catalystsSnap = await db.collection('catalysts')
         .where('userId', '==', userId)
         .where('stockTickers', 'array-contains', ticker)
         .get()
       const catalysts = catalystsSnap.docs
-        .map(doc => ({ id: doc.id, ...(doc.data() as any) }))
-        .filter(c => typeof c.priceBefore === 'number' && typeof c.priceAfter === 'number')
-        .filter(c => Math.abs(c.priceAfter - c.priceBefore) >= minimumMove)
+        .map((doc: any) => ({ id: doc.id, ...(doc.data() as any) }))
+        .filter((c: any) => typeof c.priceBefore === 'number' && typeof c.priceAfter === 'number')
+        .filter((c: any) => Math.abs(c.priceAfter - c.priceBefore) >= minimumMove)
       if (catalysts.length === 0) continue
-      
+
       // Check for price revisit
       for (const catalyst of catalysts) {
         if (Math.abs(currentPrice - catalyst.priceBefore) <= tolerancePoints) {

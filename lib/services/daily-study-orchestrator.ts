@@ -87,7 +87,7 @@ export class DailyStudyOrchestrator {
                 regime: 'neutral',
                 news_sentiment: intel.consensus as any,
                 price_action: 'chop',
-                participant_state: intel.sentiment_score > 60 ? 'greed' : 'fear',
+                participant_state: (intel as any).sentiment_score > 60 ? 'greed' : 'fear',
                 specific_events: [ticker, 'rumor']
             };
             const foundationInsights = unifiedKnowledgeFoundation.getInsights(context);
