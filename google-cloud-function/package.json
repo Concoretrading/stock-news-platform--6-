@@ -1,0 +1,20 @@
+{
+  "name": "ocr-processor",
+  "version": "1.0.0",
+  "description": "Google Cloud Function for OCR processing",
+  "main": "index.js",
+  "scripts": {
+    "start": "functions-framework --target=ocrProcessor",
+    "deploy": "gcloud functions deploy ocr-processor --runtime nodejs20 --trigger-http --allow-unauthenticated"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0",
+    "@google-cloud/vision": "^5.2.0",
+    "fuse.js": "^7.0.0",
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.4.1"
+  },
+  "engines": {
+    "node": "20"
+  }
+} 

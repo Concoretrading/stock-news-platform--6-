@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Schwab Code Extractor — Predator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .card {
+      background: #111118;
+      border: 1px solid #2a2a3a;
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 0 40px rgba(0,255,136,0.05);
+    }
+    .logo { font-size: 2em; margin-bottom: 8px; }
+    h1 { color: #00ff88; font-size: 1.5em; margin-bottom: 6px; }
+    .subtitle { color: #666; font-size: 0.9em; margin-bottom: 32px; }
+
+    .step {
+      background: #0d0d1a;
+      border: 1px solid #1e1e2e;
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .step-num {
+      display: inline-block;
+      background: #00ff88;
+      color: #000;
+      font-weight: bold;
+      font-size: 0.75em;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+    }
+    .step h3 { color: #fff; font-size: 1em; margin-bottom: 8px; }
+    .step p { color: #888; font-size: 0.88em; line-height: 1.6; }
+
+    .auth-link {
+      display: block;
+      background: #0a1a0a;
+      border: 1px solid #00ff8833;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: monospace;
+      font-size: 0.75em;
+      color: #00ff88;
+      word-break: break-all;
+      margin-top: 10px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .auth-link:hover { background: #0d250d; cursor: pointer; }
+
+    label { display: block; color: #aaa; font-size: 0.85em; margin-bottom: 8px; }
+    textarea {
+      width: 100%;
+      background: #0d0d1a;
+      border: 1px solid #2a2a3a;
+      border-radius: 8px;
+      color: #fff;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.8em;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    textarea:focus { border-color: #00ff8866; }
+
+    .result-box {
+      display: none;
+      margin-top: 20px;
+      background: #0a1a0a;
+      border: 1px solid #00ff8844;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .result-box.visible { display: block; }
+    .result-label { color: #00ff88; font-size: 0.85em; font-weight: bold; margin-bottom: 10px; }
+    .code-display {
+      background: #050f05;
+      border: 1px solid #00ff8822;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 0.82em;
+      color: #00ff88;
+      word-break: break-all;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 0.9em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #00ff88; color: #000; }
+    .btn-primary:hover { background: #00cc6a; }
+    .btn-copy { background: #1a1a2e; color: #00ff88; border: 1px solid #00ff8844; }
+    .btn-copy:hover { background: #0a1a0a; }
+
+    .instructions {
+      background: #1a0a0a;
+      border: 1px solid #ff444422;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 0.82em;
+      color: #ff8888;
+      margin-top: 10px;
+      line-height: 1.7;
+    }
+
+    .success-msg { display: none; color: #00ff88; font-size: 0.85em; margin-top: 6px; }
+    .success-msg.visible { display: block; }
+
+    .error-box { display: none; color: #ff6666; font-size: 0.85em; margin-top: 10px; padding: 10px; background: #1a0a0a; border-radius: 6px; }
+    .error-box.visible { display: block; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🦅</div>
+  <h1>Schwab Authorization</h1>
+  <p class="subtitle">Predator System — TOS Connection Setup</p>
+
+  <!-- Step 1 -->
+  <div class="step">
+    <span class="step-num">STEP 1</span>
+    <h3>Open the Authorization URL</h3>
+    <p>Click the link below to open Schwab's authorization page. Log in with your <strong>Schwab brokerage account</strong>, select your account(s), and click Allow.</p>
+    <a class="auth-link" id="authLink" href="#" target="_blank" onclick="openAuthUrl()">
+      🔐 Loading authorization URL...
+    </a>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step">
+    <span class="step-num">STEP 2</span>
+    <h3>Paste the Redirect URL Here</h3>
+    <p>After clicking Allow, your browser will go to a page that can't connect (white/error page). That's fine. Copy the <strong>entire URL from your address bar</strong> and paste it below.</p>
+    <br>
+    <label>Paste the full redirect URL here:</label>
+    <textarea id="urlInput" placeholder="https://127.0.0.1/?code=C0.xxxxx&session=..." oninput="extractCode()"></textarea>
+    <div class="error-box" id="errorBox">❌ No authorization code found in that URL. Make sure you copied the full address bar URL.</div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-box" id="resultBox">
+    <div class="result-label">✅ Authorization Code Extracted!</div>
+    <div class="code-display" id="codeDisplay"></div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <button class="btn btn-copy" onclick="copyCode()">📋 Copy Code</button>
+      <span class="success-msg" id="copyMsg">✅ Copied!</span>
+    </div>
+    <div class="instructions" style="margin-top:16px;">
+      <strong>Final step:</strong><br>
+      1. In VS Code, press <strong>Ctrl+N</strong> to open a new file<br>
+      2. Paste this code and save as <strong>schwab-code.txt</strong> in your project root<br>
+      3. Tell the AI — it will run the token exchange automatically
+    </div>
+  </div>
+</div>
+
+<script>
+  const CLIENT_ID    = 'xVjuLm4pkmZhuSXjdRA1tpYlKwPNiIdMgUPDvv6uGYEeLyFs';
+  const REDIRECT_URI = 'https://127.0.0.1';
+  const AUTH_URL     = `https://api.schwabapi.com/v1/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code`;
+
+  // Set the auth link on load
+  const linkEl = document.getElementById('authLink');
+  linkEl.href = AUTH_URL;
+  linkEl.textContent = '🔐 Click here → Authorize with Schwab';
+
+  function openAuthUrl() {
+    window.open(AUTH_URL, '_blank');
+    return false;
+  }
+
+  function extractCode() {
+    const input = document.getElementById('urlInput').value.trim();
+    const resultBox = document.getElementById('resultBox');
+    const errorBox  = document.getElementById('errorBox');
+    const codeDisplay = document.getElementById('codeDisplay');
+
+    if (!input) {
+      resultBox.classList.remove('visible');
+      errorBox.classList.remove('visible');
+      return;
+    }
+
+    try {
+      // Handle both full URLs and partial "code=xxxx&session" strings
+      let code = '';
+
+      if (input.startsWith('http')) {
+        const url = new URL(input);
+        code = url.searchParams.get('code') || '';
+      } else {
+        // Try to extract from a partial paste like "code=xxx&session=..."
+        const match = input.match(/code=([^&\s]+)/);
+        if (match) code = match[1];
+      }
+
+      if (code) {
+        errorBox.classList.remove('visible');
+        codeDisplay.textContent = decodeURIComponent(code);
+        resultBox.classList.add('visible');
+      } else {
+        resultBox.classList.remove('visible');
+        if (input.length > 20) errorBox.classList.add('visible');
+      }
+    } catch (e) {
+      // Try partial extraction if URL parse fails
+      const match = input.match(/code=([^&\s]+)/);
+      if (match) {
+        const code = match[1];
+        codeDisplay.textContent = decodeURIComponent(code);
+        resultBox.classList.add('visible');
+        errorBox.classList.remove('visible');
+      } else {
+        if (input.length > 20) errorBox.classList.add('visible');
+      }
+    }
+  }
+
+  function copyCode() {
+    const code = document.getElementById('codeDisplay').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+      document.getElementById('copyMsg').classList.add('visible');
+      setTimeout(() => document.getElementById('copyMsg').classList.remove('visible'), 2000);
+    });
+  }
+</script>
+</body>
+</html>
