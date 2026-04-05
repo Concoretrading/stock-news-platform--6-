@@ -1,35 +1,48 @@
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '.env.local' });
-import { nemotronService } from '../lib/services/nemotron-service';
-
-async function main() {
-  console.log('🧪 Testing Nemotron brain connection...\n');
-
-  const result = await nemotronService.synthesizeIntelligence({
-    ticker: 'SPY',
-    currentPrice: 650,
-    expertSignals: {
-      psychology: { squeeze: 'TIGHT on Daily and 4H' },
-      behavioral:  { momentum_bias: 'BULLISH' },
-      flow:        { call_strike: 655, put_strike: 645 },
-      news:        { note: 'Fed speakers today at 10AM' },
-      technical:   { atr: 3.2, squeezed_frames: 4 }
-    },
-    macroContext: 'SPY at $650. 4 timeframes compressed. Approaching resistance at $655. Premium slightly call-heavy.',
-    reasoningBudget: 50
-  });
-
-  const isMock = result.autonomous_thesis?.includes('MOCK MODE');
-
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🧠 NEMOTRON STATUS:', isMock ? '⚠️  MOCK (key issue)' : '✅ LIVE & REASONING');
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('Direction:  ', result.final_trade_direction);
-  console.log('Confidence: ', result.confidence + '%');
-  console.log('Thesis:     ', result.autonomous_thesis);
-  console.log('Traps:      ', result.potential_traps_identified?.join(', ') || 'None');
-  console.log('Advice:     ', result.adjustment_advice);
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+const result = dotenv.config({ path: '.env.local' });
+if (result.error) {
+    console.error('❌ Error loading .env.local:', result.error);
 }
 
-main();
+// Import AFTER dotenv config
+import { NemotronService } from '../lib/services/nemotron-service';
+
+async function testNemotron() {
+    console.log('🧠 Testing Nemotron (NVIDIA) Connection...');
+    
+    // Create NEW instance AFTER dotenv is loaded
+    const liveService = new NemotronService();
+    
+    const request = {
+        ticker: 'NVDA',
+        currentPrice: 900,
+        expertSignals: {
+            psychology: { sentiment: 'EUPHORIC', intensity: 85 },
+            behavioral: { pattern: 'Bullish Engulfing', confidence: 75 },
+            flow: { darkPool: 'Buying', intensity: 90 },
+            news: { gravity: 0.8, description: 'Earnings beat expected' },
+            technical: { rsi: 72, trend: 'UPWARD' }
+        },
+        macroContext: 'Rates holding steady, AI demand surging.',
+        reasoningBudget: 50
+    };
+
+    try {
+        const result = await liveService.synthesizeIntelligence(request);
+        
+        console.log('\n--- BRAIN SYNTHESIS RESULT ---');
+        console.log(`Final Decision: ${result.final_trade_direction}`);
+        console.log(`Confidence: ${result.confidence}%`);
+        console.log(`Thesis: ${result.autonomous_thesis}`);
+        
+        if (result.autonomous_thesis.includes('[MOCK MODE]')) {
+            console.log('\n❌ FAILED: Service is still running in MOCK mode. Check your API key.');
+        } else {
+            console.log('\n✅ SUCCESS: Nemotron is LIVE and reasoning.');
+        }
+    } catch (error) {
+        console.error('❌ Connection Error:', error);
+    }
+}
+
+testNemotron();
